@@ -295,7 +295,7 @@ def test_fill(DummyWorksheet, Cell):
     ws = DummyWorksheet
     ws.parent._fills.add(fill)
 
-    cell = Cell(ws, column='A', row=1)
+    cell = Cell(ws, column=1, row=1)
     assert cell.fill == fill
 
 
@@ -306,7 +306,7 @@ def test_border(DummyWorksheet, Cell):
     ws = DummyWorksheet
     ws.parent._borders.add(border)
 
-    cell = Cell(ws, column='A', row=1)
+    cell = Cell(ws, column=1, row=1)
     assert cell.border == border
 
 
@@ -314,7 +314,7 @@ def test_number_format(DummyWorksheet, Cell):
     ws = DummyWorksheet
     ws.parent._number_formats.add("dd--hh--mm")
 
-    cell = Cell(ws, column="A", row=1)
+    cell = Cell(ws, column=1, row=1)
     cell.number_format = "dd--hh--mm"
     assert cell.number_format == "dd--hh--mm"
 
@@ -326,7 +326,7 @@ def test_alignment(DummyWorksheet, Cell):
     ws = DummyWorksheet
     ws.parent._alignments.add(align)
 
-    cell = Cell(ws, column="A", row=1)
+    cell = Cell(ws, column=1, row=1)
     assert cell.alignment == align
 
 
@@ -337,14 +337,14 @@ def test_protection(DummyWorksheet, Cell):
     ws = DummyWorksheet
     ws.parent._protections.add(prot)
 
-    cell = Cell(ws, column="A", row=1)
+    cell = Cell(ws, column=1, row=1)
     assert cell.protection == prot
 
 
 def test_pivot_button(DummyWorksheet, Cell):
     ws = DummyWorksheet
 
-    cell = Cell(ws, column="A", row=1)
+    cell = Cell(ws, column=1, row=1)
     cell.style_id
     cell._style.pivotButton = 1
     assert cell.pivotButton is True
@@ -353,7 +353,7 @@ def test_pivot_button(DummyWorksheet, Cell):
 def test_quote_prefix(DummyWorksheet, Cell):
     ws = DummyWorksheet
 
-    cell = Cell(ws, column="A", row=1)
+    cell = Cell(ws, column=1, row=1)
     cell.style_id
     cell._style.quotePrefix = 1
     assert cell.quotePrefix is True
