@@ -30,3 +30,7 @@ class ReadOnlyWorkbookException(Exception):
 class WorkbookAlreadySaved(Exception):
     """Error when attempting to perform operations on a dump workbook
     while it has already been dumped once"""
+
+
+class CellNotMergedException(Exception):
+    """Error while trying to get list of merged cells"""
