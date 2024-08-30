@@ -1,15 +1,17 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def PictureLocking():
     from ..picture import PictureLocking
+
     return PictureLocking
+
 
 class TestPictureLocking:
 
@@ -21,7 +23,6 @@ class TestPictureLocking:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, PictureLocking):
         src = """
@@ -35,6 +36,7 @@ class TestPictureLocking:
 @pytest.fixture
 def NonVisualPictureProperties():
     from ..picture import NonVisualPictureProperties
+
     return NonVisualPictureProperties
 
 
@@ -49,7 +51,6 @@ class TestNonVisualPictureProperties:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, NonVisualPictureProperties):
         src = """
         <cNvPicPr />
@@ -59,10 +60,10 @@ class TestNonVisualPictureProperties:
         assert graphic == NonVisualPictureProperties()
 
 
-
 @pytest.fixture
 def PictureNonVisual():
     from ..picture import PictureNonVisual
+
     return PictureNonVisual
 
 
@@ -80,7 +81,6 @@ class TestPictureNonVisual:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PictureNonVisual):
         src = """
         <nvPicPr>
@@ -93,10 +93,10 @@ class TestPictureNonVisual:
         assert graphic == PictureNonVisual()
 
 
-
 @pytest.fixture
 def PictureFrame():
     from ..picture import PictureFrame
+
     return PictureFrame
 
 
@@ -125,7 +125,6 @@ class TestPicture:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, PictureFrame):
         src = """

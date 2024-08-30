@@ -1,22 +1,22 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from openpyxl.compat import safe_string
 
+
 class DataTableFormula:
-
-
     t = "dataTable"
 
-    def __init__(self,
-                 ref,
-                 ca=False,
-                 dt2D=False,
-                 dtr=False,
-                 r1=None,
-                 r2=None,
-                 del1=False,
-                 del2=False,
-                 **kw):
+    def __init__(
+        self,
+        ref,
+        ca=False,
+        dt2D=False,
+        dtr=False,
+        r1=None,
+        r2=None,
+        del1=False,
+        del2=False,
+        **kw
+    ):
         self.ref = ref
         self.ca = ca
         self.dt2D = dt2D
@@ -26,7 +26,6 @@ class DataTableFormula:
         self.del1 = del1
         self.del2 = del2
 
-
     def __iter__(self):
         for k in ["t", "ref", "dt2D", "dtr", "r1", "r2", "del1", "del2", "ca"]:
             v = getattr(self, k)
@@ -35,14 +34,11 @@ class DataTableFormula:
 
 
 class ArrayFormula:
-
     t = "array"
-
 
     def __init__(self, ref, text=None):
         self.ref = ref
         self.text = text
-
 
     def __iter__(self):
         for k in ["t", "ref"]:

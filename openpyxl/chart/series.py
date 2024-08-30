@@ -1,71 +1,117 @@
 # Copyright (c) 2010-2024 openpyxl
-
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    String,
-    Integer,
-    Bool,
-    Alias,
-    Sequence,
-)
-from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.nested import (
-    NestedInteger,
-    NestedBool,
-    NestedNoneSet,
-    NestedText,
-)
-
-from .shapes import GraphicalProperties
-from .data_source import (
-    AxDataSource,
-    NumDataSource,
-    NumRef,
-    StrRef,
-)
+from .data_source import AxDataSource
+from .data_source import NumDataSource
+from .data_source import StrRef
 from .error_bar import ErrorBars
 from .label import DataLabelList
-from .marker import DataPoint, PictureOptions, Marker
+from .marker import DataPoint
+from .marker import Marker
+from .marker import PictureOptions
+from .shapes import GraphicalProperties
 from .trendline import Trendline
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.nested import NestedBool
+from openpyxl.descriptors.nested import NestedInteger
+from openpyxl.descriptors.nested import NestedNoneSet
+from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.serialisable import Serialisable
 
 attribute_mapping = {
-    'area': ('idx', 'order', 'tx', 'spPr', 'pictureOptions', 'dPt', 'dLbls', 'errBars',
-             'trendline', 'cat', 'val',),
-    'bar':('idx', 'order','tx', 'spPr', 'invertIfNegative', 'pictureOptions', 'dPt',
-           'dLbls', 'trendline', 'errBars', 'cat', 'val', 'shape'),
-    'bubble':('idx','order', 'tx', 'spPr', 'invertIfNegative', 'dPt', 'dLbls',
-              'trendline', 'errBars', 'xVal', 'yVal', 'bubbleSize', 'bubble3D'),
-    'line':('idx', 'order', 'tx', 'spPr', 'marker', 'dPt', 'dLbls', 'trendline',
-            'errBars', 'cat', 'val', 'smooth'),
-    'pie':('idx', 'order', 'tx', 'spPr', 'explosion', 'dPt', 'dLbls', 'cat', 'val'),
-    'radar':('idx', 'order', 'tx', 'spPr', 'marker', 'dPt', 'dLbls', 'cat', 'val'),
-    'scatter':('idx', 'order', 'tx', 'spPr', 'marker', 'dPt', 'dLbls', 'trendline',
-               'errBars', 'xVal', 'yVal', 'smooth'),
-    'surface':('idx', 'order', 'tx', 'spPr', 'cat', 'val'),
-                     }
+    "area": (
+        "idx",
+        "order",
+        "tx",
+        "spPr",
+        "pictureOptions",
+        "dPt",
+        "dLbls",
+        "errBars",
+        "trendline",
+        "cat",
+        "val",
+    ),
+    "bar": (
+        "idx",
+        "order",
+        "tx",
+        "spPr",
+        "invertIfNegative",
+        "pictureOptions",
+        "dPt",
+        "dLbls",
+        "trendline",
+        "errBars",
+        "cat",
+        "val",
+        "shape",
+    ),
+    "bubble": (
+        "idx",
+        "order",
+        "tx",
+        "spPr",
+        "invertIfNegative",
+        "dPt",
+        "dLbls",
+        "trendline",
+        "errBars",
+        "xVal",
+        "yVal",
+        "bubbleSize",
+        "bubble3D",
+    ),
+    "line": (
+        "idx",
+        "order",
+        "tx",
+        "spPr",
+        "marker",
+        "dPt",
+        "dLbls",
+        "trendline",
+        "errBars",
+        "cat",
+        "val",
+        "smooth",
+    ),
+    "pie": ("idx", "order", "tx", "spPr", "explosion", "dPt", "dLbls", "cat", "val"),
+    "radar": ("idx", "order", "tx", "spPr", "marker", "dPt", "dLbls", "cat", "val"),
+    "scatter": (
+        "idx",
+        "order",
+        "tx",
+        "spPr",
+        "marker",
+        "dPt",
+        "dLbls",
+        "trendline",
+        "errBars",
+        "xVal",
+        "yVal",
+        "smooth",
+    ),
+    "surface": ("idx", "order", "tx", "spPr", "cat", "val"),
+}
 
 
 class SeriesLabel(Serialisable):
-
     tagname = "tx"
 
     strRef = Typed(expected_type=StrRef, allow_none=True)
     v = NestedText(expected_type=str, allow_none=True)
-    value = Alias('v')
+    value = Alias("v")
 
-    __elements__ = ('strRef', 'v')
+    __elements__ = ("strRef", "v")
 
-    def __init__(self,
-                 strRef=None,
-                 v=None):
+    def __init__(self, strRef=None, v=None):
         self.strRef = strRef
         self.v = v
 
 
 class Series(Serialisable):
-
     """
     Generic series object. Should not be instantiated directly.
     User the chart.Series factory instead.
@@ -76,9 +122,9 @@ class Series(Serialisable):
     idx = NestedInteger()
     order = NestedInteger()
     tx = Typed(expected_type=SeriesLabel, allow_none=True)
-    title = Alias('tx')
+    title = Alias("tx")
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
-    graphicalProperties = Alias('spPr')
+    graphicalProperties = Alias("spPr")
 
     # area chart
     pictureOptions = Typed(expected_type=PictureOptions, allow_none=True)
@@ -93,50 +139,52 @@ class Series(Serialisable):
     val = Typed(expected_type=NumDataSource, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    #bar chart
+    # bar chart
     invertIfNegative = NestedBool(allow_none=True)
-    shape = NestedNoneSet(values=(['cone', 'coneToMax', 'box', 'cylinder', 'pyramid', 'pyramidToMax']))
+    shape = NestedNoneSet(
+        values=(["cone", "coneToMax", "box", "cylinder", "pyramid", "pyramidToMax"])
+    )
 
-    #bubble chart
+    # bubble chart
     xVal = Typed(expected_type=AxDataSource, allow_none=True)
     yVal = Typed(expected_type=NumDataSource, allow_none=True)
     bubbleSize = Typed(expected_type=NumDataSource, allow_none=True)
     zVal = Alias("bubbleSize")
     bubble3D = NestedBool(allow_none=True)
 
-    #line chart
+    # line chart
     marker = Typed(expected_type=Marker, allow_none=True)
     smooth = NestedBool(allow_none=True)
 
-    #pie chart
+    # pie chart
     explosion = NestedInteger(allow_none=True)
 
     __elements__ = ()
 
-
-    def __init__(self,
-                 idx=0,
-                 order=0,
-                 tx=None,
-                 spPr=None,
-                 pictureOptions=None,
-                 dPt=(),
-                 dLbls=None,
-                 trendline=None,
-                 errBars=None,
-                 cat=None,
-                 val=None,
-                 invertIfNegative=None,
-                 shape=None,
-                 xVal=None,
-                 yVal=None,
-                 bubbleSize=None,
-                 bubble3D=None,
-                 marker=None,
-                 smooth=None,
-                 explosion=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        idx=0,
+        order=0,
+        tx=None,
+        spPr=None,
+        pictureOptions=None,
+        dPt=(),
+        dLbls=None,
+        trendline=None,
+        errBars=None,
+        cat=None,
+        val=None,
+        invertIfNegative=None,
+        shape=None,
+        xVal=None,
+        yVal=None,
+        bubbleSize=None,
+        bubble3D=None,
+        marker=None,
+        smooth=None,
+        explosion=None,
+        extLst=None,
+    ):
         self.idx = idx
         self.order = order
         self.tx = tx
@@ -162,18 +210,16 @@ class Series(Serialisable):
         self.smooth = smooth
         self.explosion = explosion
 
-
     def to_tree(self, tagname=None, idx=None):
         """The index can need rebasing"""
         if idx is not None:
             if self.order == self.idx:
-                self.order = idx # rebase the order if the index has been rebased
+                self.order = idx  # rebase the order if the index has been rebased
             self.idx = idx
         return super().to_tree(tagname)
 
 
 class XYSeries(Series):
-
     """Dedicated series for charts that have x and y series"""
 
     idx = Series.idx

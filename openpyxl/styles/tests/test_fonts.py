@@ -1,15 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring, fromstring
-
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def Font():
     from ..fonts import Font
+
     return Font
 
 
@@ -27,9 +27,9 @@ class TestFont:
         assert f.vertAlign is None
         assert f.charset is None
 
-
     def test_serialise(self):
         from ..fonts import DEFAULT_FONT
+
         ft = DEFAULT_FONT
         xml = tostring(ft.to_tree())
         expected = """
@@ -43,7 +43,6 @@ class TestFont:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_create(self, Font):
         src = """
@@ -59,9 +58,15 @@ class TestFont:
          """
         xml = fromstring(src)
         ft = Font.from_tree(xml)
-        assert ft == Font(name='Calibri', charset=204, family=2, sz=11,
-                          vertAlign='superscript', underline='single', color="FF3300FF")
-
+        assert ft == Font(
+            name="Calibri",
+            charset=204,
+            family=2,
+            sz=11,
+            vertAlign="superscript",
+            underline="single",
+            color="FF3300FF",
+        )
 
     def test_nested_empty(self, Font):
         src = """

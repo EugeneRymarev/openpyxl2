@@ -1,14 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring, fromstring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def FilterColumn():
-    from .. filters import FilterColumn
+    from ..filters import FilterColumn
+
     return FilterColumn
 
 
@@ -28,7 +29,6 @@ class TestFilterColumn:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, FilterColumn, Filters):
         xml = """
         <filterColumn colId="5">
@@ -45,21 +45,21 @@ class TestFilterColumn:
 
 @pytest.fixture
 def SortCondition():
-    from .. filters import SortCondition
+    from ..filters import SortCondition
+
     return SortCondition
 
 
 class TestSortCondition:
 
     def test_ctor(self, SortCondition):
-        cond = SortCondition(ref='A2:A3', descending=True)
+        cond = SortCondition(ref="A2:A3", descending=True)
         expected = """
         <sortCondition descending="1" ref="A2:A3"></sortCondition>
         """
         xml = tostring(cond.to_tree())
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, SortCondition):
         xml = """
@@ -72,21 +72,21 @@ class TestSortCondition:
 
 @pytest.fixture
 def AutoFilter():
-    from .. filters import AutoFilter
+    from ..filters import AutoFilter
+
     return AutoFilter
 
 
 class TestAutoFilter:
 
     def test_ctor(self, AutoFilter):
-        af = AutoFilter('A2:A3')
+        af = AutoFilter("A2:A3")
         expected = """
         <autoFilter ref="A2:A3" />
         """
         xml = tostring(af.to_tree())
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, AutoFilter):
         xml = """
@@ -96,9 +96,8 @@ class TestAutoFilter:
         af = AutoFilter.from_tree(node)
         assert af == AutoFilter(ref="A2:A3")
 
-
     def test_add_filter_column(self, AutoFilter):
-        af = AutoFilter('A1:F1')
+        af = AutoFilter("A1:F1")
         af.add_filter_column(5, ["0"], blank=True)
         expected = """
         <autoFilter ref="A1:F1">
@@ -113,10 +112,9 @@ class TestAutoFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_add_sort_condition(self, AutoFilter):
-        af = AutoFilter('A2:B3')
-        af.add_sort_condition('B2:B3', descending=True)
+        af = AutoFilter("A2:B3")
+        af.add_sort_condition("B2:B3", descending=True)
         expected = """
         <autoFilter ref="A2:B3">
             <sortState ref="A2:B3">
@@ -128,16 +126,15 @@ class TestAutoFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_bool(self, AutoFilter):
-        assert bool(AutoFilter('A2:A3')) is True
+        assert bool(AutoFilter("A2:A3")) is True
         assert bool(AutoFilter()) is False
-
 
 
 @pytest.fixture
 def SortState():
     from ..filters import SortState
+
     return SortState
 
 
@@ -152,7 +149,6 @@ class TestSortState:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SortState):
         src = """
         <sortState ref="B1:B3">
@@ -163,7 +159,6 @@ class TestSortState:
         sort = SortState.from_tree(node)
         assert sort.ref == "B1:B3"
 
-
     def test_bool(self, SortState):
         assert bool(SortState()) is False
         assert bool(SortState(ref="B4:B8")) is True
@@ -172,6 +167,7 @@ class TestSortState:
 @pytest.fixture
 def IconFilter():
     from ..filters import IconFilter
+
     return IconFilter
 
 
@@ -186,7 +182,6 @@ class TestIconFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, IconFilter):
         src = """
         <iconFilter iconSet="5Rating"/>
@@ -199,6 +194,7 @@ class TestIconFilter:
 @pytest.fixture
 def ColorFilter():
     from ..filters import ColorFilter
+
     return ColorFilter
 
 
@@ -213,7 +209,6 @@ class TestColorFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ColorFilter):
         src = """
         <colorFilter />
@@ -226,6 +221,7 @@ class TestColorFilter:
 @pytest.fixture
 def DynamicFilter():
     from ..filters import DynamicFilter
+
     return DynamicFilter
 
 
@@ -240,7 +236,6 @@ class TestDynamicFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DynamicFilter):
         src = """
         <dynamicFilter type="today"/>
@@ -253,6 +248,7 @@ class TestDynamicFilter:
 @pytest.fixture
 def CustomFilter():
     from ..filters import CustomFilter
+
     return CustomFilter
 
 
@@ -267,7 +263,6 @@ class TestCustomFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, CustomFilter):
         src = """
         <customFilter operator="greaterThanOrEqual" val="0.2" />
@@ -276,25 +271,27 @@ class TestCustomFilter:
         flt = CustomFilter.from_tree(node)
         assert flt == CustomFilter(operator="greaterThanOrEqual", val="0.2")
 
-
-    @pytest.mark.parametrize("value, typ", (
-        [" ", "BlankFilter"],
-        ["2.5", "NumberFilter"],
-        ["ab", "StringFilter"],
+    @pytest.mark.parametrize(
+        "value, typ",
+        (
+            [" ", "BlankFilter"],
+            ["2.5", "NumberFilter"],
+            ["ab", "StringFilter"],
+        ),
     )
-                             )
     def test_convert(self, CustomFilter, value, typ):
         flt = CustomFilter(val=value)
         flt = flt.convert()
         assert flt.__class__.__name__ == typ
 
-
-    @pytest.mark.parametrize("operator, value, attrs", (
-        ["equal", "*ab", {"operator": "endswith", "val": "ab", "exclude": "0"}],
-        ["notEqual", "*ab", {"operator": "endswith", "val": "ab", "exclude": "1"}],
-        ["notEqual", "c?n", {"operator": "wildcard", "val": "c?n", "exclude": "1"}],
+    @pytest.mark.parametrize(
+        "operator, value, attrs",
+        (
+            ["equal", "*ab", {"operator": "endswith", "val": "ab", "exclude": "0"}],
+            ["notEqual", "*ab", {"operator": "endswith", "val": "ab", "exclude": "1"}],
+            ["notEqual", "c?n", {"operator": "wildcard", "val": "c?n", "exclude": "1"}],
+        ),
     )
-                             )
     def test_convert_string(self, CustomFilter, operator, value, attrs):
         flt = CustomFilter(operator, value)
         flt = flt.convert()
@@ -304,6 +301,7 @@ class TestCustomFilter:
 @pytest.fixture
 def NumberFilter():
     from ..filters import NumberFilter
+
     return NumberFilter
 
 
@@ -318,7 +316,6 @@ class TestNumberFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, NumberFilter):
         src = """
         <customFilter operator="greaterThanOrEqual" val="0.2" />
@@ -331,6 +328,7 @@ class TestNumberFilter:
 @pytest.fixture
 def BlankFilter():
     from ..filters import BlankFilter
+
     return BlankFilter
 
 
@@ -345,7 +343,6 @@ class TestBlankFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, BlankFilter):
         src = """
         <customFilter operator="greaterThanOrEqual" val="0.2" />
@@ -358,11 +355,11 @@ class TestBlankFilter:
 @pytest.fixture
 def StringFilter():
     from ..filters import StringFilter
+
     return StringFilter
 
 
 class TestStringFilter:
-
 
     def test_startswith(self, StringFilter):
         flt = StringFilter(operator="startswith", val="baa")
@@ -373,7 +370,6 @@ class TestStringFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_not_startswith(self, StringFilter):
         flt = StringFilter(operator="startswith", val="baa", exclude=True)
         xml = tostring(flt.to_tree())
@@ -382,7 +378,6 @@ class TestStringFilter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_contains(self, StringFilter):
         flt = StringFilter(operator="contains", val="baa")
@@ -393,8 +388,7 @@ class TestStringFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
-    def test_not_contain(self, StringFilter,):
+    def test_not_contain(self, StringFilter):
         flt = StringFilter(operator="contains", val="baa", exclude=True)
         xml = tostring(flt.to_tree())
         expected = """
@@ -402,7 +396,6 @@ class TestStringFilter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_endswith(self, StringFilter):
         flt = StringFilter(operator="endswith", val="baa")
@@ -413,7 +406,6 @@ class TestStringFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_not_endswith(self, StringFilter):
         flt = StringFilter(operator="endswith", val="baa", exclude=True)
         xml = tostring(flt.to_tree())
@@ -423,29 +415,22 @@ class TestStringFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
-    @pytest.mark.parametrize("value, expected", [
-        ("*n", "~*n"),
-        ("n?", "n~?"),
-        ("b~i", "b~~i"),
-        ("foo~*ba*", "foo~~~*ba~*")
-    ])
+    @pytest.mark.parametrize(
+        "value, expected",
+        [("*n", "~*n"), ("n?", "n~?"), ("b~i", "b~~i"), ("foo~*ba*", "foo~~~*ba~*")],
+    )
     def test_escape(self, StringFilter, value, expected):
         flt = StringFilter("contains", value)
         out = flt._escape()
         assert out == expected
 
-
-    @pytest.mark.parametrize("expected, value", [
-        ("*n", "~*n"),
-        ("n?", "n~?"),
-        ("b~i", "b~~i"),
-        ("foo~*ba*", "foo~~~*ba~*")
-    ])
+    @pytest.mark.parametrize(
+        "expected, value",
+        [("*n", "~*n"), ("n?", "n~?"), ("b~i", "b~~i"), ("foo~*ba*", "foo~~~*ba~*")],
+    )
     def test_unescape(self, StringFilter, value, expected):
         out = StringFilter._unescape(value)
         assert out == expected
-
 
     @pytest.mark.parametrize("value", ["c*n", "c?n", "foo~*ba*"])
     def test_dont_escape_wildcard(self, StringFilter, value):
@@ -453,14 +438,16 @@ class TestStringFilter:
         out = flt._escape()
         assert out == value
 
-
-    @pytest.mark.parametrize("value, operator, term", [
-        ("*ffg", "endswith", "ffg"),
-        ("foo*", "startswith", "foo"),
-        ("*foo*", "contains", "foo"),
-        ("c*n", "wildcard", "c*n"),
-        ("c*n", "wildcard", "c*n"),
-    ])
+    @pytest.mark.parametrize(
+        "value, operator, term",
+        [
+            ("*ffg", "endswith", "ffg"),
+            ("foo*", "startswith", "foo"),
+            ("*foo*", "contains", "foo"),
+            ("c*n", "wildcard", "c*n"),
+            ("c*n", "wildcard", "c*n"),
+        ],
+    )
     def test_guess_operator(self, StringFilter, value, operator, term):
         op, val = StringFilter._guess_operator(value)
         assert (op, val) == (operator, term)
@@ -469,6 +456,7 @@ class TestStringFilter:
 @pytest.fixture
 def CustomFilters():
     from ..filters import CustomFilters
+
     return CustomFilters
 
 
@@ -483,7 +471,6 @@ class TestCustomFilters:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_blank(self, CustomFilters, BlankFilter):
         flt = CustomFilters(customFilter=[BlankFilter()])
         xml = tostring(flt.to_tree())
@@ -495,7 +482,6 @@ class TestCustomFilters:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_number(self, CustomFilters, NumberFilter):
         flt = CustomFilters(customFilter=[NumberFilter("lessThan", 4)])
         xml = tostring(flt.to_tree())
@@ -506,7 +492,6 @@ class TestCustomFilters:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_string(self, CustomFilters, StringFilter):
         flt = CustomFilters(customFilter=[StringFilter("contains", "xml")])
@@ -520,8 +505,6 @@ class TestCustomFilters:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
-
     def test_escape_string(self, CustomFilters, StringFilter):
         flt = CustomFilters(customFilter=[StringFilter("contains", "*xml")])
         xml = tostring(flt.to_tree())
@@ -534,7 +517,6 @@ class TestCustomFilters:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_wildcard(self, CustomFilters, StringFilter):
         flt = CustomFilters(customFilter=[StringFilter("wildcard", "c?n")])
         xml = tostring(flt.to_tree())
@@ -546,7 +528,6 @@ class TestCustomFilters:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, CustomFilters, CustomFilter):
         src = """
@@ -563,6 +544,7 @@ class TestCustomFilters:
 @pytest.fixture
 def Top10():
     from ..filters import Top10
+
     return Top10
 
 
@@ -577,7 +559,6 @@ class TestTop10:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Top10):
         src = """
         <top10 percent="1" val="5" filterVal="6"/>
@@ -590,6 +571,7 @@ class TestTop10:
 @pytest.fixture
 def DateGroupItem():
     from ..filters import DateGroupItem
+
     return DateGroupItem
 
 
@@ -604,7 +586,6 @@ class TestDateGroupItem:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DateGroupItem):
         src = """
         <dateGroupItem year="2005" dateTimeGrouping="year"/>
@@ -617,6 +598,7 @@ class TestDateGroupItem:
 @pytest.fixture
 def Filters():
     from ..filters import Filters
+
     return Filters
 
 
@@ -631,7 +613,6 @@ class TestFilters:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_write_filters(self, Filters):
         flt = Filters()
         flt.filter = [1, 2, 3]
@@ -645,7 +626,6 @@ class TestFilters:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, Filters):
         src = """

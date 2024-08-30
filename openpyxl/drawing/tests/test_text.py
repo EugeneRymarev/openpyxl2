@@ -1,19 +1,19 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def Paragraph():
     from ..text import Paragraph
+
     return Paragraph
 
 
 class TestParagraph:
-
 
     def test_ctor(self, Paragraph):
         text = Paragraph()
@@ -28,7 +28,6 @@ class TestParagraph:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Paragraph):
         src = """
         <p />
@@ -36,7 +35,6 @@ class TestParagraph:
         node = fromstring(src)
         text = Paragraph.from_tree(node)
         assert text == Paragraph()
-
 
     def test_multiline(self, Paragraph):
         src = """
@@ -57,6 +55,7 @@ class TestParagraph:
 @pytest.fixture
 def ParagraphProperties():
     from ..text import ParagraphProperties
+
     return ParagraphProperties
 
 
@@ -70,7 +69,6 @@ class TestParagraphProperties:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ParagraphProperties):
         src = """
@@ -103,6 +101,7 @@ class TestTextBox:
 @pytest.fixture
 def CharacterProperties():
     from ..text import CharacterProperties
+
     return CharacterProperties
 
 
@@ -110,11 +109,17 @@ class TestCharacterProperties:
 
     def test_ctor(self, CharacterProperties):
         from ..text import Font
-        normal_font = Font(typeface='Arial')
-        text = CharacterProperties(latin=normal_font, sz=900, b=False, solidFill='FFC000')
+
+        normal_font = Font(typeface="Arial")
+        text = CharacterProperties(
+            latin=normal_font,
+            sz=900,
+            b=False,
+            solidFill="FFC000",
+        )
 
         xml = tostring(text.to_tree())
-        expected = ("""
+        expected = """
         <a:defRPr xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
         b="0" sz="900">
            <a:solidFill>
@@ -122,11 +127,10 @@ class TestCharacterProperties:
            </a:solidFill>
            <a:latin typeface="Arial"/>
         </a:defRPr>
-        """)
+        """
 
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, CharacterProperties):
         src = """
@@ -140,6 +144,7 @@ class TestCharacterProperties:
 @pytest.fixture
 def Font():
     from ..text import Font
+
     return Font
 
 
@@ -155,7 +160,6 @@ xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" />
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Font):
         src = """
         <latin typeface="Arial" pitchFamily="40"
@@ -169,6 +173,7 @@ xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" />
 @pytest.fixture
 def Hyperlink():
     from ..text import Hyperlink
+
     return Hyperlink
 
 
@@ -183,7 +188,6 @@ class TestHyperlink:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Hyperlink):
         src = """
         <hlinkClick tooltip="Select/de-select all"/>
@@ -196,6 +200,7 @@ class TestHyperlink:
 @pytest.fixture
 def LineBreak():
     from ..text import LineBreak
+
     return LineBreak
 
 
@@ -204,10 +209,11 @@ class TestLineBreak:
     def test_ctor(self, LineBreak):
         fut = LineBreak()
         xml = tostring(fut.to_tree())
-        expected = """ <br xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" /> """
+        expected = (
+            '<br xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" />'
+        )
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, LineBreak):
         src = """
@@ -216,4 +222,3 @@ class TestLineBreak:
         node = fromstring(src)
         fut = LineBreak.from_tree(node)
         assert fut == LineBreak()
-

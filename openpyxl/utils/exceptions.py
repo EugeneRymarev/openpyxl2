@@ -1,6 +1,4 @@
 # Copyright (c) 2010-2024 openpyxl
-
-
 """Definitions for openpyxl shared exception classes."""
 
 

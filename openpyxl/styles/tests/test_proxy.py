@@ -1,5 +1,4 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from copy import copy
 
 import pytest
@@ -27,7 +26,8 @@ def dummy_object():
 
 @pytest.fixture
 def proxy(dummy_object):
-    from .. proxy import StyleProxy
+    from ..proxy import StyleProxy
+
     return StyleProxy(dummy_object)
 
 

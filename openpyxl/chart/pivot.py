@@ -1,41 +1,31 @@
-
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Alias,
-    Typed,
-)
-from openpyxl.descriptors.nested import NestedInteger, NestedText
-from openpyxl.descriptors.excel import ExtensionList
-
 from .label import DataLabel
 from .marker import Marker
 from .shapes import GraphicalProperties
 from .text import RichText
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.nested import NestedInteger
+from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.serialisable import Serialisable
 
 
 class PivotSource(Serialisable):
-
     tagname = "pivotSource"
 
     name = NestedText(expected_type=str)
     fmtId = NestedInteger(expected_type=int)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('name', 'fmtId')
+    __elements__ = ("name", "fmtId")
 
-    def __init__(self,
-                 name=None,
-                 fmtId=None,
-                 extLst=None,
-                ):
+    def __init__(self, name=None, fmtId=None, extLst=None):
         self.name = name
         self.fmtId = fmtId
 
 
 class PivotFormat(Serialisable):
-
     tagname = "pivotFmt"
 
     idx = NestedInteger(nested=True)
@@ -48,16 +38,17 @@ class PivotFormat(Serialisable):
     DataLabel = Alias("dLbl")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('idx', 'spPr', 'txPr', 'marker', 'dLbl')
+    __elements__ = ("idx", "spPr", "txPr", "marker", "dLbl")
 
-    def __init__(self,
-                 idx=0,
-                 spPr=None,
-                 txPr=None,
-                 marker=None,
-                 dLbl=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        idx=0,
+        spPr=None,
+        txPr=None,
+        marker=None,
+        dLbl=None,
+        extLst=None,
+    ):
         self.idx = idx
         self.spPr = spPr
         self.txPr = txPr

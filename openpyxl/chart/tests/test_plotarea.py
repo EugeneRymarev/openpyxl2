@@ -1,17 +1,17 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
-from openpyxl.tests.helper import compare_xml
-
-from ..line_chart import LineChart
 from ..bar_chart import BarChart
+from ..line_chart import LineChart
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def PlotArea():
     from ..plotarea import PlotArea
+
     return PlotArea
 
 
@@ -26,7 +26,6 @@ class TestPlotArea:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PlotArea):
         src = """
         <plotArea />
@@ -34,7 +33,6 @@ class TestPlotArea:
         node = fromstring(src)
         plot = PlotArea.from_tree(node)
         assert plot == PlotArea()
-
 
     def test_multi_chart(self, PlotArea):
         plot = PlotArea()
@@ -88,7 +86,6 @@ class TestPlotArea:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_read_multi_chart(self, PlotArea, datadir):
         datadir.chdir()
         with open("plotarea.xml", "rb") as src:
@@ -96,18 +93,16 @@ class TestPlotArea:
         plot = PlotArea.from_tree(tree)
         assert len(plot._charts) == 2
 
-
     def test_read_multi_axes(self, PlotArea, datadir):
         datadir.chdir()
         with open("plotarea.xml", "rb") as src:
             tree = fromstring(src.read())
         plot = PlotArea.from_tree(tree)
-        assert [ax.tagname for ax in plot._axes]  == ["catAx", "valAx", "valAx", "catAx"]
+        assert [ax.tagname for ax in plot._axes] == ["catAx", "valAx", "valAx", "catAx"]
         assert plot._charts[0].x_axis == plot._axes[0]
         assert plot._charts[0].y_axis == plot._axes[1]
         assert plot._charts[1].x_axis == plot._axes[3]
         assert plot._charts[1].y_axis == plot._axes[2]
-
 
     def test_read_scatter_chart(self, PlotArea, datadir):
         datadir.chdir()
@@ -119,7 +114,6 @@ class TestPlotArea:
         assert chart.x_axis.axId == 211326240
         assert chart.y_axis.axId == 211330000
 
-
     def test_read_bubble_chart(self, PlotArea, datadir):
         datadir.chdir()
         with open("bubblechart_plot_area.xml", "rb") as src:
@@ -130,7 +124,6 @@ class TestPlotArea:
         assert chart.x_axis.axId == 196911488
         assert chart.y_axis.axId == 196913408
 
-
     def test_read_surface_chart_3d(self, PlotArea, datadir):
         datadir.chdir()
         with open("3D_plotarea.xml", "rb") as src:
@@ -139,7 +132,6 @@ class TestPlotArea:
         chart = plot._charts[0]
         assert chart.axId == [10, 100, 1000]
         assert chart.tagname == "surface3DChart"
-
 
     def test_read_bar_chart_3d(self, PlotArea, datadir):
         datadir.chdir()
@@ -150,7 +142,6 @@ class TestPlotArea:
         assert chart.axId == [203780744, 203656728, 0]
         assert chart.tagname == "bar3DChart"
         assert chart.z_axis.crossAx == 203780744
-
 
     def test_read_bar_chart_3d_no_series_axis(self, PlotArea, datadir):
         datadir.chdir()
@@ -169,6 +160,7 @@ class TestPlotArea:
 @pytest.fixture
 def DataTable():
     from ..plotarea import DataTable
+
     return DataTable
 
 
@@ -182,7 +174,6 @@ class TestDataTable:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, DataTable):
         src = """

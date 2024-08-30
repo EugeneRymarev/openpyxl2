@@ -1,14 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring, fromstring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def BarChart():
     from ..bar_chart import BarChart
+
     return BarChart
 
 
@@ -29,7 +30,6 @@ class TestBarChart:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_tree(self, BarChart):
         src = """
         <barChart>
@@ -43,10 +43,9 @@ class TestBarChart:
         """
         node = fromstring(src)
         bc = BarChart.from_tree(node)
-        assert bc == BarChart(varyColors=False,axId=(10, 100))
+        assert bc == BarChart(varyColors=False, axId=(10, 100))
         assert bc.axId == [10, 100]
         assert bc.grouping == "clustered"
-
 
     def test_write(self, BarChart):
         chart = BarChart()
@@ -96,9 +95,9 @@ class TestBarChart:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_series(self, BarChart):
         from .. import Series
+
         s1 = Series(values="Sheet1!$A$1:$A$10")
         s2 = Series(values="Sheet1!$B$1:$B$10")
         bc = BarChart(ser=[s1, s2])
@@ -147,6 +146,7 @@ class TestBarChart:
 @pytest.fixture
 def BarChart3D():
     from ..bar_chart import BarChart3D
+
     return BarChart3D
 
 
@@ -154,7 +154,7 @@ class TestBarChart3D:
 
     def test_ctor(self, BarChart3D):
         bc = BarChart3D()
-        assert hasattr(bc.view3D, 'rotX')
+        assert hasattr(bc.view3D, "rotX")
         xml = tostring(bc.to_tree())
         expected = """
         <bar3DChart>
@@ -169,7 +169,6 @@ class TestBarChart3D:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, BarChart3D):
         src = """

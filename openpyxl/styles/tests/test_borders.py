@@ -1,23 +1,24 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring, fromstring
-
-from openpyxl.tests.helper import compare_xml
-from ..colors import Color
 from .. import colors
+from ..colors import Color
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def Side():
     from ..borders import Side
+
     return Side
 
 
 @pytest.fixture
 def Border():
     from ..borders import Border
+
     return Border
 
 
@@ -45,16 +46,16 @@ class TestBorder:
         assert bd.bottom.style == None
         assert bd.diagonal == None
 
-
     def test_serialise(self, Border, Side):
-        medium_blue = Side(border_style='medium', color=Color(colors.BLUE))
-        bd = Border(left=medium_blue,
-                             right=medium_blue,
-                             top=medium_blue,
-                             bottom=medium_blue,
-                             outline=False,
-                             diagonalDown=True,
-                             )
+        medium_blue = Side(border_style="medium", color=Color(colors.BLUE))
+        bd = Border(
+            left=medium_blue,
+            right=medium_blue,
+            top=medium_blue,
+            bottom=medium_blue,
+            outline=False,
+            diagonalDown=True,
+        )
         xml = tostring(bd.to_tree())
         expected = """
         <border diagonalDown="1" outline="0">

@@ -3,58 +3,63 @@ import os
 from io import BytesIO
 from shutil import copyfile
 from tempfile import NamedTemporaryFile
-from zipfile import BadZipfile, ZipFile
-
-from openpyxl.packaging.manifest import Manifest, Override
-from openpyxl.packaging.relationship import Relationship
-from openpyxl.utils.exceptions import InvalidFileException
-from openpyxl.xml.functions import fromstring
-from openpyxl.xml.constants import (
-    ARC_WORKBOOK,
-    XLSM,
-    XLSX,
-    XLTM,
-    XLTX,
-)
+from zipfile import BadZipfile
+from zipfile import ZipFile
 
 import pytest
+
+from openpyxl.packaging.manifest import Manifest
+from openpyxl.packaging.manifest import Override
+from openpyxl.packaging.relationship import Relationship
+from openpyxl.utils.exceptions import InvalidFileException
+from openpyxl.xml.constants import ARC_WORKBOOK
+from openpyxl.xml.constants import XLSM
+from openpyxl.xml.constants import XLSX
+from openpyxl.xml.constants import XLTM
+from openpyxl.xml.constants import XLTX
+from openpyxl.xml.functions import fromstring
 
 
 @pytest.fixture
 def load_workbook():
     from ..excel import load_workbook
+
     return load_workbook
 
 
 def test_read_empty_file(datadir, load_workbook):
     datadir.chdir()
     with pytest.raises(BadZipfile):
-        load_workbook('null_file.xlsx')
+        load_workbook("null_file.xlsx")
 
 
 def test_load_workbook_from_fileobj(datadir, load_workbook):
-    """ can a workbook be loaded from a file object without exceptions
+    """can a workbook be loaded from a file object without exceptions
     This tests for regressions of
     https://bitbucket.org/openpyxl/openpyxl/issue/433
     """
     datadir.chdir()
-    with open('empty_with_no_properties.xlsx', 'rb') as f:
+    with open("empty_with_no_properties.xlsx", "rb") as f:
         load_workbook(f)
 
 
-@pytest.mark.parametrize('wb_type, wb_name', [
-    (ct, name) for ct in [XLSX, XLSM, XLTX, XLTM]
-               for name in ['/' + ARC_WORKBOOK, '/xl/spqr.xml']
-])
+@pytest.mark.parametrize(
+    "wb_type, wb_name",
+    [
+        (ct, name)
+        for ct in [XLSX, XLSM, XLTX, XLTM]
+        for name in ["/" + ARC_WORKBOOK, "/xl/spqr.xml"]
+    ],
+)
 def test_find_standard_workbook_part(datadir, wb_type, wb_name):
     from ..excel import _find_workbook_part
 
-    src = """
+    src = f"""
         <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-        <Override ContentType="{0}"
-          PartName="{1}"/>
+        <Override ContentType="{wb_type}"
+          PartName="{wb_name}"/>
         </Types>
-        """.format(wb_type, wb_name)
+        """
     node = fromstring(src)
     package = Manifest.from_tree(node)
 
@@ -82,9 +87,7 @@ def test_overwritten_default():
     assert _find_workbook_part(package) == Override("/xl/workbook.xml", XLSX)
 
 
-@pytest.mark.parametrize("extension",
-                         ['.xlsb', '.xls', 'no-format']
-                         )
+@pytest.mark.parametrize("extension", [".xlsb", ".xls", "no-format"])
 def test_invalid_file_extension(extension, load_workbook):
     tmp = NamedTemporaryFile(suffix=extension)
     with pytest.raises(InvalidFileException):
@@ -110,7 +113,7 @@ def test_close_read(datadir, load_workbook, ro):
     datadir.chdir()
 
     wb = load_workbook("complex-styles.xlsx", read_only=ro)
-    assert hasattr(wb, '_archive') is ro
+    assert hasattr(wb, "_archive") is ro
 
     wb.close()
 
@@ -121,6 +124,7 @@ def test_close_read(datadir, load_workbook, ro):
 @pytest.mark.parametrize("wo", [False, True])
 def test_close_write(wo):
     from openpyxl.workbook import Workbook
+
     wb = Workbook(write_only=wo)
     wb.close()
 
@@ -135,14 +139,14 @@ def test_read_stringio(load_workbook):
 def test_load_workbook_with_vba(datadir, load_workbook):
     datadir.chdir()
 
-    test_file = 'legacy_drawing.xlsm'
+    test_file = "legacy_drawing.xlsm"
     # open the workbook directly from the file
     wb1 = load_workbook(test_file, keep_vba=True)
     # open again from a BytesIO copy
-    with open(test_file, 'rb') as f:
+    with open(test_file, "rb") as f:
         wb2 = load_workbook(BytesIO(f.read()), keep_vba=True)
     assert wb1.vba_archive.namelist() == wb2.vba_archive.namelist()
-    assert wb1.vba_archive.namelist() == ZipFile(test_file, 'r').namelist()
+    assert wb1.vba_archive.namelist() == ZipFile(test_file, "r").namelist()
 
 
 def test_no_external_links(datadir, load_workbook):
@@ -173,19 +177,18 @@ class TestExcelReader:
         datadir.chdir()
         reader = ExcelReader("complex-styles.xlsx")
         assert reader.valid_files == [
-            '[Content_Types].xml',
-            '_rels/.rels',
-            'xl/_rels/workbook.xml.rels',
-            'xl/workbook.xml',
-            'xl/sharedStrings.xml',
-            'xl/theme/theme1.xml',
-            'xl/styles.xml',
-            'xl/worksheets/sheet1.xml',
-            'docProps/thumbnail.jpeg',
-            'docProps/core.xml',
-            'docProps/app.xml'
+            "[Content_Types].xml",
+            "_rels/.rels",
+            "xl/_rels/workbook.xml.rels",
+            "xl/workbook.xml",
+            "xl/sharedStrings.xml",
+            "xl/theme/theme1.xml",
+            "xl/styles.xml",
+            "xl/worksheets/sheet1.xml",
+            "docProps/thumbnail.jpeg",
+            "docProps/core.xml",
+            "docProps/app.xml",
         ]
-
 
     def test_read_manifest(self, datadir):
         datadir.chdir()
@@ -193,14 +196,12 @@ class TestExcelReader:
         reader.read_manifest()
         assert reader.package is not None
 
-
     def test_read_strings(self, datadir):
         datadir.chdir()
         reader = ExcelReader("complex-styles.xlsx")
         reader.read_manifest()
         reader.read_strings()
         assert reader.shared_strings != []
-
 
     def test_read_workbook(self, datadir):
         datadir.chdir()
@@ -228,7 +229,6 @@ class TestExcelReader:
         very_hidden = reader.wb.worksheets[2]
         assert very_hidden.sheet_state == "veryHidden"
 
-
     def test_read_chartsheet(self, datadir):
         datadir.chdir()
         reader = ExcelReader("contains_chartsheets.xlsx")
@@ -244,4 +244,4 @@ class TestExcelReader:
         sheet.name = "chart"
 
         reader.read_chartsheet(sheet, rel)
-        assert reader.wb['chart'].title == "chart"
+        assert reader.wb["chart"].title == "chart"

@@ -1,50 +1,49 @@
-from openpyxl import Workbook
-from openpyxl.chart import (
-    ScatterChart,
-    Reference,
-    Series,
-)
 import math
+
+from openpyxl import Workbook
+from openpyxl.chart import Reference
+from openpyxl.chart import ScatterChart
+from openpyxl.chart import Series
 
 wb = Workbook()
 ws = wb.active
 
-ws.append(['X', 'Gaussian'])
+ws.append(["X", "Gaussian"])
 for i, x in enumerate(range(-10, 11)):
-    ws.append([x, "=EXP(-(($A${row}/6)^2))".format(row = i + 2)])
+    ws.append([x, f"=EXP(-(($A${i + 2}/6)^2))"])
 
 chart1 = ScatterChart()
 chart1.title = "No Scaling"
-chart1.x_axis.title = 'x'
-chart1.y_axis.title = 'y'
+chart1.x_axis.title = "x"
+chart1.y_axis.title = "y"
 chart1.legend = None
 
 chart2 = ScatterChart()
 chart2.title = "X Log Scale"
-chart2.x_axis.title = 'x (log10)'
-chart2.y_axis.title = 'y'
+chart2.x_axis.title = "x (log10)"
+chart2.y_axis.title = "y"
 chart2.legend = None
 chart2.x_axis.scaling.logBase = 10
 
 chart3 = ScatterChart()
 chart3.title = "Y Log Scale"
-chart3.x_axis.title = 'x'
-chart3.y_axis.title = 'y (log10)'
+chart3.x_axis.title = "x"
+chart3.y_axis.title = "y (log10)"
 chart3.legend = None
 chart3.y_axis.scaling.logBase = 10
 
 chart4 = ScatterChart()
 chart4.title = "Both Log Scale"
-chart4.x_axis.title = 'x (log10)'
-chart4.y_axis.title = 'y (log10)'
+chart4.x_axis.title = "x (log10)"
+chart4.y_axis.title = "y (log10)"
 chart4.legend = None
 chart4.x_axis.scaling.logBase = 10
 chart4.y_axis.scaling.logBase = 10
 
 chart5 = ScatterChart()
 chart5.title = "Log Scale Base e"
-chart5.x_axis.title = 'x (ln)'
-chart5.y_axis.title = 'y (ln)'
+chart5.x_axis.title = "x (ln)"
+chart5.y_axis.title = "y (ln)"
 chart5.legend = None
 chart5.x_axis.scaling.logBase = math.e
 chart5.y_axis.scaling.logBase = math.e

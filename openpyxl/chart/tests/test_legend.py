@@ -1,13 +1,15 @@
-
 # Copyright (c) 2010-2024 openpyxl
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def Legend():
     from ..legend import Legend
+
     return Legend
 
 
@@ -24,7 +26,6 @@ class TestLegend:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Legend):
         src = """
         <legend>
@@ -39,6 +40,7 @@ class TestLegend:
 @pytest.fixture
 def LegendEntry():
     from ..legend import LegendEntry
+
     return LegendEntry
 
 
@@ -55,7 +57,6 @@ class TestLegendEntry:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, LegendEntry):
         src = """

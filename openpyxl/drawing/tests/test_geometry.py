@@ -1,14 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def GradientFillProperties():
     from ..fill import GradientFillProperties
+
     return GradientFillProperties
 
 
@@ -23,7 +24,6 @@ class TestGradientFillProperties:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, GradientFillProperties):
         src = """
         <a:gradFill xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" />
@@ -36,6 +36,7 @@ class TestGradientFillProperties:
 @pytest.fixture
 def Transform2D():
     from ..geometry import Transform2D
+
     return Transform2D
 
 
@@ -50,7 +51,6 @@ class TestTransform2D:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Transform2D):
         src = """
         <root />
@@ -63,6 +63,7 @@ class TestTransform2D:
 @pytest.fixture
 def Camera():
     from ..geometry import Camera
+
     return Camera
 
 
@@ -77,7 +78,6 @@ class TestCamera:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Camera):
         src = """
         <camera prst="orthographicFront" />
@@ -90,6 +90,7 @@ class TestCamera:
 @pytest.fixture
 def LightRig():
     from ..geometry import LightRig
+
     return LightRig
 
 
@@ -104,7 +105,6 @@ class TestLightRig:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, LightRig):
         src = """
         <lightRig rig="threePt" dir="t"/>
@@ -117,6 +117,7 @@ class TestLightRig:
 @pytest.fixture
 def Bevel():
     from ..geometry import Bevel
+
     return Bevel
 
 
@@ -131,19 +132,19 @@ class TestBevel:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Bevel):
         src = """
         <bevel w="101600" h="101600"/>
         """
         node = fromstring(src)
         bevel = Bevel.from_tree(node)
-        assert bevel == Bevel( w=101600, h=101600)
+        assert bevel == Bevel(w=101600, h=101600)
 
 
 @pytest.fixture
 def SphereCoords():
     from ..geometry import SphereCoords
+
     return SphereCoords
 
 
@@ -158,7 +159,6 @@ class TestSphereCoords:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SphereCoords):
         src = """
         <sphereCoords lat="90" lon="45" rev="60" />
@@ -171,6 +171,7 @@ class TestSphereCoords:
 @pytest.fixture
 def Vector3D():
     from ..geometry import Vector3D
+
     return Vector3D
 
 
@@ -185,7 +186,6 @@ class TestVector3D:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Vector3D):
         src = """
         <vector dx="100000" dy="300000" dz="50000" />
@@ -198,6 +198,7 @@ class TestVector3D:
 @pytest.fixture
 def Point3D():
     from ..geometry import Point3D
+
     return Point3D
 
 
@@ -211,7 +212,6 @@ class TestPoint3D:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, Point3D):
         src = """

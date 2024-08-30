@@ -1,13 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def TrendlineLabel():
     from ..trendline import TrendlineLabel
+
     return TrendlineLabel
 
 
@@ -22,7 +24,6 @@ class TestTrendlineLabel:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, TrendlineLabel):
         src = """
         <trendlineLbl></trendlineLbl>
@@ -35,6 +36,7 @@ class TestTrendlineLabel:
 @pytest.fixture
 def Trendline():
     from ..trendline import Trendline
+
     return Trendline
 
 
@@ -50,7 +52,6 @@ class TestTrendline:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, Trendline):
         src = """

@@ -1,19 +1,19 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring, fromstring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def NumRef():
     from ..data_source import NumRef
+
     return NumRef
 
 
 class TestNumRef:
-
 
     def test_from_xml(self, NumRef):
         src = """
@@ -24,7 +24,6 @@ class TestNumRef:
         node = fromstring(src)
         num = NumRef.from_tree(node)
         assert num.ref == "Blatt1!$A$1:$A$12"
-
 
     def test_to_xml(self, NumRef):
         num = NumRef(f="Blatt1!$A$1:$A$12")
@@ -37,9 +36,7 @@ class TestNumRef:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_tree_degree_sign(self, NumRef):
-
         src = b"""
             <numRef>
                 <f>Hoja1!$A$2:$B$2</f>
@@ -57,12 +54,13 @@ class TestNumRef:
         """
         node = fromstring(src)
         numRef = NumRef.from_tree(node)
-        assert numRef.numCache.formatCode == u"0\xb0"
+        assert numRef.numCache.formatCode == "0\xb0"
 
 
 @pytest.fixture
 def StrRef():
     from ..data_source import StrRef
+
     return StrRef
 
 
@@ -79,7 +77,6 @@ class TestStrRef:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, StrRef):
         src = """
         <strRef>
@@ -94,6 +91,7 @@ class TestStrRef:
 @pytest.fixture
 def StrVal():
     from ..data_source import StrVal
+
     return StrVal
 
 
@@ -110,7 +108,6 @@ class TestStrVal:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, StrVal):
         src = """
         <pt idx="4">
@@ -125,6 +122,7 @@ class TestStrVal:
 @pytest.fixture
 def StrData():
     from ..data_source import StrData
+
     return StrData
 
 
@@ -141,7 +139,6 @@ class TestStrData:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, StrData):
         src = """
         <strData>
@@ -156,6 +153,7 @@ class TestStrData:
 @pytest.fixture
 def Level():
     from ..data_source import Level
+
     return Level
 
 
@@ -170,7 +168,6 @@ class TestLevel:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Level):
         src = """
         <root />
@@ -183,6 +180,7 @@ class TestLevel:
 @pytest.fixture
 def MultiLevelStrData():
     from ..data_source import MultiLevelStrData
+
     return MultiLevelStrData
 
 
@@ -197,7 +195,6 @@ class TestMultiLevelStrData:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, MultiLevelStrData):
         src = """
         <multiLvlStrData />
@@ -210,6 +207,7 @@ class TestMultiLevelStrData:
 @pytest.fixture
 def MultiLevelStrRef():
     from ..data_source import MultiLevelStrRef
+
     return MultiLevelStrRef
 
 
@@ -226,7 +224,6 @@ class TestMultiLevelStrRef:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, MultiLevelStrRef):
         src = """
         <multiLvlStrRef>
@@ -241,6 +238,7 @@ class TestMultiLevelStrRef:
 @pytest.fixture
 def AxDataSource():
     from ..data_source import AxDataSource
+
     return AxDataSource
 
 
@@ -260,11 +258,9 @@ class TestAxDataSource:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_no_source(self, AxDataSource):
         with pytest.raises(TypeError):
             ax = AxDataSource()
-
 
     def test_from_xml(self, AxDataSource, StrRef):
         src = """

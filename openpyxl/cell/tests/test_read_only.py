@@ -1,44 +1,42 @@
-
 # Copyright (c) 2010-2024 openpyxl
-
-import datetime
 import pytest
 
 from openpyxl.cell.read_only import ReadOnlyCell
-from openpyxl.utils.indexed_list import IndexedList
 from openpyxl.styles.styleable import StyleArray
+from openpyxl.utils.indexed_list import IndexedList
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def dummy_sheet():
     class DummyWorkbook:
         shared_styles = IndexedList()
         style = StyleArray()
-        shared_styles.add(style) # Workbooks always have a default style
+        shared_styles.add(style)  # Workbooks always have a default style
         _cell_styles = IndexedList()
         _cell_styles.add(style)
         _number_formats = IndexedList()
         _fonts = IndexedList()
         _fonts.add(None)
 
-
     class DummySheet:
         base_date = 2415018.5
         style_table = {}
-        shared_strings = ['Hello world']
+        shared_strings = ["Hello world"]
         parent = DummyWorkbook()
+
     return DummySheet()
 
 
 def test_ctor(dummy_sheet):
-    cell = ReadOnlyCell(dummy_sheet, None, None, '10', 'n')
-    assert cell.value == '10'
+    cell = ReadOnlyCell(dummy_sheet, None, None, "10", "n")
+    assert cell.value == "10"
 
 
 def test_empty_cell(dummy_sheet):
     from openpyxl.cell.read_only import EMPTY_CELL
+
     assert EMPTY_CELL.value is None
-    assert EMPTY_CELL.data_type == 'n'
+    assert EMPTY_CELL.data_type == "n"
 
 
 def test_coordinate(dummy_sheet):
@@ -48,12 +46,12 @@ def test_coordinate(dummy_sheet):
 
 @pytest.fixture(scope="class")
 def DummyCell(dummy_sheet):
-
-    dummy_sheet.parent._number_formats.add('d-mmm-yy')
-    style = StyleArray([0,0,0,164,0,0,0,0,0])
+    dummy_sheet.parent._number_formats.add("d-mmm-yy")
+    style = StyleArray([0, 0, 0, 164, 0, 0, 0, 0, 0])
     dummy_sheet.parent._cell_styles.add(style)
-    cell = ReadOnlyCell(dummy_sheet, None, None, "23596", 'n', 1)
+    cell = ReadOnlyCell(dummy_sheet, None, None, "23596", "n", 1)
     return cell
+
 
 class TestStyle:
 
@@ -61,11 +59,9 @@ class TestStyle:
         cell = ReadOnlyCell(dummy_sheet, None, None, None)
         assert cell.style_array == StyleArray()
 
-
     def test_font(self, dummy_sheet):
         cell = ReadOnlyCell(dummy_sheet, None, None, None)
         assert cell.font == None
-
 
     def test_has_style(self, DummyCell):
         cell = DummyCell
@@ -91,5 +87,5 @@ def test_equality():
 
 
 def test_is_date():
-    c1 = ReadOnlyCell(None, None, None, None, 'd')
+    c1 = ReadOnlyCell(None, None, None, None, "d")
     assert c1.is_date is True

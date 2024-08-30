@@ -1,32 +1,21 @@
 # Copyright (c) 2010-2024 openpyxl
-
 """Implementation of custom properties see § 22.3 in the specification"""
-
-
 from warnings import warn
 
-from openpyxl.descriptors import Strict
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors.sequence import Sequence
-from openpyxl.descriptors import (
-    Alias,
-    String,
-    Integer,
-    Float,
-    DateTime,
-    Bool,
-)
-from openpyxl.descriptors.nested import (
-    NestedText,
-)
-
-from openpyxl.xml.constants import (
-    CUSTPROPS_NS,
-    VTYPES_NS,
-    CPROPS_FMTID,
-)
-
 from .core import NestedDateTime
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Strict
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import DateTime
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.sequence import Sequence
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.xml.constants import CPROPS_FMTID
+from openpyxl.xml.constants import CUSTPROPS_NS
+from openpyxl.xml.constants import VTYPES_NS
 
 
 class NestedBoolText(Bool, NestedText):
@@ -38,7 +27,6 @@ class NestedBoolText(Bool, NestedText):
 
 
 class _CustomDocumentProperty(Serialisable):
-
     """
     Low-level representation of a Custom Document Property.
     Not used directly
@@ -58,12 +46,7 @@ class _CustomDocumentProperty(Serialisable):
     fmtid = String()
     pid = Integer()
 
-    def __init__(self,
-                 name=None,
-                 pid=0,
-                 fmtid=CPROPS_FMTID,
-                 linkTarget=None,
-                 **kw):
+    def __init__(self, name=None, pid=0, fmtid=CPROPS_FMTID, linkTarget=None, **kw):
         self.fmtid = fmtid
         self.pid = pid
         self.name = name
@@ -72,11 +55,10 @@ class _CustomDocumentProperty(Serialisable):
 
         for k, v in kw.items():
             setattr(self, k, v)
-            setattr(self, "_typ", k) # ugh!
+            setattr(self, "_typ", k)  # ugh!
         for e in self.__elements__:
             if e not in kw:
                 setattr(self, e, None)
-
 
     @property
     def type(self):
@@ -88,7 +70,6 @@ class _CustomDocumentProperty(Serialisable):
         if self.linkTarget is not None:
             return "linkTarget"
 
-
     def to_tree(self, tagname=None, idx=None, namespace=None):
         child = getattr(self, self._typ, None)
         if child is None:
@@ -98,7 +79,6 @@ class _CustomDocumentProperty(Serialisable):
 
 
 class _CustomDocumentPropertyList(Serialisable):
-
     """
     Parses and seriliases property lists but is not used directly
     """
@@ -108,14 +88,11 @@ class _CustomDocumentPropertyList(Serialisable):
     property = Sequence(expected_type=_CustomDocumentProperty, namespace=CUSTPROPS_NS)
     customProps = Alias("property")
 
-
     def __init__(self, property=()):
         self.property = property
 
-
     def __len__(self):
         return len(self.property)
-
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
         for idx, p in enumerate(self.property, 2):
@@ -127,51 +104,40 @@ class _CustomDocumentPropertyList(Serialisable):
 
 
 class _TypedProperty(Strict):
-
     name = String()
 
-    def __init__(self,
-                 name,
-                 value):
+    def __init__(self, name, value):
         self.name = name
         self.value = value
 
-
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value
-
 
     def __repr__(self):
         return f"{self.__class__.__name__}, name={self.name}, value={self.value}"
 
 
 class IntProperty(_TypedProperty):
-
     value = Integer()
 
 
 class FloatProperty(_TypedProperty):
-
     value = Float()
 
 
 class StringProperty(_TypedProperty):
-
     value = String(allow_none=True)
 
 
 class DateTimeProperty(_TypedProperty):
-
     value = DateTime()
 
 
 class BoolProperty(_TypedProperty):
-
     value = Bool()
 
 
 class LinkProperty(_TypedProperty):
-
     value = String()
 
 
@@ -182,20 +148,17 @@ CLASS_MAPPING = {
     FloatProperty: "r8",
     DateTimeProperty: "filetime",
     BoolProperty: "bool",
-    LinkProperty: "linkTarget"
+    LinkProperty: "linkTarget",
 }
 
-XML_MAPPING = {v:k for k,v in CLASS_MAPPING.items()}
+XML_MAPPING = {v: k for k, v in CLASS_MAPPING.items()}
 
 
 class CustomPropertyList(Strict):
-
-
     props = Sequence(expected_type=_TypedProperty)
 
     def __init__(self):
         self.props = []
-
 
     @classmethod
     def from_tree(cls, tree):
@@ -225,13 +188,11 @@ class CustomPropertyList(Strict):
         new_prop_list.props = props
         return new_prop_list
 
-
     def append(self, prop):
         if prop.name in self.names:
             raise ValueError(f"Property with name {prop.name} already exists")
 
         self.props.append(prop)
-
 
     def to_tree(self):
         props = []
@@ -239,26 +200,22 @@ class CustomPropertyList(Strict):
         for p in self.props:
             attr = CLASS_MAPPING.get(p.__class__, None)
             if not attr:
-                raise TypeError("Unknown adapter for {p}")
+                raise TypeError(f"Unknown adapter for {p}")
             np = _CustomDocumentProperty(name=p.name, **{attr:p.value})
             if isinstance(p, LinkProperty):
                 np._typ = "lpwstr"
-                #np.lpwstr = ""
             props.append(np)
 
         prop_list = _CustomDocumentPropertyList(property=props)
         return prop_list.to_tree()
 
-
     def __len__(self):
         return len(self.props)
-
 
     @property
     def names(self):
         """List of property names"""
         return [p.name for p in self.props]
-
 
     def __getitem__(self, name):
         """
@@ -268,7 +225,6 @@ class CustomPropertyList(Strict):
             if p.name == name:
                 return p
         raise KeyError(f"Property with name {name} not found")
-
 
     def __delitem__(self, name):
         """
@@ -280,10 +236,8 @@ class CustomPropertyList(Strict):
                 return
         raise KeyError(f"Property with name {name} not found")
 
-
     def __repr__(self):
         return f"{self.__class__.__name__} containing {self.props}"
-
 
     def __iter__(self):
         return iter(self.props)

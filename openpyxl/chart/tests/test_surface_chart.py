@@ -1,12 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def SurfaceChart():
     from ..surface_chart import SurfaceChart
+
     return SurfaceChart
 
 
@@ -24,7 +27,6 @@ class TestSurfaceChart:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, SurfaceChart):
         src = """
@@ -52,6 +54,7 @@ class TestSurfaceChart:
 @pytest.fixture
 def SurfaceChart3D():
     from ..surface_chart import SurfaceChart3D
+
     return SurfaceChart3D
 
 
@@ -69,7 +72,6 @@ class TestSurfaceChart3D:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, SurfaceChart3D):
         src = """
@@ -108,6 +110,7 @@ class TestSurfaceChart3D:
 @pytest.fixture
 def BandFormat():
     from ..surface_chart import BandFormat
+
     return BandFormat
 
 
@@ -124,7 +127,6 @@ class TestBandFormat:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, BandFormat):
         src = """
         <bandFmt>
@@ -139,6 +141,7 @@ class TestBandFormat:
 @pytest.fixture
 def BandFormatList():
     from ..surface_chart import BandFormatList
+
     return BandFormatList
 
 
@@ -152,7 +155,6 @@ class TestBandFormatList:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, BandFormatList):
         src = """

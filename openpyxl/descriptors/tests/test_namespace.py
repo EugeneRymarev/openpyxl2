@@ -1,5 +1,4 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from ..namespace import namespaced
 
 
@@ -11,9 +10,7 @@ def test_no_namespace():
 
 
 def test_object_namespace():
-
     class Object:
-
         namespace = "main"
 
     obj = Object()
@@ -23,7 +20,6 @@ def test_object_namespace():
 
 
 def test_overwrite_namespace():
-
     obj = object()
 
     tag = namespaced(obj, "root", "main")

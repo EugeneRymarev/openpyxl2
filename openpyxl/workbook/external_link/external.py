@@ -1,44 +1,31 @@
 # Copyright (c) 2010-2024 openpyxl
-
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    String,
-    Bool,
-    Integer,
-    NoneSet,
-    Sequence,
-)
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.nested import NestedText
-from openpyxl.descriptors.sequence import NestedSequence, ValueSequence
-
-from openpyxl.packaging.relationship import (
-    Relationship,
-    get_rels_path,
-    get_dependents
-    )
+from openpyxl.descriptors.sequence import NestedSequence
+from openpyxl.descriptors.sequence import ValueSequence
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.packaging.relationship import get_dependents
+from openpyxl.packaging.relationship import get_rels_path
+from openpyxl.packaging.relationship import Relationship
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import fromstring
-
 
 """Manage links to external Workbooks"""
 
 
 class ExternalCell(Serialisable):
-
     r = String()
-    t = NoneSet(values=(['b', 'd', 'n', 'e', 's', 'str', 'inlineStr']))
+    t = NoneSet(values=(["b", "d", "n", "e", "s", "str", "inlineStr"]))
     vm = Integer(allow_none=True)
     v = NestedText(allow_none=True, expected_type=str)
 
-    def __init__(self,
-                 r=None,
-                 t=None,
-                 vm=None,
-                 v=None,
-                ):
+    def __init__(self, r=None, t=None, vm=None, v=None):
         self.r = r
         self.t = t
         self.vm = vm
@@ -46,82 +33,61 @@ class ExternalCell(Serialisable):
 
 
 class ExternalRow(Serialisable):
-
     r = Integer()
     cell = Sequence(expected_type=ExternalCell)
 
-    __elements__ = ('cell',)
+    __elements__ = ("cell",)
 
-    def __init__(self,
-                 r=(),
-                 cell=None,
-                ):
+    def __init__(self, r=(), cell=None):
         self.r = r
         self.cell = cell
 
 
 class ExternalSheetData(Serialisable):
-
     sheetId = Integer()
     refreshError = Bool(allow_none=True)
     row = Sequence(expected_type=ExternalRow)
 
-    __elements__ = ('row',)
+    __elements__ = ("row",)
 
-    def __init__(self,
-                 sheetId=None,
-                 refreshError=None,
-                 row=(),
-                ):
+    def __init__(self, sheetId=None, refreshError=None, row=()):
         self.sheetId = sheetId
         self.refreshError = refreshError
         self.row = row
 
 
 class ExternalSheetDataSet(Serialisable):
+    sheetData = Sequence(expected_type=ExternalSheetData)
 
-    sheetData = Sequence(expected_type=ExternalSheetData, )
+    __elements__ = ("sheetData",)
 
-    __elements__ = ('sheetData',)
-
-    def __init__(self,
-                 sheetData=None,
-                ):
+    def __init__(self, sheetData=None):
         self.sheetData = sheetData
 
 
 class ExternalSheetNames(Serialisable):
-
     sheetName = ValueSequence(expected_type=str)
 
-    __elements__ = ('sheetName',)
+    __elements__ = ("sheetName",)
 
-    def __init__(self,
-                 sheetName=(),
-                ):
+    def __init__(self, sheetName=()):
         self.sheetName = sheetName
 
 
 class ExternalDefinedName(Serialisable):
-
     tagname = "definedName"
 
     name = String()
     refersTo = String(allow_none=True)
     sheetId = Integer(allow_none=True)
 
-    def __init__(self,
-                 name=None,
-                 refersTo=None,
-                 sheetId=None,
-                ):
+    def __init__(self, name=None, refersTo=None, sheetId=None):
         self.name = name
         self.refersTo = refersTo
         self.sheetId = sheetId
 
 
 class ExternalBook(Serialisable):
-
     tagname = "externalBook"
 
     sheetNames = Typed(expected_type=ExternalSheetNames, allow_none=True)
@@ -129,14 +95,9 @@ class ExternalBook(Serialisable):
     sheetDataSet = Typed(expected_type=ExternalSheetDataSet, allow_none=True)
     id = Relation()
 
-    __elements__ = ('sheetNames', 'definedNames', 'sheetDataSet')
+    __elements__ = ("sheetNames", "definedNames", "sheetDataSet")
 
-    def __init__(self,
-                 sheetNames=None,
-                 definedNames=(),
-                 sheetDataSet=None,
-                 id=None,
-                ):
+    def __init__(self, sheetNames=None, definedNames=(), sheetDataSet=None, id=None):
         self.sheetNames = sheetNames
         self.definedNames = definedNames
         self.sheetDataSet = sheetDataSet
@@ -144,34 +105,29 @@ class ExternalBook(Serialisable):
 
 
 class ExternalLink(Serialisable):
-
     tagname = "externalLink"
 
     _id = None
     _path = "/xl/externalLinks/externalLink{0}.xml"
     _rel_type = "externalLink"
-    mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml"
+    mime_type = (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml"
+    )
 
     externalBook = Typed(expected_type=ExternalBook, allow_none=True)
-    file_link = Typed(expected_type=Relationship, allow_none=True) # link to external file
+    # link to external file
+    file_link = Typed(expected_type=Relationship, allow_none=True)
 
-    __elements__ = ('externalBook', )
+    __elements__ = ("externalBook",)
 
-    def __init__(self,
-                 externalBook=None,
-                 ddeLink=None,
-                 oleLink=None,
-                 extLst=None,
-                ):
+    def __init__(self, externalBook=None, ddeLink=None, oleLink=None, extLst=None):
         self.externalBook = externalBook
         # ignore other items for the moment.
-
 
     def to_tree(self):
         node = super().to_tree()
         node.set("xmlns", SHEET_MAIN_NS)
         return node
-
 
     @property
     def path(self):

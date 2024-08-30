@@ -1,18 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
-
 """
 Based on Python Cookbook 3rd Edition, 8.13
 http://chimera.labs.oreilly.com/books/1230000000393/ch08.html#_discussiuncion_130
 """
-
 import datetime
 import re
 
+from .namespace import namespaced
 from openpyxl import DEBUG
 from openpyxl.utils.datetime import from_ISO8601
 
-from .namespace import namespaced
 
 class Descriptor:
 
@@ -38,8 +35,7 @@ class Typed(Descriptor):
 
     def __set__(self, instance, value):
         if not isinstance(value, self.expected_type):
-            if (not self.allow_none
-                or (self.allow_none and value is not None)):
+            if not self.allow_none or (self.allow_none and value is not None):
                 msg = f"{instance.__class__}.{self.name} should be {self.expected_type} but value is {type(value)}"
                 if DEBUG:
                     msg = f"{instance.__class__}.{self.name} should be {self.expected_type} but {value} is {type(value)}"
@@ -47,7 +43,7 @@ class Typed(Descriptor):
         super().__set__(instance, value)
 
     def __repr__(self):
-        return  self.__doc__
+        return self.__doc__
 
 
 def _convert(expected_type, value):
@@ -58,7 +54,7 @@ def _convert(expected_type, value):
         try:
             value = expected_type(value)
         except:
-            raise TypeError('expected ' + str(expected_type))
+            raise TypeError("expected " + str(expected_type))
     return value
 
 
@@ -66,8 +62,7 @@ class Convertible(Typed):
     """Values must be convertible to a particular type"""
 
     def __set__(self, instance, value):
-        if ((self.allow_none and value is not None)
-            or not self.allow_none):
+        if (self.allow_none and value is not None) or not self.allow_none:
             value = _convert(self.expected_type, value)
         super().__set__(instance, value)
 
@@ -79,16 +74,15 @@ class Max(Convertible):
     allow_none = False
 
     def __init__(self, **kw):
-        if 'max' not in kw and not hasattr(self, 'max'):
-            raise TypeError('missing max value')
+        if "max" not in kw and not hasattr(self, "max"):
+            raise TypeError("missing max value")
         super().__init__(**kw)
 
     def __set__(self, instance, value):
-        if ((self.allow_none and value is not None)
-            or not self.allow_none):
+        if (self.allow_none and value is not None) or not self.allow_none:
             value = _convert(self.expected_type, value)
             if value > self.max:
-                raise ValueError('Max value is {0}'.format(self.max))
+                raise ValueError(f"Max value is {self.max}")
         super().__set__(instance, value)
 
 
@@ -99,21 +93,21 @@ class Min(Convertible):
     allow_none = False
 
     def __init__(self, **kw):
-        if 'min' not in kw and not hasattr(self, 'min'):
-            raise TypeError('missing min value')
+        if "min" not in kw and not hasattr(self, "min"):
+            raise TypeError("missing min value")
         super().__init__(**kw)
 
     def __set__(self, instance, value):
-        if ((self.allow_none and value is not None)
-            or not self.allow_none):
+        if (self.allow_none and value is not None) or not self.allow_none:
             value = _convert(self.expected_type, value)
             if value < self.min:
-                raise ValueError('Min value is {0}'.format(self.min))
+                raise ValueError(f"Min value is {self.min}")
         super().__set__(instance, value)
 
 
 class MinMax(Min, Max):
     """Values must be greater than `min` value and less than a `max` one"""
+
     pass
 
 
@@ -121,11 +115,11 @@ class Set(Descriptor):
     """Value can only be from a set of know values"""
 
     def __init__(self, name=None, **kw):
-        if not 'values' in kw:
+        if not "values" in kw:
             raise TypeError("missing set of values")
-        kw['values'] = set(kw['values'])
+        kw["values"] = set(kw["values"])
         super().__init__(name, **kw)
-        self.__doc__ = "Value must be one of {0}".format(self.values)
+        self.__doc__ = f"Value must be one of {self.values}"
 
     def __set__(self, instance, value):
         if value not in self.values:
@@ -134,7 +128,6 @@ class Set(Descriptor):
 
 
 class NoneSet(Set):
-
     """'none' will be treated as None"""
 
     def __init__(self, name=None, **kw):
@@ -142,49 +135,42 @@ class NoneSet(Set):
         self.values.add(None)
 
     def __set__(self, instance, value):
-        if value == 'none':
+        if value == "none":
             value = None
         super().__set__(instance, value)
 
 
 class Integer(Convertible):
-
     expected_type = int
 
 
 class Float(Convertible):
-
     expected_type = float
 
 
 class Bool(Convertible):
-
     expected_type = bool
 
     def __set__(self, instance, value):
         if isinstance(value, str):
-            if value in ('false', 'f', '0'):
+            if value in ("false", "f", "0"):
                 value = False
         super().__set__(instance, value)
 
 
 class String(Typed):
-
     expected_type = str
 
 
 class Text(String, Convertible):
-
     pass
 
 
 class ASCII(Typed):
-
     expected_type = bytes
 
 
 class Tuple(Typed):
-
     expected_type = tuple
 
 
@@ -195,10 +181,9 @@ class Length(Descriptor):
             raise TypeError("value length must be supplied")
         super().__init__(**kw)
 
-
     def __set__(self, instance, value):
         if len(value) != self.length:
-            raise ValueError("Value must be length {0}".format(self.length))
+            raise ValueError(f"Value must be length {self.length}")
         super().__set__(instance, value)
 
 
@@ -210,7 +195,7 @@ class Default(Typed):
 
     def __init__(self, name=None, **kw):
         if "defaults" not in kw:
-            kw['defaults'] = {}
+            kw["defaults"] = {}
         super().__init__(**kw)
 
     def __call__(self):
@@ -235,32 +220,30 @@ class Alias(Descriptor):
 
 
 class MatchPattern(Descriptor):
-    """Values must match a regex pattern """
+    """Values must match a regex pattern"""
+
     allow_none = False
 
     def __init__(self, name=None, **kw):
-        if 'pattern' not in kw and not hasattr(self, 'pattern'):
-            raise TypeError('missing pattern value')
+        if "pattern" not in kw and not hasattr(self, "pattern"):
+            raise TypeError("missing pattern value")
 
         super().__init__(name, **kw)
         self.test_pattern = re.compile(self.pattern, re.VERBOSE)
-
 
     def __set__(self, instance, value):
 
         if value is None and not self.allow_none:
             raise ValueError("Value must not be none")
 
-        if ((self.allow_none and value is not None)
-            or not self.allow_none):
+        if (self.allow_none and value is not None) or not self.allow_none:
             if not self.test_pattern.match(value):
-                raise ValueError('Value does not match pattern {0}'.format(self.pattern))
+                raise ValueError(f"Value does not match pattern {self.pattern}")
 
         super().__set__(instance, value)
 
 
 class DateTime(Typed):
-
     expected_type = datetime.datetime
 
     def __set__(self, instance, value):

@@ -1,18 +1,15 @@
 from openpyxl import Workbook
-
-from openpyxl.chart import (
-    PieChart,
-    ProjectedPieChart,
-    Reference
-)
+from openpyxl.chart import PieChart
+from openpyxl.chart import ProjectedPieChart
+from openpyxl.chart import Reference
 from openpyxl.chart.series import DataPoint
 
 data = [
-    ['Pie', 'Sold'],
-    ['Apple', 50],
-    ['Cherry', 30],
-    ['Pumpkin', 10],
-    ['Chocolate', 40],
+    ["Pie", "Sold"],
+    ["Apple", 50],
+    ["Cherry", 30],
+    ["Pumpkin", 10],
+    ["Chocolate", 40],
 ]
 
 wb = Workbook()
@@ -38,11 +35,11 @@ ws.add_chart(pie, "D1")
 ws = wb.create_sheet(title="Projection")
 
 data = [
-    ['Page', 'Views'],
-    ['Search', 95],
-    ['Products', 4],
-    ['Offers', 0.5],
-    ['Sales', 0.5],
+    ["Page", "Views"],
+    ["Search", 95],
+    ["Products", 4],
+    ["Offers", 0.5],
+    ["Sales", 0.5],
 ]
 
 for row in data:
@@ -50,7 +47,7 @@ for row in data:
 
 projected_pie = ProjectedPieChart()
 projected_pie.type = "pie"
-projected_pie.splitType = "val" # split by value
+projected_pie.splitType = "val"  # split by value
 labels = Reference(ws, min_col=1, min_row=2, max_row=5)
 data = Reference(ws, min_col=2, min_row=1, max_row=5)
 projected_pie.add_data(data, titles_from_data=True)
@@ -59,9 +56,10 @@ projected_pie.set_categories(labels)
 ws.add_chart(projected_pie, "A10")
 
 from copy import deepcopy
+
 projected_bar = deepcopy(projected_pie)
 projected_bar.type = "bar"
-projected_bar.splitType = 'pos' # split by position
+projected_bar.splitType = "pos"  # split by position
 
 ws.add_chart(projected_bar, "A27")
 

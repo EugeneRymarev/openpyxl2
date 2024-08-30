@@ -1,23 +1,22 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
 from .. import Strict
 
-class TestDescriptor:
 
+class TestDescriptor:
     from ..base import Descriptor
 
     class Dummy:
         pass
 
     def test_ctor(self):
-        d = self.Descriptor('key', size=1)
-        assert d.name == 'key'
+        d = self.Descriptor("key", size=1)
+        assert d.name == "key"
         assert d.size == 1
 
     def test_setter(self):
-        d = self.Descriptor('key')
+        d = self.Descriptor("key")
         client = self.Dummy()
         d.__set__(client, 42)
         assert client.key == 42
@@ -25,11 +24,9 @@ class TestDescriptor:
 
 @pytest.fixture
 def boolean():
-
     from ..base import Bool
 
     class Dummy(Strict):
-
         value = Bool()
 
     return Dummy()
@@ -41,18 +38,19 @@ class TestBool:
         boolean.value = True
         assert boolean.value
 
-    @pytest.mark.parametrize("value, expected",
-                             [
-                                 (1, True,),
-                                 (0, False),
-                                 ('true', True),
-                                 ('false', False),
-                                 ('0', False),
-                                 ('f', False),
-                                 ('', False),
-                                 ([], False)
-                             ]
-                              )
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            (1, True),
+            (0, False),
+            ("true", True),
+            ("false", False),
+            ("0", False),
+            ("f", False),
+            ("", False),
+            ([], False),
+        ],
+    )
     def test_cast(self, boolean, value, expected):
         boolean.value = value
         assert boolean.value == expected
@@ -62,7 +60,6 @@ def test_nested():
     from ..base import Bool
 
     class DummyNested(Strict):
-
         value = Bool(nested=True)
 
     dummy = DummyNested()
@@ -72,11 +69,9 @@ def test_nested():
 
 @pytest.fixture
 def integer():
-
     from ..base import Integer
 
     class Dummy(Strict):
-
         value = Integer()
 
     return Dummy()
@@ -88,16 +83,18 @@ class TestInt:
         integer.value = 4
         assert integer.value == 4
 
-    @pytest.mark.parametrize("value", ['a', '4.5', None])
+    @pytest.mark.parametrize("value", ["a", "4.5", None])
     def test_invalid(self, integer, value):
         with pytest.raises(TypeError):
             integer.value = value
 
-    @pytest.mark.parametrize("value, expected",
-                             [
-                                 ('4', 4),
-                                 (4.5, 4),
-                             ])
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            ("4", 4),
+            (4.5, 4),
+        ],
+    )
     def test_cast(self, integer, value, expected):
         integer.value = value
         assert integer.value == expected
@@ -105,11 +102,9 @@ class TestInt:
 
 @pytest.fixture
 def float():
-
     from ..base import Float
 
     class Dummy(Strict):
-
         value = Float()
 
     return Dummy()
@@ -121,17 +116,19 @@ class TestFloat:
         float.value = 4
         assert float.value == 4
 
-    @pytest.mark.parametrize("value", ['a', None])
+    @pytest.mark.parametrize("value", ["a", None])
     def test_invalid(self, float, value):
         with pytest.raises(TypeError):
             float.value = value
 
-    @pytest.mark.parametrize("value, expected",
-                             [
-                                 ('4.5', 4.5),
-                                 (4.5, 4.5),
-                                 (4, 4.0),
-                             ])
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            ("4.5", 4.5),
+            (4.5, 4.5),
+            (4, 4.0),
+        ],
+    )
     def test_cast(self, float, value, expected):
         float.value = value
         assert float.value == expected
@@ -139,11 +136,9 @@ class TestFloat:
 
 @pytest.fixture
 def allow_none():
-
     from ..base import Float
 
     class Dummy(Strict):
-
         value = Float(allow_none=True)
 
     return Dummy()
@@ -161,7 +156,6 @@ def maximum():
     from ..base import Max
 
     class Dummy(Strict):
-
         value = Max(max=5)
 
     return Dummy()
@@ -173,6 +167,7 @@ class TestMax:
         from ..base import Max
 
         with pytest.raises(TypeError):
+
             class Dummy(Strict):
                 value = Max()
 
@@ -190,7 +185,6 @@ def minimum():
     from ..base import Min
 
     class Dummy(Strict):
-
         value = Min(min=0)
 
     return Dummy()
@@ -202,14 +196,13 @@ class TestMin:
         from ..base import Min
 
         with pytest.raises(TypeError):
+
             class Dummy(Strict):
                 value = Min()
-
 
     def test_valid(self, minimum):
         minimum.value = 2
         assert minimum.value == 2
-
 
     def test_invalid(self, minimum):
         with pytest.raises(ValueError):
@@ -221,7 +214,6 @@ def min_max():
     from ..base import MinMax
 
     class Dummy(Strict):
-
         value = MinMax(min=-1, max=1)
 
     return Dummy()
@@ -242,11 +234,9 @@ class TestMinMax:
             class Dummy(Strict):
                 value = MinMax(max=10)
 
-
     def test_valid(self, min_max):
         min_max.value = 1
         assert min_max.value == 1
-
 
     def test_invalid(self, min_max):
         with pytest.raises(ValueError):
@@ -258,8 +248,7 @@ def set():
     from ..base import Set
 
     class Dummy(Strict):
-
-        value = Set(values=[1, 'a', None])
+        value = Set(values=[1, "a", None])
 
     return Dummy()
 
@@ -270,15 +259,13 @@ class TestValues:
         from ..base import Set
 
         with pytest.raises(TypeError):
+
             class Dummy(Strict):
-
                 value = Set()
-
 
     def test_valid(self, set):
         set.value = 1
         assert set.value == 1
-
 
     def test_invalid(self, set):
         with pytest.raises(ValueError):
@@ -287,12 +274,12 @@ class TestValues:
 
 def test_noneset():
     from ..base import NoneSet
-    class Dummy(Strict):
 
+    class Dummy(Strict):
         value = NoneSet(values=[1, 2, 3])
 
     obj = Dummy()
-    obj.value = 'none'
+    obj.value = "none"
     assert obj.value is None
     with pytest.raises(ValueError):
         obj.value = 5
@@ -300,11 +287,9 @@ def test_noneset():
 
 @pytest.fixture
 def ascii():
-
     from ..base import ASCII
 
     class Dummy(Strict):
-
         value = ASCII()
 
     return Dummy()
@@ -313,17 +298,12 @@ def ascii():
 class TestASCII:
 
     def test_valid(self, ascii):
-        ascii.value = b'some text'
-        assert ascii.value == b'some text'
+        ascii.value = b"some text"
+        assert ascii.value == b"some text"
 
-    value = b'\xc3\xbc'.decode("utf-8")
-    @pytest.mark.parametrize("value",
-                             [
-                                 value,
-                                 10,
-                                 []
-                             ]
-                             )
+    value = b"\xc3\xbc".decode("utf-8")
+
+    @pytest.mark.parametrize("value", [value, 10, []])
     def test_invalid(self, ascii, value):
         with pytest.raises(TypeError):
             ascii.value = value
@@ -331,11 +311,9 @@ class TestASCII:
 
 @pytest.fixture
 def string():
-
     from ..base import String
 
     class Dummy(Strict):
-
         value = String()
 
     return Dummy()
@@ -344,7 +322,7 @@ def string():
 class TestString:
 
     def test_valid(self, string):
-        value = b'\xc3\xbc'.decode("utf-8")
+        value = b"\xc3\xbc".decode("utf-8")
         string.value = value
         assert string.value == value
 
@@ -358,7 +336,6 @@ def Tuple():
     from ..base import Tuple
 
     class Dummy(Strict):
-
         value = Tuple()
 
     return Dummy()
@@ -380,7 +357,6 @@ def Length():
     from ..base import Length
 
     class Dummy(Strict):
-
         value = Length(length=4)
 
     return Dummy()

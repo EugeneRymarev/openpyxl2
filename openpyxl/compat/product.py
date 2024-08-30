@@ -1,11 +1,10 @@
 # Copyright (c) 2010-2024 openpyxl
-
 """
 math.prod equivalent for < Python 3.8
 """
-
 import functools
 import operator
+
 
 def product(sequence):
     return functools.reduce(operator.mul, sequence)

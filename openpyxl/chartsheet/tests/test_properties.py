@@ -1,9 +1,9 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
-from openpyxl.xml.functions import fromstring, tostring
-from openpyxl.tests.helper import compare_xml
 
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture

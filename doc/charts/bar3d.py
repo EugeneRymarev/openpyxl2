@@ -1,19 +1,12 @@
 from openpyxl import Workbook
-from openpyxl.chart import (
-    Reference,
-    Series,
-    BarChart3D,
-)
+from openpyxl.chart import BarChart3D
+from openpyxl.chart import Reference
+from openpyxl.chart import Series
 
 wb = Workbook()
 ws = wb.active
 
-rows = [
-    (None, 2013, 2014),
-    ("Apples", 5, 4),
-    ("Oranges", 6, 2),
-    ("Pears", 8, 3)
-]
+rows = [(None, 2013, 2014), ("Apples", 5, 4), ("Oranges", 6, 2), ("Pears", 8, 3)]
 
 for row in rows:
     ws.append(row)

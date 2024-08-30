@@ -1,46 +1,33 @@
-
 # Copyright (c) 2010-2024 openpyxl
-
 """
 Enclosing chart object. The various chart types are actually child objects.
 Will probably need to call this indirectly
 """
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    String,
-    Alias,
-)
-from openpyxl.descriptors.excel import (
-    ExtensionList,
-    Relation
-)
-from openpyxl.descriptors.nested import (
-    NestedBool,
-    NestedNoneSet,
-    NestedString,
-    NestedMinMax,
-)
-from openpyxl.descriptors.sequence import NestedSequence
-from openpyxl.xml.constants import CHART_NS
-
-from openpyxl.drawing.colors import ColorMapping
-from .text import RichText
-from .shapes import GraphicalProperties
-from .legend import Legend
 from ._3d import _3DBase
+from .legend import Legend
+from .pivot import PivotFormat
+from .pivot import PivotSource
 from .plotarea import PlotArea
-from .title import Title
-from .pivot import (
-    PivotFormat,
-    PivotSource,
-)
 from .print_settings import PrintSettings
+from .shapes import GraphicalProperties
+from .text import RichText
+from .title import Title
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.excel import Relation
+from openpyxl.descriptors.nested import NestedBool
+from openpyxl.descriptors.nested import NestedMinMax
+from openpyxl.descriptors.nested import NestedNoneSet
+from openpyxl.descriptors.nested import NestedString
+from openpyxl.descriptors.sequence import NestedSequence
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.colors import ColorMapping
+from openpyxl.xml.constants import CHART_NS
 
 
 class ChartContainer(Serialisable):
-
     tagname = "chart"
 
     title = Typed(expected_type=Title, allow_none=True)
@@ -50,32 +37,44 @@ class ChartContainer(Serialisable):
     floor = _3DBase.floor
     sideWall = _3DBase.sideWall
     backWall = _3DBase.backWall
-    plotArea = Typed(expected_type=PlotArea, )
+    plotArea = Typed(expected_type=PlotArea)
     legend = Typed(expected_type=Legend, allow_none=True)
     plotVisOnly = NestedBool()
-    dispBlanksAs = NestedNoneSet(values=(['span', 'gap', 'zero']))
+    dispBlanksAs = NestedNoneSet(values=(["span", "gap", "zero"]))
     showDLblsOverMax = NestedBool(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('title', 'autoTitleDeleted', 'pivotFmts', 'view3D',
-                    'floor', 'sideWall', 'backWall', 'plotArea', 'legend', 'plotVisOnly',
-                    'dispBlanksAs', 'showDLblsOverMax')
+    __elements__ = (
+        "title",
+        "autoTitleDeleted",
+        "pivotFmts",
+        "view3D",
+        "floor",
+        "sideWall",
+        "backWall",
+        "plotArea",
+        "legend",
+        "plotVisOnly",
+        "dispBlanksAs",
+        "showDLblsOverMax",
+    )
 
-    def __init__(self,
-                 title=None,
-                 autoTitleDeleted=None,
-                 pivotFmts=(),
-                 view3D=None,
-                 floor=None,
-                 sideWall=None,
-                 backWall=None,
-                 plotArea=None,
-                 legend=None,
-                 plotVisOnly=True,
-                 dispBlanksAs="gap",
-                 showDLblsOverMax=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        title=None,
+        autoTitleDeleted=None,
+        pivotFmts=(),
+        view3D=None,
+        floor=None,
+        sideWall=None,
+        backWall=None,
+        plotArea=None,
+        legend=None,
+        plotVisOnly=True,
+        dispBlanksAs="gap",
+        showDLblsOverMax=None,
+        extLst=None,
+    ):
         self.title = title
         self.autoTitleDeleted = autoTitleDeleted
         self.pivotFmts = pivotFmts
@@ -93,7 +92,6 @@ class ChartContainer(Serialisable):
 
 
 class Protection(Serialisable):
-
     tagname = "protection"
 
     chartObject = NestedBool(allow_none=True)
@@ -104,13 +102,14 @@ class Protection(Serialisable):
 
     __elements__ = ("chartObject", "data", "formatting", "selection", "userInterface")
 
-    def __init__(self,
-                 chartObject=None,
-                 data=None,
-                 formatting=None,
-                 selection=None,
-                 userInterface=None,
-                ):
+    def __init__(
+        self,
+        chartObject=None,
+        data=None,
+        formatting=None,
+        selection=None,
+        userInterface=None,
+    ):
         self.chartObject = chartObject
         self.data = data
         self.formatting = formatting
@@ -119,22 +118,17 @@ class Protection(Serialisable):
 
 
 class ExternalData(Serialisable):
-
     tagname = "externalData"
 
     autoUpdate = NestedBool(allow_none=True)
-    id = String() # Needs namespace
+    id = String()  # Needs namespace
 
-    def __init__(self,
-                 autoUpdate=None,
-                 id=None
-                ):
+    def __init__(self, autoUpdate=None, id=None):
         self.autoUpdate = autoUpdate
         self.id = id
 
 
 class ChartSpace(Serialisable):
-
     tagname = "chartSpace"
 
     date1904 = NestedBool(allow_none=True)
@@ -154,26 +148,39 @@ class ChartSpace(Serialisable):
     userShapes = Relation()
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('date1904', 'lang', 'roundedCorners', 'style',
-                    'clrMapOvr', 'pivotSource', 'protection', 'chart', 'spPr', 'txPr',
-                    'externalData', 'printSettings', 'userShapes')
+    __elements__ = (
+        "date1904",
+        "lang",
+        "roundedCorners",
+        "style",
+        "clrMapOvr",
+        "pivotSource",
+        "protection",
+        "chart",
+        "spPr",
+        "txPr",
+        "externalData",
+        "printSettings",
+        "userShapes",
+    )
 
-    def __init__(self,
-                 date1904=None,
-                 lang=None,
-                 roundedCorners=None,
-                 style=None,
-                 clrMapOvr=None,
-                 pivotSource=None,
-                 protection=None,
-                 chart=None,
-                 spPr=None,
-                 txPr=None,
-                 externalData=None,
-                 printSettings=None,
-                 userShapes=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        date1904=None,
+        lang=None,
+        roundedCorners=None,
+        style=None,
+        clrMapOvr=None,
+        pivotSource=None,
+        protection=None,
+        chart=None,
+        spPr=None,
+        txPr=None,
+        externalData=None,
+        printSettings=None,
+        userShapes=None,
+        extLst=None,
+    ):
         self.date1904 = date1904
         self.lang = lang
         self.roundedCorners = roundedCorners
@@ -187,7 +194,6 @@ class ChartSpace(Serialisable):
         self.externalData = externalData
         self.printSettings = printSettings
         self.userShapes = userShapes
-
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
         tree = super().to_tree()

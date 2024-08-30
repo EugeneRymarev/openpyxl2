@@ -1,16 +1,13 @@
 from openpyxl import Workbook
-
-from openpyxl.chart import (
-    PieChart3D,
-    Reference
-)
+from openpyxl.chart import PieChart3D
+from openpyxl.chart import Reference
 
 data = [
-    ['Pie', 'Sold'],
-    ['Apple', 50],
-    ['Cherry', 30],
-    ['Pumpkin', 10],
-    ['Chocolate', 40],
+    ["Pie", "Sold"],
+    ["Apple", 50],
+    ["Cherry", 30],
+    ["Pumpkin", 10],
+    ["Chocolate", 40],
 ]
 
 wb = Workbook()

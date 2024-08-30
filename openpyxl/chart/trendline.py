@@ -1,27 +1,21 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    String,
-    Alias
-)
-from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.nested import (
-    NestedBool,
-    NestedInteger,
-    NestedFloat,
-    NestedSet
-)
-
 from .data_source import NumFmt
-from .shapes import GraphicalProperties
-from .text import RichText, Text
 from .layout import Layout
+from .shapes import GraphicalProperties
+from .text import RichText
+from .text import Text
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.nested import NestedBool
+from openpyxl.descriptors.nested import NestedFloat
+from openpyxl.descriptors.nested import NestedInteger
+from openpyxl.descriptors.nested import NestedSet
+from openpyxl.descriptors.serialisable import Serialisable
 
 
 class TrendlineLabel(Serialisable):
-
     tagname = "trendlineLbl"
 
     layout = Typed(expected_type=Layout, allow_none=True)
@@ -33,16 +27,17 @@ class TrendlineLabel(Serialisable):
     textProperties = Alias("txPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('layout', 'tx', 'numFmt', 'spPr', 'txPr')
+    __elements__ = ("layout", "tx", "numFmt", "spPr", "txPr")
 
-    def __init__(self,
-                 layout=None,
-                 tx=None,
-                 numFmt=None,
-                 spPr=None,
-                 txPr=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        layout=None,
+        tx=None,
+        numFmt=None,
+        spPr=None,
+        txPr=None,
+        extLst=None,
+    ):
         self.layout = layout
         self.tx = tx
         self.numFmt = numFmt
@@ -51,13 +46,14 @@ class TrendlineLabel(Serialisable):
 
 
 class Trendline(Serialisable):
-
     tagname = "trendline"
 
     name = String(allow_none=True)
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
-    graphicalProperties = Alias('spPr')
-    trendlineType = NestedSet(values=(['exp', 'linear', 'log', 'movingAvg', 'poly', 'power']))
+    graphicalProperties = Alias("spPr")
+    trendlineType = NestedSet(
+        values=(["exp", "linear", "log", "movingAvg", "poly", "power"])
+    )
     order = NestedInteger(allow_none=True)
     period = NestedInteger(allow_none=True)
     forward = NestedFloat(allow_none=True)
@@ -68,23 +64,34 @@ class Trendline(Serialisable):
     trendlineLbl = Typed(expected_type=TrendlineLabel, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('spPr', 'trendlineType', 'order', 'period', 'forward',
-                    'backward', 'intercept', 'dispRSqr', 'dispEq', 'trendlineLbl')
+    __elements__ = (
+        "spPr",
+        "trendlineType",
+        "order",
+        "period",
+        "forward",
+        "backward",
+        "intercept",
+        "dispRSqr",
+        "dispEq",
+        "trendlineLbl",
+    )
 
-    def __init__(self,
-                 name=None,
-                 spPr=None,
-                 trendlineType='linear',
-                 order=None,
-                 period=None,
-                 forward=None,
-                 backward=None,
-                 intercept=None,
-                 dispRSqr=None,
-                 dispEq=None,
-                 trendlineLbl=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        name=None,
+        spPr=None,
+        trendlineType="linear",
+        order=None,
+        period=None,
+        forward=None,
+        backward=None,
+        intercept=None,
+        dispRSqr=None,
+        dispEq=None,
+        trendlineLbl=None,
+        extLst=None,
+    ):
         self.name = name
         self.spPr = spPr
         self.trendlineType = trendlineType

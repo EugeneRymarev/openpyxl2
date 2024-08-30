@@ -1,14 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from copy import copy
+
+import pytest
 
 from openpyxl.comments import Comment
 
-import pytest
 
 @pytest.fixture
 def Comment():
     from ..comments import Comment
+
     return Comment
 
 
@@ -21,21 +22,18 @@ class TestComment:
         assert comment.parent is None
         assert comment.height == 79
         assert comment.width == 144
-        assert repr(comment) == 'Comment: A comment by Charlie'
-
+        assert repr(comment) == "Comment: A comment by Charlie"
 
     def test_bind(self, Comment):
         comment = Comment("", "")
         comment.bind("ws")
         assert comment.parent == "ws"
 
-
     def test_unbind(self, Comment):
         comment = Comment("", "")
         comment.bind("ws")
         comment.unbind()
         assert comment.parent is None
-
 
     def test_copy(self, Comment):
         comment = Comment("", "")

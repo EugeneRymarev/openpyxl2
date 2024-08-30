@@ -1,5 +1,4 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from collections import defaultdict
 
 
@@ -17,7 +16,6 @@ class BoundDictionary(defaultdict):
     def __init__(self, reference=None, *args, **kw):
         self.reference = reference
         super().__init__(*args, **kw)
-
 
     def __getitem__(self, key):
         value = super().__getitem__(key)

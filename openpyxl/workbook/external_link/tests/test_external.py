@@ -1,25 +1,23 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from zipfile import ZipFile
 
 import pytest
-from openpyxl.tests.helper import compare_xml
 
-from openpyxl.xml.constants import (
-    ARC_WORKBOOK_RELS,
-)
 from openpyxl.packaging.relationship import Relationship
-from openpyxl.xml.functions import tostring, fromstring
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.constants import ARC_WORKBOOK_RELS
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def ExternalCell():
     from ..external import ExternalCell
+
     return ExternalCell
 
 
 class TestExternalCell:
-
 
     def test_read(self, ExternalCell):
         src = """
@@ -29,17 +27,17 @@ class TestExternalCell:
         """
         node = fromstring(src)
         cell = ExternalCell.from_tree(node)
-        assert cell.v == u'D\xfcsseldorf'
+        assert cell.v == "D\xfcsseldorf"
 
 
 @pytest.fixture
 def ExternalLink():
-    from .. external import ExternalLink
+    from ..external import ExternalLink
+
     return ExternalLink
 
 
 class TestExternalLink:
-
 
     def test_ctor(self, ExternalLink):
         src = """
@@ -53,9 +51,8 @@ class TestExternalLink:
         link = ExternalLink.from_tree(node)
         assert link.externalBook.id == "rId1"
 
-
     def test_write(self, ExternalLink):
-        expected  = """
+        expected = """
         <externalLink
           xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
         </externalLink>
@@ -66,7 +63,6 @@ class TestExternalLink:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_path(self, ExternalLink):
         link = ExternalLink()
         assert link.path == "/xl/externalLinks/externalLinkNone.xml"
@@ -74,15 +70,16 @@ class TestExternalLink:
 
 @pytest.fixture
 def ExternalBook():
-    from .. external import ExternalBook
+    from ..external import ExternalBook
+
     return ExternalBook
 
 
 class TestExternalBook:
 
-
     def test_ctor(self, ExternalBook):
         from ..external import ExternalDefinedName, ExternalSheetNames
+
         book = ExternalBook()
         book.sheetNames = ExternalSheetNames(sheetName=["Sheet1", "Sheet2", "Sheet3"])
         df = ExternalDefinedName(name="B2range", refersTo="='Sheet1'!$A$1:$A$10")
@@ -103,7 +100,6 @@ class TestExternalBook:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_read(self, ExternalBook):
         src = """
         <externalBook>
@@ -119,7 +115,7 @@ class TestExternalBook:
         """
         node = fromstring(src)
         book = ExternalBook.from_tree(node)
-        assert book.definedNames[0].name == 'B2range'
+        assert book.definedNames[0].name == "B2range"
         assert book.definedNames[0].refersTo == "='Sheet1'!$A$1:$A$10"
 
 
@@ -134,7 +130,9 @@ def test_read_ole_link(datadir, ExternalLink):
 
 def test_read_external_link(datadir):
     from openpyxl.packaging.relationship import get_dependents
-    from .. external import read_external_link
+
+    from ..external import read_external_link
+
     datadir.chdir()
     archive = ZipFile("book1.xlsx")
     rels = get_dependents(archive, ARC_WORKBOOK_RELS)
@@ -150,6 +148,7 @@ def test_write_workbook(datadir, tmpdir):
     src.close()
 
     from openpyxl import load_workbook
+
     wb = load_workbook("book1.xlsx")
     tmpdir.chdir()
     wb.save("book1.xlsx")

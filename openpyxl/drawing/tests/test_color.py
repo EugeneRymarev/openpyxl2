@@ -1,13 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def ColorChoice():
     from ..colors import ColorChoice
+
     return ColorChoice
 
 
@@ -25,7 +27,6 @@ class TestColorChoice:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ColorChoice):
         src = """
         <colorChoice />
@@ -38,6 +39,7 @@ class TestColorChoice:
 @pytest.fixture
 def SystemColor():
     from ..colors import SystemColor
+
     return SystemColor
 
 
@@ -52,7 +54,6 @@ class TestSystemColor:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SystemColor):
         src = """
         <sysClr val="windowText"></sysClr>
@@ -65,6 +66,7 @@ class TestSystemColor:
 @pytest.fixture
 def HSLColor():
     from ..colors import HSLColor
+
     return HSLColor
 
 
@@ -79,7 +81,6 @@ class TestHSLColor:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, HSLColor):
         src = """
         <hslClr hue="0" lum="70" sat="20" />
@@ -92,6 +93,7 @@ class TestHSLColor:
 @pytest.fixture
 def RGBPercent():
     from ..colors import RGBPercent
+
     return RGBPercent
 
 
@@ -106,7 +108,6 @@ class TestRGBPercent:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, RGBPercent):
         src = """
         <rgbClr b="20" g="40" r="30" />
@@ -119,6 +120,7 @@ class TestRGBPercent:
 @pytest.fixture
 def ColorMapping():
     from ..colors import ColorMapping
+
     return ColorMapping
 
 
@@ -137,7 +139,6 @@ class TestColorMapping:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ColorMapping):
         src = """
         <clrMapOvr accent1="accent1" accent2="accent2"
@@ -154,6 +155,7 @@ class TestColorMapping:
 @pytest.fixture
 def SchemeColor():
     from ..colors import SchemeColor
+
     return SchemeColor
 
 
@@ -167,7 +169,6 @@ class TestSchemeColor:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, SchemeColor):
         src = """

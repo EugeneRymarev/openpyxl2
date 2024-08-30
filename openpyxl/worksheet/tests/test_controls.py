@@ -1,16 +1,17 @@
 # Copyright (c) 2010-2024 openpyxl
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
-from openpyxl.tests.helper import compare_xml
-
 from openpyxl.drawing.spreadsheet_drawing import AnchorMarker
+from openpyxl.tests.helper import compare_xml
 from openpyxl.worksheet.ole import ObjectAnchor
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def ControlProperty():
     from ..controls import ControlProperty
+
     return ControlProperty
 
 
@@ -44,7 +45,6 @@ class TestControlProperty:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ControlProperty):
         src = """

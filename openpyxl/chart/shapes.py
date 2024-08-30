@@ -1,27 +1,23 @@
 # Copyright (c) 2010-2024 openpyxl
-
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.nested import EmptyTag
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Alias
-)
-from openpyxl.descriptors.nested import (
-    EmptyTag
-)
 from openpyxl.drawing.colors import ColorChoiceDescriptor
-from openpyxl.drawing.fill import *
+from openpyxl.drawing.fill import GradientFillProperties
+from openpyxl.drawing.fill import PatternFillProperties
+from openpyxl.drawing.geometry import CustomGeometry2D
+from openpyxl.drawing.geometry import PresetGeometry2D
+from openpyxl.drawing.geometry import Scene3D
+from openpyxl.drawing.geometry import Shape3D
+from openpyxl.drawing.geometry import Transform2D
 from openpyxl.drawing.line import LineProperties
-from openpyxl.drawing.geometry import (
-    Shape3D,
-    Scene3D,
-    Transform2D,
-    CustomGeometry2D,
-    PresetGeometry2D,
-)
+from openpyxl.xml.constants import DRAWING_NS
 
 
 class GraphicalProperties(Serialisable):
-
     """
     Somewhat vaguely 21.2.2.197 says this:
 
@@ -34,14 +30,27 @@ class GraphicalProperties(Serialisable):
 
     tagname = "spPr"
 
-    bwMode = NoneSet(values=(['clr', 'auto', 'gray', 'ltGray', 'invGray',
-                          'grayWhite', 'blackGray', 'blackWhite', 'black', 'white', 'hidden']
-                         )
-                 )
+    bwMode = NoneSet(
+        values=(
+            [
+                "clr",
+                "auto",
+                "gray",
+                "ltGray",
+                "invGray",
+                "grayWhite",
+                "blackGray",
+                "blackWhite",
+                "black",
+                "white",
+                "hidden",
+            ]
+        )
+    )
 
     xfrm = Typed(expected_type=Transform2D, allow_none=True)
-    transform = Alias('xfrm')
-    custGeom = Typed(expected_type=CustomGeometry2D, allow_none=True) # either or
+    transform = Alias("xfrm")
+    custGeom = Typed(expected_type=CustomGeometry2D, allow_none=True)  # either or
     prstGeom = Typed(expected_type=PresetGeometry2D, allow_none=True)
 
     # fills one of
@@ -51,29 +60,39 @@ class GraphicalProperties(Serialisable):
     pattFill = Typed(expected_type=PatternFillProperties, allow_none=True)
 
     ln = Typed(expected_type=LineProperties, allow_none=True)
-    line = Alias('ln')
+    line = Alias("ln")
     scene3d = Typed(expected_type=Scene3D, allow_none=True)
     sp3d = Typed(expected_type=Shape3D, allow_none=True)
-    shape3D = Alias('sp3d')
+    shape3D = Alias("sp3d")
     extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
 
-    __elements__ = ('xfrm', 'prstGeom', 'noFill', 'solidFill', 'gradFill', 'pattFill',
-                    'ln', 'scene3d', 'sp3d')
+    __elements__ = (
+        "xfrm",
+        "prstGeom",
+        "noFill",
+        "solidFill",
+        "gradFill",
+        "pattFill",
+        "ln",
+        "scene3d",
+        "sp3d",
+    )
 
-    def __init__(self,
-                 bwMode=None,
-                 xfrm=None,
-                 noFill=None,
-                 solidFill=None,
-                 gradFill=None,
-                 pattFill=None,
-                 ln=None,
-                 scene3d=None,
-                 custGeom=None,
-                 prstGeom=None,
-                 sp3d=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        bwMode=None,
+        xfrm=None,
+        noFill=None,
+        solidFill=None,
+        gradFill=None,
+        pattFill=None,
+        ln=None,
+        scene3d=None,
+        custGeom=None,
+        prstGeom=None,
+        sp3d=None,
+        extLst=None,
+    ):
         self.bwMode = bwMode
         self.xfrm = xfrm
         self.noFill = noFill

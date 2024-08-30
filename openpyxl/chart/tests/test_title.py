@@ -1,13 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def Title():
     from ..title import Title
+
     return Title
 
 
@@ -33,7 +35,6 @@ class TestTitle:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Title):
         src = """
         <title />
@@ -49,6 +50,7 @@ def test_title_maker():
     """
 
     from ..title import title_maker
+
     text = "Two-line\nText"
     title = title_maker(text)
     xml = tostring(title.to_tree())

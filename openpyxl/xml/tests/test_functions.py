@@ -1,21 +1,24 @@
 # Copyright (c) 2010-2024 openpyxl
+from io import BytesIO
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import iterparse
 
 import pytest
 
-from io import BytesIO
-from ..functions import fromstring, iterparse
+from ..functions import fromstring
 
 
-
-@pytest.mark.parametrize("xml, tag",
-                         [
-                             ("<root xmlns='http://openpyxl.org/ns' />", "root"),
-                             ("<root />", "root"),
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "xml, tag",
+    [
+        ("<root xmlns='http://openpyxl.org/ns' />", "root"),
+        ("<root />", "root"),
+    ],
+)
 def test_localtag(xml, tag):
-    from .. functions import localname
-    from .. functions import fromstring
+    from ..functions import fromstring
+    from ..functions import localname
+
     node = fromstring(xml)
     assert localname(node) == tag
 
@@ -51,6 +54,7 @@ vulnerable_xml_strings = (
 @pytest.mark.parametrize("xml_input", vulnerable_xml_strings)
 def test_fromstring(xml_input):
     from defusedxml.common import DefusedXmlException
+
     with pytest.raises(DefusedXmlException):
         fromstring(xml_input)
 
@@ -59,6 +63,7 @@ def test_fromstring(xml_input):
 @pytest.mark.parametrize("xml_input", vulnerable_xml_strings)
 def test_iterparse(xml_input):
     from defusedxml.common import DefusedXmlException
+
     with pytest.raises(DefusedXmlException):
         f = BytesIO(xml_input)
         list(iterparse(f))
@@ -72,18 +77,17 @@ def test_iterparse(xml_input):
         fromstring(f)
 
 
-from ..functions import Element, whitespace, XML_NS
+from ..functions import XML_NS
+from ..functions import whitespace
 
 
-@pytest.mark.parametrize("value, preserve", [
-    ("some text", False),
-    ("Some more Text ", True),
-    (" ", False)
-]
-                         )
+@pytest.mark.parametrize(
+    "value, preserve",
+    [("some text", False), ("Some more Text ", True), (" ", False)],
+)
 def test_whitespace(value, preserve):
     el = Element("tag")
     el.text = value
     whitespace(el)
-    check = "{%s}space" % XML_NS in el.attrib
+    check = f"{{{XML_NS}}}space" in el.attrib
     assert check is preserve

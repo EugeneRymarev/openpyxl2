@@ -1,11 +1,11 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
 
 @pytest.fixture
 def BoundDictionary():
-    from .. bound_dictionary import BoundDictionary
+    from ..bound_dictionary import BoundDictionary
+
     return BoundDictionary
 
 
@@ -17,7 +17,6 @@ def test_ctor(BoundDictionary, default):
 
 
 def test_coupling(BoundDictionary):
-
     class Child:
 
         def __init__(self, parent, index=None):
@@ -33,6 +32,6 @@ def test_coupling(BoundDictionary):
             return Child(self)
 
     p = Parent()
-    child = p.children['A']
+    child = p.children["A"]
     assert child.parent == p
-    assert child.index == 'A'
+    assert child.index == "A"

@@ -1,12 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def InputCells():
     from ..scenario import InputCells
+
     return InputCells
 
 
@@ -21,7 +24,6 @@ class TestInputCells:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, InputCells):
         src = """
         <inputCells r="B3" val="12000" />
@@ -34,6 +36,7 @@ class TestInputCells:
 @pytest.fixture
 def Scenario():
     from ..scenario import Scenario
+
     return Scenario
 
 
@@ -53,7 +56,6 @@ class TestScenario:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Scenario, InputCells):
         src = """
         <scenario name="Worst case" locked="1" count="2" >
@@ -71,6 +73,7 @@ class TestScenario:
 @pytest.fixture
 def ScenarioList():
     from ..scenario import ScenarioList
+
     return ScenarioList
 
 
@@ -90,7 +93,6 @@ class TestScenarios:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ScenarioList, Scenario, InputCells):
         src = """

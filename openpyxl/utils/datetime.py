@@ -1,28 +1,24 @@
 # Copyright (c) 2010-2024 openpyxl
-
 """Manage Excel date weirdness."""
-
-# Python stdlib imports
 import datetime
-from math import isnan
 import re
+from math import isnan
 
-
-# constants
 MAC_EPOCH = datetime.datetime(1904, 1, 1)
 WINDOWS_EPOCH = datetime.datetime(1899, 12, 30)
-CALENDAR_WINDOWS_1900 = 2415018.5   # Julian date of WINDOWS_EPOCH
-CALENDAR_MAC_1904 = 2416480.5       # Julian date of MAC_EPOCH
+CALENDAR_WINDOWS_1900 = 2415018.5  # Julian date of WINDOWS_EPOCH
+CALENDAR_MAC_1904 = 2416480.5  # Julian date of MAC_EPOCH
 CALENDAR_WINDOWS_1900 = WINDOWS_EPOCH
 CALENDAR_MAC_1904 = MAC_EPOCH
 SECS_PER_DAY = 86400
 
-ISO_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
-ISO_REGEX = re.compile(r'''
+ISO_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+pattern1 = r"""
 (?P<date>(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2}))?T?
-(?P<time>(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{2})(?P<microsecond>\.\d{1,3})?)?)?Z?''',
-                                       re.VERBOSE)
-ISO_DURATION = re.compile(r'PT((?P<hours>\d+)H)?((?P<minutes>\d+)M)?((?P<seconds>\d+(\.\d{1,3})?)S)?')
+(?P<time>(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{2})(?P<microsecond>\.\d{1,3})?)?)?Z?"""
+ISO_REGEX = re.compile(pattern1, re.VERBOSE)
+pattern2 = r"PT((?P<hours>\d+)H)?((?P<minutes>\d+)M)?((?P<seconds>\d+(\.\d{1,3})?)S)?"
+ISO_DURATION = re.compile(pattern2)
 
 
 def to_ISO8601(dt):
@@ -55,12 +51,17 @@ def from_ISO8601(formatted_string):
                 parts[key] = int(parts[key])
 
         if parts["microsecond"]:
-            parts["microsecond"] = int(float(parts['microsecond']) * 1_000_000)
+            parts["microsecond"] = int(float(parts["microsecond"]) * 1_000_000)
 
         if not parts["date"]:
-            dt = datetime.time(parts['hour'], parts['minute'], parts['second'], parts["microsecond"])
+            dt = datetime.time(
+                parts["hour"],
+                parts["minute"],
+                parts["second"],
+                parts["microsecond"],
+            )
         elif not parts["time"]:
-            dt = datetime.date(parts['year'], parts['month'], parts['day'])
+            dt = datetime.date(parts["year"], parts["month"], parts["day"])
         else:
             del parts["time"]
             del parts["date"]
@@ -75,7 +76,7 @@ def from_ISO8601(formatted_string):
                 parts[key] = float(val)
         return datetime.timedelta(**parts)
 
-    raise ValueError("Invalid datetime value {}".format(formatted_string))
+    raise ValueError(f"Invalid datetime value {formatted_string}")
 
 
 def to_excel(dt, epoch=WINDOWS_EPOCH):
@@ -106,8 +107,10 @@ def from_excel(value, epoch=WINDOWS_EPOCH, timedelta=False):
         td = datetime.timedelta(days=value)
         if td.microseconds:
             # round to millisecond precision
-            td = datetime.timedelta(seconds=td.total_seconds() // 1,
-                                    microseconds=round(td.microseconds, -3))
+            td = datetime.timedelta(
+                seconds=td.total_seconds() // 1,
+                microseconds=round(td.microseconds, -3),
+            )
         return td
 
     day, fraction = divmod(value, 1)
@@ -126,7 +129,7 @@ def time_to_days(value):
         + (value.minute * 60)
         + value.second
         + value.microsecond / 10**6
-        ) / SECS_PER_DAY
+    ) / SECS_PER_DAY
 
 
 def timedelta_to_days(value):

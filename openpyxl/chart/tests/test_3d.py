@@ -1,15 +1,15 @@
-
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring, fromstring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def View3D():
     from .._3d import View3D
+
     return View3D
 
 
@@ -28,7 +28,6 @@ class TestView3D:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, View3D):
         src = """
         <view3D>
@@ -46,6 +45,7 @@ class TestView3D:
 @pytest.fixture
 def Surface():
     from .._3d import Surface
+
     return Surface
 
 
@@ -62,7 +62,6 @@ class TestSurface:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Surface):
         src = """
         <floor xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
@@ -77,6 +76,7 @@ class TestSurface:
 @pytest.fixture
 def _3DBase():
     from .._3d import _3DBase
+
     return _3DBase
 
 
@@ -99,7 +99,6 @@ class TestSurface:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, _3DBase):
         src = """

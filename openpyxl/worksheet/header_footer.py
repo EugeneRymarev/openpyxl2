@@ -1,32 +1,26 @@
 # Copyright (c) 2010-2024 openpyxl
-
 # Simplified implementation of headers and footers: let worksheets have separate items
-
 import re
 from warnings import warn
 
-from openpyxl.descriptors import (
-    Alias,
-    Bool,
-    Strict,
-    String,
-    Integer,
-    MatchPattern,
-    Typed,
-)
+from lxml.etree import Element
+
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Strict
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MatchPattern
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.serialisable import Serialisable
-
-
-from openpyxl.xml.functions import Element
-from openpyxl.utils.escape import escape, unescape
-
+from openpyxl.utils.escape import escape
+from openpyxl.utils.escape import unescape
 
 FONT_PATTERN = '&"(?P<font>.+)"'
-COLOR_PATTERN  = "&K(?P<color>[A-F0-9]{6})"
+COLOR_PATTERN = "&K(?P<color>[A-F0-9]{6})"
 SIZE_REGEX = r"&(?P<size>\d+\s?)"
-FORMAT_REGEX = re.compile("{0}|{1}|{2}".format(FONT_PATTERN, COLOR_PATTERN,
-                                               SIZE_REGEX)
-                          )
+FORMAT_REGEX = re.compile(f"{FONT_PATTERN}|{COLOR_PATTERN}|{SIZE_REGEX}")
+
 
 def _split_string(text):
     """
@@ -34,24 +28,23 @@ def _split_string(text):
 
     # See http://stackoverflow.com/questions/27711175/regex-with-multiple-optional-groups for discussion
     """
-
-    ITEM_REGEX = re.compile("""
+    pattern = """
     (&L(?P<left>.+?))?
     (&C(?P<center>.+?))?
     (&R(?P<right>.+?))?
-    $""", re.VERBOSE | re.DOTALL)
+    $"""
+    ITEM_REGEX = re.compile(pattern, re.VERBOSE | re.DOTALL)
 
     m = ITEM_REGEX.match(text)
     try:
         parts = m.groupdict()
     except AttributeError:
-        warn("""Cannot parse header or footer so it will be ignored""")
-        parts = {'left':'', 'right':'', 'center':''}
+        warn("Cannot parse header or footer so it will be ignored")
+        parts = {"left": "", "right": "", "center": ""}
     return parts
 
 
 class _HeaderFooterPart(Strict):
-
     """
     Individual left/center/right header/footer part
 
@@ -86,9 +79,8 @@ class _HeaderFooterPart(Strict):
     text = String(allow_none=True)
     font = String(allow_none=True)
     size = Integer(allow_none=True)
-    RGB = ("^[A-Fa-f0-9]{6}$")
+    RGB = "^[A-Fa-f0-9]{6}$"
     color = MatchPattern(allow_none=True, pattern=RGB)
-
 
     def __init__(self, text=None, font=None, size=None, color=None):
         self.text = text
@@ -96,35 +88,36 @@ class _HeaderFooterPart(Strict):
         self.size = size
         self.color = color
 
-
     def __str__(self):
         """
         Convert to Excel HeaderFooter miniformat minus position
         """
         fmt = []
         if self.font:
-            fmt.append(u'&"{0}"'.format(self.font))
+            fmt.append(f'&"{self.font}"')
         if self.size:
-            fmt.append("&{0} ".format(self.size))
+            fmt.append(f"&{self.size} ")
         if self.color:
-            fmt.append("&K{0}".format(self.color))
-        return u"".join(fmt + [self.text])
+            fmt.append(f"&K{self.color}")
+        return "".join(fmt + [self.text])
 
     def __bool__(self):
         return bool(self.text)
-
-
 
     @classmethod
     def from_str(cls, text):
         """
         Convert from miniformat to object
         """
-        keys = ('font', 'color', 'size')
-        kw = dict((k, v) for match in FORMAT_REGEX.findall(text)
-                  for k, v in zip(keys, match) if v)
+        keys = ("font", "color", "size")
+        kw = dict(
+            (k, v)
+            for match in FORMAT_REGEX.findall(text)
+            for k, v in zip(keys, match)
+            if v
+        )
 
-        kw['text'] = FORMAT_REGEX.sub('', text)
+        kw["text"] = FORMAT_REGEX.sub("", text)
 
         return cls(**kw)
 
@@ -140,8 +133,7 @@ class HeaderFooterItem(Strict):
     centre = Alias("center")
     right = Typed(expected_type=_HeaderFooterPart)
 
-    __keys = ('L', 'C', 'R')
-
+    __keys = ("L", "C", "R")
 
     def __init__(self, left=None, right=None, center=None):
         if left is None:
@@ -154,18 +146,23 @@ class HeaderFooterItem(Strict):
             right = _HeaderFooterPart()
         self.right = right
 
-
     def __str__(self):
         """
         Pack parts into a single string
         """
-        TRANSFORM = {'&[Tab]': '&A', '&[Pages]': '&N', '&[Date]': '&D',
-                     '&[Path]': '&Z', '&[Page]': '&P', '&[Time]': '&T', '&[File]': '&F',
-                     '&[Picture]': '&G'}
+        TRANSFORM = {
+            "&[Tab]": "&A",
+            "&[Pages]": "&N",
+            "&[Date]": "&D",
+            "&[Path]": "&Z",
+            "&[Page]": "&P",
+            "&[Time]": "&T",
+            "&[File]": "&F",
+            "&[Picture]": "&G",
+        }
 
         # escape keys and create regex
-        SUBS_REGEX = re.compile("|".join(["({0})".format(re.escape(k))
-                                          for k in TRANSFORM]))
+        SUBS_REGEX = re.compile("|".join([f"({re.escape(k)})" for k in TRANSFORM]))
 
         def replace(match):
             """
@@ -176,19 +173,15 @@ class HeaderFooterItem(Strict):
             return TRANSFORM[sub]
 
         txt = []
-        for key, part in zip(
-            self.__keys, [self.left, self.center, self.right]):
+        for key, part in zip(self.__keys, [self.left, self.center, self.right]):
             if part.text is not None:
-                txt.append(u"&{0}{1}".format(key, str(part)))
+                txt.append(f"&{key}{part}")
         txt = "".join(txt)
         txt = SUBS_REGEX.sub(replace, txt)
         return escape(txt)
 
-
     def __bool__(self):
         return any([self.left, self.center, self.right])
-
-
 
     def to_tree(self, tagname):
         """
@@ -197,7 +190,6 @@ class HeaderFooterItem(Strict):
         el = Element(tagname)
         el.text = str(self)
         return el
-
 
     @classmethod
     def from_tree(cls, node):
@@ -212,7 +204,6 @@ class HeaderFooterItem(Strict):
 
 
 class HeaderFooter(Serialisable):
-
     tagname = "headerFooter"
 
     differentOddEven = Bool(allow_none=True)
@@ -226,20 +217,28 @@ class HeaderFooter(Serialisable):
     firstHeader = Typed(expected_type=HeaderFooterItem, allow_none=True)
     firstFooter = Typed(expected_type=HeaderFooterItem, allow_none=True)
 
-    __elements__ = ("oddHeader", "oddFooter", "evenHeader", "evenFooter", "firstHeader", "firstFooter")
+    __elements__ = (
+        "oddHeader",
+        "oddFooter",
+        "evenHeader",
+        "evenFooter",
+        "firstHeader",
+        "firstFooter",
+    )
 
-    def __init__(self,
-                 differentOddEven=None,
-                 differentFirst=None,
-                 scaleWithDoc=None,
-                 alignWithMargins=None,
-                 oddHeader=None,
-                 oddFooter=None,
-                 evenHeader=None,
-                 evenFooter=None,
-                 firstHeader=None,
-                 firstFooter=None,
-                ):
+    def __init__(
+        self,
+        differentOddEven=None,
+        differentFirst=None,
+        scaleWithDoc=None,
+        alignWithMargins=None,
+        oddHeader=None,
+        oddFooter=None,
+        evenHeader=None,
+        evenFooter=None,
+        firstHeader=None,
+        firstFooter=None,
+    ):
         self.differentOddEven = differentOddEven
         self.differentFirst = differentFirst
         self.scaleWithDoc = scaleWithDoc
@@ -263,8 +262,6 @@ class HeaderFooter(Serialisable):
             firstFooter = HeaderFooterItem()
         self.firstFooter = firstFooter
 
-
     def __bool__(self):
         parts = [getattr(self, attr) for attr in self.__attrs__ + self.__elements__]
         return any(parts)
-

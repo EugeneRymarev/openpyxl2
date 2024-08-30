@@ -1,25 +1,24 @@
-
 # Copyright (c) 2010-2024 openpyxl
-
-from io import BytesIO
-import os
-from string import ascii_letters
 import datetime
+import os
+from io import BytesIO
+from string import ascii_letters
 from zipfile import ZipFile
 
 import pytest
 
+from openpyxl import Workbook
 from openpyxl.chart import BarChart
 from openpyxl.comments import Comment
 from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
-from openpyxl import Workbook
-from openpyxl.worksheet.table import Table
 from openpyxl.utils.exceptions import InvalidFileException
+from openpyxl.worksheet.table import Table
 
 
 @pytest.fixture
 def ExcelWriter():
     from ..excel import ExcelWriter
+
     return ExcelWriter
 
 
@@ -62,7 +61,7 @@ def test_drawing(ExcelWriter, archive):
 
     writer = ExcelWriter(wb, archive)
     writer._write_drawing(drawing)
-    assert drawing.path == '/xl/drawings/drawing1.xml'
+    assert drawing.path == "/xl/drawings/drawing1.xml"
     assert drawing.path[1:] in archive.namelist()
     assert drawing.path in writer.manifest.filenames
 
@@ -76,18 +75,21 @@ def test_write_chart(ExcelWriter, archive):
 
     writer = ExcelWriter(wb, archive)
     writer._write_worksheets()
-    assert 'xl/worksheets/sheet1.xml' in archive.namelist()
+    assert "xl/worksheets/sheet1.xml" in archive.namelist()
     assert ws.path in writer.manifest.filenames
 
     rel = ws._rels.get("rId1")
-    assert dict(rel) == {'Id': 'rId1', 'Target': '/xl/drawings/drawing1.xml',
-                         'Type':
-                         'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing'}
+    assert dict(rel) == {
+        "Id": "rId1",
+        "Target": "/xl/drawings/drawing1.xml",
+        "Type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+    }
 
 
 @pytest.mark.pil_required
 def test_write_images(datadir, ExcelWriter, archive):
     from openpyxl.drawing.image import Image
+
     datadir.chdir()
 
     writer = ExcelWriter(None, archive)
@@ -99,7 +101,7 @@ def test_write_images(datadir, ExcelWriter, archive):
     archive.close()
 
     zipinfo = archive.infolist()
-    assert 'xl/media/image1.png' in archive.namelist()
+    assert "xl/media/image1.png" in archive.namelist()
 
 
 def test_chartsheet(ExcelWriter, archive):
@@ -114,24 +116,25 @@ def test_chartsheet(ExcelWriter, archive):
 
 
 def test_comment(ExcelWriter, archive):
-
     wb = Workbook()
     ws = wb.active
-    ws['B5'].comment = Comment("A comment", "The Author")
+    ws["B5"].comment = Comment("A comment", "The Author")
 
     writer = ExcelWriter(None, archive)
     writer._write_comment(ws)
 
-    assert archive.namelist() == ['xl/comments/comment1.xml', 'xl/drawings/commentsDrawing1.vml']
-    assert '/xl/comments/comment1.xml' in writer.manifest.filenames
-    assert ws.legacy_drawing == 'xl/drawings/commentsDrawing1.vml'
+    assert archive.namelist() == [
+        "xl/comments/comment1.xml",
+        "xl/drawings/commentsDrawing1.vml",
+    ]
+    assert "/xl/comments/comment1.xml" in writer.manifest.filenames
+    assert ws.legacy_drawing == "xl/drawings/commentsDrawing1.vml"
 
 
 def test_duplicate_comment(ExcelWriter, archive):
-
     wb = Workbook()
     ws = wb.active
-    ws['B5'].comment = Comment("A comment", "The Author")
+    ws["B5"].comment = Comment("A comment", "The Author")
 
     writer = ExcelWriter(wb, archive)
     writer.write_worksheet(ws)
@@ -141,35 +144,39 @@ def test_duplicate_comment(ExcelWriter, archive):
 
 def test_merge_vba(ExcelWriter, archive, datadir):
     from openpyxl import load_workbook
+
     datadir.chdir()
     wb = load_workbook("vba+comments.xlsm", keep_vba=True)
 
     writer = ExcelWriter(wb, archive)
     writer._merge_vba()
 
-    assert set(archive.namelist()) ==  set([
-        'xl/vbaProject.bin',
-        'xl/drawings/vmlDrawing1.vml',
-        'xl/ctrlProps/ctrlProp3.xml',
-        'xl/ctrlProps/ctrlProp1.xml',
-        'xl/ctrlProps/ctrlProp10.xml',
-        'xl/ctrlProps/ctrlProp9.xml',
-        'xl/ctrlProps/ctrlProp4.xml',
-        'xl/ctrlProps/ctrlProp5.xml',
-        'xl/ctrlProps/ctrlProp6.xml',
-        'xl/ctrlProps/ctrlProp7.xml',
-        'xl/ctrlProps/ctrlProp8.xml',
-        'xl/ctrlProps/ctrlProp2.xml',
-    ])
+    assert set(archive.namelist()) == set(
+        [
+            "xl/vbaProject.bin",
+            "xl/drawings/vmlDrawing1.vml",
+            "xl/ctrlProps/ctrlProp3.xml",
+            "xl/ctrlProps/ctrlProp1.xml",
+            "xl/ctrlProps/ctrlProp10.xml",
+            "xl/ctrlProps/ctrlProp9.xml",
+            "xl/ctrlProps/ctrlProp4.xml",
+            "xl/ctrlProps/ctrlProp5.xml",
+            "xl/ctrlProps/ctrlProp6.xml",
+            "xl/ctrlProps/ctrlProp7.xml",
+            "xl/ctrlProps/ctrlProp8.xml",
+            "xl/ctrlProps/ctrlProp2.xml",
+        ]
+    )
 
 
 def test_duplicate_chart(ExcelWriter, archive):
     from openpyxl.chart import PieChart
+
     pc = PieChart()
     wb = Workbook()
     writer = ExcelWriter(wb, archive)
 
-    writer._charts = [pc]*2
+    writer._charts = [pc] * 2
     with pytest.raises(InvalidFileException):
         writer._write_charts()
 
@@ -178,19 +185,21 @@ def test_write_empty_workbook(tmpdir):
     tmpdir.chdir()
     wb = Workbook()
     from ..excel import save_workbook
-    dest_filename = 'empty_book.xlsx'
+
+    dest_filename = "empty_book.xlsx"
     save_workbook(wb, dest_filename)
     assert os.path.isfile(dest_filename)
 
 
 def test_modified(tmpdir):
     from ..excel import save_workbook
+
     tmpdir.chdir()
 
     wb = Workbook()
     modified = datetime.datetime(2011, 5, 19, 10, 23, 15)
     wb.properties.modified = modified
 
-    dest_filename = 'empty_book.xlsx'
+    dest_filename = "empty_book.xlsx"
     save_workbook(wb, dest_filename)
     assert wb.properties.modified > modified

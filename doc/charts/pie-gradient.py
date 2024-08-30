@@ -1,24 +1,19 @@
 from openpyxl import Workbook
-
-from openpyxl.chart import (
-    PieChart,
-    Reference
-)
+from openpyxl.chart import PieChart
+from openpyxl.chart import Reference
 from openpyxl.chart.series import DataPoint
 from openpyxl.chart.shapes import GraphicalProperties
-from openpyxl.drawing.fill import (
-    GradientFillProperties,
-    GradientStop,
-    LinearShadeProperties
-)
 from openpyxl.drawing.colors import SchemeColor
+from openpyxl.drawing.fill import GradientFillProperties
+from openpyxl.drawing.fill import GradientStop
+from openpyxl.drawing.fill import LinearShadeProperties
 
 data = [
-    ['Pie', 'Sold'],
-    ['Apple', 50],
-    ['Cherry', 30],
-    ['Pumpkin', 10],
-    ['Chocolate', 40],
+    ["Pie", "Sold"],
+    ["Apple", 50],
+    ["Cherry", 30],
+    ["Pumpkin", 10],
+    ["Chocolate", 40],
 ]
 
 wb = Workbook()
@@ -41,21 +36,14 @@ slice = DataPoint(
     spPr=GraphicalProperties(
         gradFill=GradientFillProperties(
             gsLst=(
-                GradientStop(
-                    pos=0,
-                    prstClr='blue'
-                ),
+                GradientStop(pos=0, prstClr="blue"),
                 GradientStop(
                     pos=100000,
-                    schemeClr=SchemeColor(
-                        val='accent1',
-                        lumMod=30000,
-                        lumOff=70000
-                    )
-                )
+                    schemeClr=SchemeColor(val="accent1", lumMod=30000, lumOff=70000),
+                ),
             )
         )
-    )
+    ),
 )
 pie.series[0].data_points = [slice]
 

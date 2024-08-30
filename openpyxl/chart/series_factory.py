@@ -1,12 +1,21 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from .data_source import NumDataSource, NumRef, AxDataSource
+from .data_source import AxDataSource
+from .data_source import NumDataSource
+from .data_source import NumRef
 from .reference import Reference
-from .series import Series, XYSeries, SeriesLabel, StrRef
-from  openpyxl.utils import rows_from_range, quote_sheetname
+from .series import Series
+from .series import SeriesLabel
+from .series import StrRef
+from .series import XYSeries
 
 
-def SeriesFactory(values, xvalues=None, zvalues=None, title=None, title_from_data=False):
+def SeriesFactory(
+    values,
+    xvalues=None,
+    zvalues=None,
+    title=None,
+    title_from_data=False,
+):
     """
     Convenience Factory for creating chart data series.
     """
@@ -16,7 +25,7 @@ def SeriesFactory(values, xvalues=None, zvalues=None, title=None, title_from_dat
 
     if title_from_data:
         cell = values.pop()
-        title = u"{0}!{1}".format(values.sheetname, cell)
+        title = f"{values.sheetname}!{cell}"
         title = SeriesLabel(strRef=StrRef(title))
     elif title is not None:
         title = SeriesLabel(v=title)

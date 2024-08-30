@@ -1,12 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def WorkbookProtection():
     from ..protection import WorkbookProtection
+
     return WorkbookProtection
 
 
@@ -55,6 +58,7 @@ class TestWorkbookProtection:
 @pytest.fixture
 def FileSharing():
     from ..protection import FileSharing
+
     return FileSharing
 
 
@@ -68,7 +72,6 @@ class TestFileSharing:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, FileSharing):
         src = """

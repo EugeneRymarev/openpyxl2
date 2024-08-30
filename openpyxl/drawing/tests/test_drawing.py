@@ -1,17 +1,18 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
-from openpyxl.xml.functions import tostring
+
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def Drawing():
     from ..drawing import Drawing
+
     return Drawing
 
 
 class TestDrawing:
-
 
     def test_ctor(self, Drawing):
         d = Drawing()
@@ -63,7 +64,6 @@ class TestDrawing:
         assert d.width == 50
         assert d.height == 417
 
-
     @pytest.mark.pil_required
     def test_absolute_anchor(self, Drawing):
         drawing = Drawing()
@@ -79,11 +79,10 @@ class TestDrawing:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     @pytest.mark.pil_required
     def test_onecell_anchor(self, Drawing):
         drawing = Drawing()
-        drawing.anchortype =  "oneCell"
+        drawing.anchortype = "oneCell"
         node = drawing.anchor
         xml = tostring(node.to_tree())
         expected = """

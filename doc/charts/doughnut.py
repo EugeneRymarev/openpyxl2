@@ -1,18 +1,15 @@
 from openpyxl import Workbook
-
-from openpyxl.chart import (
-    DoughnutChart,
-    Reference,
-    Series,
-)
+from openpyxl.chart import DoughnutChart
+from openpyxl.chart import Reference
+from openpyxl.chart import Series
 from openpyxl.chart.series import DataPoint
 
 data = [
-    ['Pie', 2014, 2015],
-    ['Plain', 40, 50],
-    ['Jam', 2, 10],
-    ['Lime', 20, 30],
-    ['Chocolate', 30, 40],
+    ["Pie", 2014, 2015],
+    ["Plain", 40, 50],
+    ["Jam", 2, 10],
+    ["Lime", 20, 30],
+    ["Chocolate", 30, 40],
 ]
 
 wb = Workbook()

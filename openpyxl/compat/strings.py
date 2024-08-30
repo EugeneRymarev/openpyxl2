@@ -1,8 +1,8 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from datetime import datetime
-from math import isnan, isinf
 import sys
+from datetime import datetime
+from math import isinf
+from math import isnan
 
 VER = sys.version_info
 
@@ -15,7 +15,7 @@ def safe_string(value):
         if isnan(value) or isinf(value):
             value = ""
         else:
-            value = "%.16g" % value
+            value = f"{value:.16g}"
     elif value is None:
         value = "none"
     elif isinstance(value, datetime):

@@ -1,14 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def NonVisualGraphicFrame():
     from ..graphic import NonVisualGraphicFrame
+
     return NonVisualGraphicFrame
 
 
@@ -26,7 +27,6 @@ class TestNonVisualGraphicFrame:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, NonVisualGraphicFrame):
         src = """
         <nvGraphicFramePr>
@@ -42,6 +42,7 @@ class TestNonVisualGraphicFrame:
 @pytest.fixture
 def GraphicData():
     from ..graphic import GraphicData
+
     return GraphicData
 
 
@@ -56,7 +57,6 @@ class TestGraphicData:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, GraphicData):
         src = """
         <graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart" />
@@ -64,7 +64,6 @@ class TestGraphicData:
         node = fromstring(src)
         graphic = GraphicData.from_tree(node)
         assert graphic == GraphicData()
-
 
     def test_contains_chart(self, GraphicData):
         src = """
@@ -80,6 +79,7 @@ class TestGraphicData:
 @pytest.fixture
 def GraphicObject():
     from ..graphic import GraphicObject
+
     return GraphicObject
 
 
@@ -96,7 +96,6 @@ class TestGraphicObject:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, GraphicObject):
         src = """
         <graphic>
@@ -110,6 +109,7 @@ class TestGraphicObject:
 @pytest.fixture
 def GraphicFrame():
     from ..graphic import GraphicFrame
+
     return GraphicFrame
 
 
@@ -133,7 +133,6 @@ class TestGraphicFrame:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, GraphicFrame):
         src = """
         <graphicFrame>
@@ -155,6 +154,7 @@ class TestGraphicFrame:
 @pytest.fixture
 def GroupTransform2D():
     from ..geometry import GroupTransform2D
+
     return GroupTransform2D
 
 
@@ -168,7 +168,6 @@ class TestGroupTransform2D:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, GroupTransform2D):
         src = """
@@ -187,6 +186,7 @@ class TestGroupTransform2D:
 @pytest.fixture
 def GroupShape():
     from ..graphic import GroupShape
+
     return GroupShape
 
 
@@ -201,7 +201,6 @@ class TestGroupShape:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     @pytest.mark.xfail
     def test_from_xml(self, GroupShape):
@@ -281,6 +280,7 @@ class TestGroupShape:
 @pytest.fixture
 def NonVisualGraphicFrameProperties():
     from ..graphic import NonVisualGraphicFrameProperties
+
     return NonVisualGraphicFrameProperties
 
 
@@ -294,7 +294,6 @@ class TestNonVisualGraphicFrameProperties:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, NonVisualGraphicFrameProperties):
         src = """

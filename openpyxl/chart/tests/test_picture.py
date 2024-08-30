@@ -1,13 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def PictureOptions():
     from ..picture import PictureOptions
+
     return PictureOptions
 
 
@@ -21,7 +23,6 @@ class TestPictureOptions:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, PictureOptions):
         src = """

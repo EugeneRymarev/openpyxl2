@@ -1,48 +1,40 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import datetime
 
-from openpyxl.descriptors import (
-    DateTime,
-    Alias,
-)
-from openpyxl.descriptors.serialisable import Serialisable
+from lxml.etree import Element
+from lxml.etree import QName
+
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors.base import DateTime
 from openpyxl.descriptors.nested import NestedText
-from openpyxl.xml.functions import (
-    Element,
-    QName,
-)
-from openpyxl.xml.constants import (
-    COREPROPS_NS,
-    DCORE_NS,
-    XSI_NS,
-    DCTERMS_NS,
-)
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.xml.constants import COREPROPS_NS
+from openpyxl.xml.constants import DCORE_NS
+from openpyxl.xml.constants import DCTERMS_NS
+from openpyxl.xml.constants import XSI_NS
 
 
 class NestedDateTime(DateTime, NestedText):
-
     expected_type = datetime.datetime
 
     def to_tree(self, tagname=None, value=None, namespace=None):
         namespace = getattr(self, "namespace", namespace)
         if namespace is not None:
-            tagname = "{%s}%s" % (namespace, tagname)
+            tagname = f"{{{namespace}}}{tagname}"
         el = Element(tagname)
         if value is not None:
             value = value.replace(tzinfo=None)
-            el.text = value.isoformat(timespec="seconds") + 'Z'
+            el.text = value.isoformat(timespec="seconds") + "Z"
             return el
 
 
 class QualifiedDateTime(NestedDateTime):
-
     """In certain situations Excel will complain if the additional type
     attribute isn't set"""
 
     def to_tree(self, tagname=None, value=None, namespace=None):
         el = super().to_tree(tagname, value, namespace)
-        el.set("{%s}type" % XSI_NS, QName(DCTERMS_NS, "W3CDTF"))
+        el.set(f"{{{XSI_NS}}}type", QName(DCTERMS_NS, "W3CDTF"))
         return el
 
 
@@ -70,33 +62,46 @@ class DocumentProperties(Serialisable):
     description = NestedText(expected_type=str, allow_none=True, namespace=DCORE_NS)
     identifier = NestedText(expected_type=str, allow_none=True, namespace=DCORE_NS)
     language = NestedText(expected_type=str, allow_none=True, namespace=DCORE_NS)
-    # Dublin Core Terms
-    created = QualifiedDateTime(allow_none=True, namespace=DCTERMS_NS) # assumed to be UTC
-    modified = QualifiedDateTime(allow_none=True, namespace=DCTERMS_NS) # assumed to be UTC
+    # Dublin Core Terms, assumed to be UTC
+    created = QualifiedDateTime(allow_none=True, namespace=DCTERMS_NS)
+    modified = QualifiedDateTime(allow_none=True, namespace=DCTERMS_NS)
 
-    __elements__ = ("creator", "title", "description", "subject","identifier",
-                    "language", "created", "modified", "lastModifiedBy", "category",
-                    "contentStatus", "version", "revision", "keywords", "lastPrinted",
-                    )
+    __elements__ = (
+        "creator",
+        "title",
+        "description",
+        "subject",
+        "identifier",
+        "language",
+        "created",
+        "modified",
+        "lastModifiedBy",
+        "category",
+        "contentStatus",
+        "version",
+        "revision",
+        "keywords",
+        "lastPrinted",
+    )
 
-
-    def __init__(self,
-                 category=None,
-                 contentStatus=None,
-                 keywords=None,
-                 lastModifiedBy=None,
-                 lastPrinted=None,
-                 revision=None,
-                 version=None,
-                 created=None,
-                 creator="openpyxl",
-                 description=None,
-                 identifier=None,
-                 language=None,
-                 modified=None,
-                 subject=None,
-                 title=None,
-                 ):
+    def __init__(
+        self,
+        category=None,
+        contentStatus=None,
+        keywords=None,
+        lastModifiedBy=None,
+        lastPrinted=None,
+        revision=None,
+        version=None,
+        created=None,
+        creator="openpyxl",
+        description=None,
+        identifier=None,
+        language=None,
+        modified=None,
+        subject=None,
+        title=None,
+    ):
         now = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
         self.contentStatus = contentStatus
         self.lastPrinted = lastPrinted

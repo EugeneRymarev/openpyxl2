@@ -1,15 +1,13 @@
 from openpyxl import Workbook
-from openpyxl.chart import (
-    AreaChart,
-    Reference,
-    Series,
-)
+from openpyxl.chart import AreaChart
+from openpyxl.chart import Reference
+from openpyxl.chart import Series
 
 wb = Workbook()
 ws = wb.active
 
 rows = [
-    ['Number', 'Batch 1', 'Batch 2'],
+    ["Number", "Batch 1", "Batch 2"],
     [2, 40, 30],
     [3, 40, 25],
     [4, 50, 30],
@@ -24,8 +22,8 @@ for row in rows:
 chart = AreaChart()
 chart.title = "Area Chart"
 chart.style = 13
-chart.x_axis.title = 'Test'
-chart.y_axis.title = 'Percentage'
+chart.x_axis.title = "Test"
+chart.y_axis.title = "Percentage"
 
 cats = Reference(ws, min_col=1, min_row=1, max_row=7)
 data = Reference(ws, min_col=2, min_row=1, max_col=3, max_row=7)

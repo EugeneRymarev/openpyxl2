@@ -1,13 +1,14 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.xml.functions import fromstring, tostring
-from openpyxl.tests.helper import compare_xml
-from openpyxl import Workbook
 from ..comment_sheet import CommentRecord
+from openpyxl import Workbook
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 def _comment_list():
     from ..comments import Comment
+
     wb = Workbook()
     ws = wb.active
     comment1 = Comment("text", "author")
@@ -42,7 +43,6 @@ class TestComment:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self):
         src = """
         <comment authorId="0" ref="A1">
@@ -56,7 +56,6 @@ class TestComment:
 
 class TestCommentSheet:
 
-
     def test_read_comments(self, datadir):
         from ..comment_sheet import CommentSheet
 
@@ -65,29 +64,29 @@ class TestCommentSheet:
             node = fromstring(src.read())
 
         comments = CommentSheet.from_tree(node)
-        assert comments.authors.author == ['author2', 'author', 'author3']
+        assert comments.authors.author == ["author2", "author", "author3"]
         assert len(comments.commentList) == 3
 
-
     def test_from_comments(self, datadir):
-        from .. comment_sheet import CommentSheet
+        from ..comment_sheet import CommentSheet
+
         datadir.chdir()
         comments = _comment_list()
         cs = CommentSheet.from_comments(comments)
         xml = tostring(cs.to_tree())
 
-        with open('comments_out.xml') as src:
+        with open("comments_out.xml") as src:
             expected = src.read()
 
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_path(self):
-        from ..comment_sheet import CommentSheet
         from ..author import AuthorList
+        from ..comment_sheet import CommentSheet
+
         cs = CommentSheet(authors=AuthorList(), commentList=())
-        assert cs.path == '/xl/comments/commentNone.xml'
+        assert cs.path == "/xl/comments/commentNone.xml"
 
 
 def test_read_google_docs(datadir):

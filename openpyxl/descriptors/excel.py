@@ -1,30 +1,24 @@
 # Copyright (c) 2010-2024 openpyxl
-
 """
 Excel specific descriptors
 """
+from lxml.etree import Element
 
-from openpyxl.xml.constants import REL_NS
-from openpyxl.compat import safe_string
-from openpyxl.xml.functions import Element
-
-from . import (
-    MatchPattern,
-    MinMax,
-    Integer,
-    String,
-    Sequence,
-)
+from . import Sequence
+from .base import Integer
+from .base import MatchPattern
+from .base import MinMax
+from .base import String
 from .serialisable import Serialisable
+from openpyxl.compat import safe_string
+from openpyxl.xml.constants import REL_NS
 
 
 class HexBinary(MatchPattern):
-
     pattern = "[0-9a-fA-F]+$"
 
 
 class UniversalMeasure(MatchPattern):
-
     pattern = r"[0-9]+(\.[0-9]+)?(mm|cm|in|pt|pc|pi)"
 
 
@@ -33,6 +27,7 @@ class TextPoint(MinMax):
     Size in hundredths of points.
     In theory other units of measurement can be used but these are unbounded
     """
+
     expected_type = int
 
     min = -400000
@@ -43,8 +38,7 @@ Coordinate = Integer
 
 
 class Percentage(MinMax):
-
-    pattern = r"((100)|([0-9][0-9]?))(\.[0-9][0-9]?)?%" # strict
+    pattern = r"((100)|([0-9][0-9]?))(\.[0-9][0-9]?)?%"  # strict
     min = -1000000
     max = 1000000
 
@@ -56,27 +50,20 @@ class Percentage(MinMax):
 
 
 class Extension(Serialisable):
-
     uri = String()
 
-    def __init__(self,
-                 uri=None,
-                ):
+    def __init__(self, uri=None):
         self.uri = uri
 
 
 class ExtensionList(Serialisable):
-
     ext = Sequence(expected_type=Extension)
 
-    def __init__(self,
-                 ext=(),
-                ):
+    def __init__(self, ext=()):
         self.ext = ext
 
 
 class Relation(String):
-
     namespace = REL_NS
     allow_none = True
 
@@ -92,12 +79,10 @@ class Guid(MatchPattern):
 
 
 class CellRange(MatchPattern):
-
     pattern = r"^[$]?([A-Za-z]{1,3})[$]?(\d+)(:[$]?([A-Za-z]{1,3})[$]?(\d+)?)?$|^[A-Za-z]{1,3}:[A-Za-z]{1,3}$"
     allow_none = True
 
     def __set__(self, instance, value):
-
         if value is not None:
             value = value.upper()
         super().__set__(instance, value)
@@ -108,5 +93,5 @@ def _explicit_none(tagname, value, namespace=None):
     Override serialisation because explicit none required
     """
     if namespace is not None:
-        tagname = "{%s}%s" % (namespace, tagname)
+        tagname = f"{{{namespace}}}{tagname}"
     return Element(tagname, val=safe_string(value))

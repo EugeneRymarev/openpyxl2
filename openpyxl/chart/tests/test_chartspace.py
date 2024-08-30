@@ -1,13 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def ChartContainer():
     from ..chartspace import ChartContainer
+
     return ChartContainer
 
 
@@ -26,7 +28,6 @@ class TestChartContainer:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ChartContainer):
         src = """
         <chart>
@@ -42,6 +43,7 @@ class TestChartContainer:
 @pytest.fixture
 def Protection():
     from ..chartspace import Protection
+
     return Protection
 
 
@@ -55,7 +57,6 @@ class TestProtection:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, Protection):
         src = """
@@ -71,20 +72,20 @@ class TestProtection:
 @pytest.fixture
 def ExternalData():
     from ..chartspace import ExternalData
+
     return ExternalData
 
 
 class TestExternalData:
 
     def test_ctor(self, ExternalData):
-        data = ExternalData(id='rId1')
+        data = ExternalData(id="rId1")
         xml = tostring(data.to_tree())
         expected = """
         <externalData id="rId1"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ExternalData):
         src = """
@@ -98,6 +99,7 @@ class TestExternalData:
 @pytest.fixture
 def ChartSpace():
     from ..chartspace import ChartSpace
+
     return ChartSpace
 
 
@@ -117,7 +119,6 @@ class TestChartSpace:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ChartSpace, ChartContainer):
         src = """

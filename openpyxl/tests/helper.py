@@ -1,14 +1,13 @@
 # Copyright (c) 2010-2024 openpyxl
-
-# Python stdlib imports
-from lxml.doctestcompare import LXMLOutputChecker, PARSE_XML
+from lxml.doctestcompare import LXMLOutputChecker
+from lxml.doctestcompare import PARSE_XML
 
 
 def compare_xml(generated, expected):
     """Use doctest checking from lxml for comparing XML trees. Returns diff if the two are not the same"""
     checker = LXMLOutputChecker()
 
-    class DummyDocTest():
+    class DummyDocTest:
         pass
 
     ob = DummyDocTest()

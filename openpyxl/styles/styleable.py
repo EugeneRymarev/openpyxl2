@@ -1,16 +1,13 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from copy import copy
 
-from .numbers import (
-    BUILTIN_FORMATS,
-    BUILTIN_FORMATS_MAX_SIZE,
-    BUILTIN_FORMATS_REVERSE,
-)
-from .proxy import StyleProxy
+from .builtins import styles
 from .cell_style import StyleArray
 from .named_styles import NamedStyle
-from .builtins import styles
+from .numbers import BUILTIN_FORMATS
+from .numbers import BUILTIN_FORMATS_MAX_SIZE
+from .numbers import BUILTIN_FORMATS_REVERSE
+from .proxy import StyleProxy
 
 
 class StyleDescriptor:
@@ -25,19 +22,17 @@ class StyleDescriptor:
             instance._style = StyleArray()
         setattr(instance._style, self.key, coll.add(value))
 
-
     def __get__(self, instance, cls):
         coll = getattr(instance.parent.parent, self.collection)
         if not getattr(instance, "_style"):
             instance._style = StyleArray()
-        idx =  getattr(instance._style, self.key)
+        idx = getattr(instance._style, self.key)
         return StyleProxy(coll[idx])
 
 
 class NumberFormatDescriptor:
-
     key = "numFmtId"
-    collection = '_number_formats'
+    collection = "_number_formats"
 
     def __set__(self, instance, value):
         coll = getattr(instance.parent.parent, self.collection)
@@ -50,7 +45,6 @@ class NumberFormatDescriptor:
             instance._style = StyleArray()
         setattr(instance._style, self.key, idx)
 
-
     def __get__(self, instance, cls):
         if not getattr(instance, "_style"):
             instance._style = StyleArray()
@@ -62,10 +56,8 @@ class NumberFormatDescriptor:
 
 
 class NamedStyleDescriptor:
-
     key = "xfId"
     collection = "_named_styles"
-
 
     def __set__(self, instance, value):
         if not getattr(instance, "_style"):
@@ -76,16 +68,15 @@ class NamedStyleDescriptor:
             if style not in coll:
                 instance.parent.parent.add_named_style(style)
         elif value not in coll.names:
-            if value in styles: # is it builtin?
+            if value in styles:  # is it builtin?
                 style = styles[value]
                 if style not in coll:
                     instance.parent.parent.add_named_style(style)
             else:
-                raise ValueError("{0} is not a known style".format(value))
+                raise ValueError(f"{value} is not a known style")
         else:
             style = coll[value]
         instance._style = copy(style.as_tuple())
-
 
     def __get__(self, instance, cls):
         if not getattr(instance, "_style"):
@@ -105,7 +96,6 @@ class StyleArrayDescriptor:
             instance._style = StyleArray()
         setattr(instance._style, self.key, value)
 
-
     def __get__(self, instance, cls):
         if instance._style is None:
             return False
@@ -117,17 +107,17 @@ class StyleableObject:
     Base class for styleble objects implementing proxy and lookup functions
     """
 
-    font = StyleDescriptor('_fonts', "fontId")
-    fill = StyleDescriptor('_fills', "fillId")
-    border = StyleDescriptor('_borders', "borderId")
+    font = StyleDescriptor("_fonts", "fontId")
+    fill = StyleDescriptor("_fills", "fillId")
+    border = StyleDescriptor("_borders", "borderId")
     number_format = NumberFormatDescriptor()
-    protection = StyleDescriptor('_protections', "protectionId")
-    alignment = StyleDescriptor('_alignments', "alignmentId")
+    protection = StyleDescriptor("_protections", "protectionId")
+    alignment = StyleDescriptor("_alignments", "alignmentId")
     style = NamedStyleDescriptor()
-    quotePrefix = StyleArrayDescriptor('quotePrefix')
-    pivotButton = StyleArrayDescriptor('pivotButton')
+    quotePrefix = StyleArrayDescriptor("quotePrefix")
+    pivotButton = StyleArrayDescriptor("pivotButton")
 
-    __slots__ = ('parent', '_style')
+    __slots__ = ("parent", "_style")
 
     def __init__(self, sheet, style_array=None):
         self.parent = sheet
@@ -135,17 +125,14 @@ class StyleableObject:
             style_array = StyleArray(style_array)
         self._style = style_array
 
-
     @property
     def style_id(self):
         if self._style is None:
             self._style = StyleArray()
         return self.parent.parent._cell_styles.add(self._style)
 
-
     @property
     def has_style(self):
         if self._style is None:
             return False
         return any(self._style)
-

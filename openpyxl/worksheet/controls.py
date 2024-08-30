@@ -1,23 +1,18 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Bool,
-    Integer,
-    String,
-    Sequence,
-)
-
-from openpyxl.descriptors.excel import Relation
 from .ole import ObjectAnchor
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.excel import Relation
+from openpyxl.descriptors.serialisable import Serialisable
 
 
 class ControlProperty(Serialisable):
-
     tagname = "controlPr"
 
-    anchor = Typed(expected_type=ObjectAnchor, )
+    anchor = Typed(expected_type=ObjectAnchor)
     locked = Bool(allow_none=True)
     defaultSize = Bool(allow_none=True)
     _print = Bool(allow_none=True)
@@ -34,26 +29,27 @@ class ControlProperty(Serialisable):
     cf = String(allow_none=True)
     id = Relation(allow_none=True)
 
-    __elements__ = ('anchor',)
+    __elements__ = ("anchor",)
 
-    def __init__(self,
-                 anchor=None,
-                 locked=True,
-                 defaultSize=True,
-                 _print=True,
-                 disabled=False,
-                 recalcAlways=False,
-                 uiObject=False,
-                 autoFill=True,
-                 autoLine=True,
-                 autoPict=True,
-                 macro=None,
-                 altText=None,
-                 linkedCell=None,
-                 listFillRange=None,
-                 cf='pict',
-                 id=None,
-                ):
+    def __init__(
+        self,
+        anchor=None,
+        locked=True,
+        defaultSize=True,
+        _print=True,
+        disabled=False,
+        recalcAlways=False,
+        uiObject=False,
+        autoFill=True,
+        autoLine=True,
+        autoPict=True,
+        macro=None,
+        altText=None,
+        linkedCell=None,
+        listFillRange=None,
+        cf="pict",
+        id=None,
+    ):
         self.anchor = anchor
         self.locked = locked
         self.defaultSize = defaultSize
@@ -73,35 +69,26 @@ class ControlProperty(Serialisable):
 
 
 class Control(Serialisable):
-
     tagname = "control"
 
     controlPr = Typed(expected_type=ControlProperty, allow_none=True)
     shapeId = Integer()
     name = String(allow_none=True)
 
-    __elements__ = ('controlPr',)
+    __elements__ = ("controlPr",)
 
-    def __init__(self,
-                 controlPr=None,
-                 shapeId=None,
-                 name=None,
-                ):
+    def __init__(self, controlPr=None, shapeId=None, name=None):
         self.controlPr = controlPr
         self.shapeId = shapeId
         self.name = name
 
 
 class Controls(Serialisable):
-
     tagname = "controls"
 
     control = Sequence(expected_type=Control)
 
-    __elements__ = ('control',)
+    __elements__ = ("control",)
 
-    def __init__(self,
-                 control=(),
-                ):
+    def __init__(self, control=()):
         self.control = control
-

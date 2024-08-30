@@ -29,15 +29,13 @@ Adding a new property:
 
 .. code::
 
-    from openpyxl.packaging.custom import (
-        BoolProperty,
-        DateTimeProperty,
-        FloatProperty,
-        IntProperty,
-        LinkProperty,
-        StringProperty,
-        CustomPropertyList,
-    )
+    from openpyxl.packaging.custom import BoolProperty
+    from openpyxl.packaging.custom import CustomPropertyList
+    from openpyxl.packaging.custom import DateTimeProperty
+    from openpyxl.packaging.custom import FloatProperty
+    from openpyxl.packaging.custom import IntProperty
+    from openpyxl.packaging.custom import LinkProperty
+    from openpyxl.packaging.custom import StringProperty
 
     props = CustomePropertyList()
     props.append(StringProperty(name="PropName1", value="Something"))

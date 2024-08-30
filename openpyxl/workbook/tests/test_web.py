@@ -1,24 +1,22 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def WebPublishObject():
     from ..web import WebPublishObject
+
     return WebPublishObject
 
 
 class TestWebPublishObject:
 
     def test_ctor(self, WebPublishObject):
-        obj = WebPublishObject(
-            id = 1,
-            divId = "main",
-            destinationFile="www"
-        )
+        obj = WebPublishObject(id=1, divId="main", destinationFile="www")
         xml = tostring(obj.to_tree())
         expected = """
         <webPublishingObject destinationFile="www" divId="main" id="1" />
@@ -26,23 +24,19 @@ class TestWebPublishObject:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, WebPublishObject):
         src = """
         <webPublishingObject destinationFile="www" divId="main" id="1" />
         """
         node = fromstring(src)
         obj = WebPublishObject.from_tree(node)
-        assert obj == WebPublishObject(
-            id = 1,
-            divId = "main",
-            destinationFile="www"
-        )
+        assert obj == WebPublishObject(id=1, divId="main", destinationFile="www")
 
 
 @pytest.fixture
 def WebPublishObjectList():
     from ..web import WebPublishObjectList
+
     return WebPublishObjectList
 
 
@@ -57,7 +51,6 @@ class TestWebPublishObjectList:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, WebPublishObjectList):
         src = """
         <webPublishingObjects />
@@ -70,6 +63,7 @@ class TestWebPublishObjectList:
 @pytest.fixture
 def WebPublishing():
     from ..web import WebPublishing
+
     return WebPublishing
 
 
@@ -83,7 +77,6 @@ class TestWebPublishing:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, WebPublishing):
         src = """

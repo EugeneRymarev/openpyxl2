@@ -1,24 +1,21 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import datetime
+
+import pytest
 
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
-from openpyxl.utils.indexed_list import IndexedList
-from openpyxl.utils.datetime  import CALENDAR_WINDOWS_1900
 from openpyxl.styles.styleable import StyleArray
 from openpyxl.tests.helper import compare_xml
-
-import pytest
+from openpyxl.utils.datetime import CALENDAR_WINDOWS_1900
+from openpyxl.utils.indexed_list import IndexedList
 
 
 class DummyWorkbook:
 
     def __init__(self):
         self.shared_strings = IndexedList()
-        self._cell_styles = IndexedList(
-            [StyleArray([0, 0, 0, 0, 0, 0, 0, 0, 0])]
-        )
+        self._cell_styles = IndexedList([StyleArray([0, 0, 0, 0, 0, 0, 0, 0, 0])])
         self._number_formats = IndexedList()
         self.encoding = "UTF-8"
         self.epoch = CALENDAR_WINDOWS_1900
@@ -29,6 +26,7 @@ class DummyWorkbook:
 @pytest.fixture
 def WriteOnlyWorksheet():
     from .._write_only import WriteOnlyWorksheet
+
     return WriteOnlyWorksheet(DummyWorkbook(), title="TestWorksheet")
 
 
@@ -203,8 +201,8 @@ def test_write_only_cell(WriteOnlyWorksheet):
 
 def test_hyperlink(WriteOnlyWorksheet):
     ws = WriteOnlyWorksheet
-    cell = WriteOnlyCell(ws, 'should have hyperlink')
-    cell.hyperlink = 'http://bbc.co.uk'
+    cell = WriteOnlyCell(ws, "should have hyperlink")
+    cell.hyperlink = "http://bbc.co.uk"
     ws.append([])
     ws.append([cell])
     assert cell.hyperlink.ref == "A2"

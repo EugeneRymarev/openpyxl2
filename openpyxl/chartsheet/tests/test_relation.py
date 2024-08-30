@@ -1,9 +1,9 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
@@ -31,6 +31,7 @@ class TestSheetBackgroundPicture:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
+
 @pytest.fixture
 def DrawingHF():
     from ..chartsheet import DrawingHF
@@ -48,7 +49,7 @@ class TestDrawingHF:
         assert drawingHF.lho == 7
 
     def test_write(self, DrawingHF):
-        drawingHF = DrawingHF(lho=7, lhf=6, id='rId3')
+        drawingHF = DrawingHF(lho=7, lhf=6, id="rId3")
         expected = """
             <drawingHF lho="7" lhf="6" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId3" />
         """

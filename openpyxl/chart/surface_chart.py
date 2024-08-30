@@ -1,74 +1,55 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Integer,
-    Bool,
-    Alias,
-    Sequence,
-)
-from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.nested import (
-    NestedInteger,
-    NestedBool,
-)
-
-from ._chart import ChartBase
 from ._3d import _3DBase
-from .axis import TextAxis, NumericAxis, SeriesAxis
-from .shapes import GraphicalProperties
+from ._chart import ChartBase
+from .axis import NumericAxis
+from .axis import SeriesAxis
+from .axis import TextAxis
 from .series import Series
+from .shapes import GraphicalProperties
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.nested import NestedBool
+from openpyxl.descriptors.nested import NestedInteger
+from openpyxl.descriptors.serialisable import Serialisable
 
 
 class BandFormat(Serialisable):
-
     tagname = "bandFmt"
 
     idx = NestedInteger()
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
 
-    __elements__ = ('idx', 'spPr')
+    __elements__ = ("idx", "spPr")
 
-    def __init__(self,
-                 idx=0,
-                 spPr=None,
-                ):
+    def __init__(self, idx=0, spPr=None):
         self.idx = idx
         self.spPr = spPr
 
 
 class BandFormatList(Serialisable):
-
     tagname = "bandFmts"
 
     bandFmt = Sequence(expected_type=BandFormat, allow_none=True)
 
-    __elements__ = ('bandFmt',)
+    __elements__ = ("bandFmt",)
 
-    def __init__(self,
-                 bandFmt=(),
-                ):
+    def __init__(self, bandFmt=()):
         self.bandFmt = bandFmt
 
 
 class _SurfaceChartBase(ChartBase):
-
     wireframe = NestedBool(allow_none=True)
     ser = Sequence(expected_type=Series, allow_none=True)
     bandFmts = Typed(expected_type=BandFormatList, allow_none=True)
 
     _series_type = "surface"
 
-    __elements__ = ('wireframe', 'ser', 'bandFmts')
+    __elements__ = ("wireframe", "ser", "bandFmts")
 
-    def __init__(self,
-                 wireframe=None,
-                 ser=(),
-                 bandFmts=None,
-                 **kw
-                ):
+    def __init__(self, wireframe=None, ser=(), bandFmts=None, **kw):
         self.wireframe = wireframe
         self.ser = ser
         self.bandFmts = bandFmts
@@ -76,7 +57,6 @@ class _SurfaceChartBase(ChartBase):
 
 
 class SurfaceChart3D(_SurfaceChartBase, _3DBase):
-
     tagname = "surface3DChart"
 
     wireframe = _SurfaceChartBase.wireframe
@@ -89,7 +69,7 @@ class SurfaceChart3D(_SurfaceChartBase, _3DBase):
     y_axis = Typed(expected_type=NumericAxis)
     z_axis = Typed(expected_type=SeriesAxis)
 
-    __elements__ = _SurfaceChartBase.__elements__ + ('axId',)
+    __elements__ = _SurfaceChartBase.__elements__ + ("axId",)
 
     def __init__(self, **kw):
         self.x_axis = TextAxis()
@@ -99,7 +79,6 @@ class SurfaceChart3D(_SurfaceChartBase, _3DBase):
 
 
 class SurfaceChart(SurfaceChart3D):
-
     tagname = "surfaceChart"
 
     wireframe = _SurfaceChartBase.wireframe

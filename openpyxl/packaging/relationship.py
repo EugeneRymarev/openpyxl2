@@ -1,21 +1,14 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import posixpath
 from warnings import warn
 
-from openpyxl.descriptors import (
-    String,
-    Alias,
-    Sequence,
-)
-from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.container import ElementList
-
-from openpyxl.xml.constants import REL_NS, PKG_REL_NS
-from openpyxl.xml.functions import (
-    Element,
-    fromstring,
-)
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.xml.constants import PKG_REL_NS
+from openpyxl.xml.constants import REL_NS
+from openpyxl.xml.functions import fromstring
 
 
 class Relationship(Serialisable):
@@ -30,20 +23,13 @@ class Relationship(Serialisable):
     Id = String(allow_none=True)
     id = Alias("Id")
 
-
-    def __init__(self,
-                 Id=None,
-                 Type=None,
-                 type=None,
-                 Target=None,
-                 TargetMode=None
-                 ):
+    def __init__(self, Id=None, Type=None, type=None, Target=None, TargetMode=None):
         """
         `type` can be used as a shorthand with the default relationships namespace
         otherwise the `Type` must be a fully qualified URL
         """
         if type is not None:
-            Type = "{0}/{1}".format(REL_NS, type)
+            Type = f"{REL_NS}/{type}"
         self.Type = Type
         self.Target = Target
         self.TargetMode = TargetMode
@@ -51,16 +37,13 @@ class Relationship(Serialisable):
 
 
 class RelationshipList(ElementList):
-
     tagname = "Relationships"
     expected_type = Relationship
-
 
     def append(self, value):
         super().append(value)
         if not value.Id:
             value.Id = f"rId{len(self)}"
-
 
     def find(self, content_type):
         """
@@ -72,18 +55,15 @@ class RelationshipList(ElementList):
             if r.Type == content_type:
                 yield r
 
-
     def get(self, key):
         for r in self:
             if r.Id == key:
                 return r
-        raise KeyError("Unknown relationship: {0}".format(key))
-
+        raise KeyError(f"Unknown relationship: {key}")
 
     def to_dict(self):
         """Return a dictionary of relations keyed by id"""
-        return {r.id:r for r in self}
-
+        return {r.id: r for r in self}
 
     def to_tree(self):
         tree = super().to_tree()
@@ -99,7 +79,7 @@ def get_rels_path(path):
     worksheet, etc.)
     """
     folder, obj = posixpath.split(path)
-    filename = posixpath.join(folder, '_rels', '{0}.rels'.format(obj))
+    filename = posixpath.join(folder, "_rels", f"{obj}.rels")
     return filename
 
 
@@ -114,7 +94,7 @@ def get_dependents(archive, filename):
     try:
         rels = RelationshipList.from_tree(node)
     except TypeError:
-        msg = "{0} contains invalid dependency definitions".format(filename)
+        msg = f"{filename} contains invalid dependency definitions"
         warn(msg)
         rels = RelationshipList()
     folder = posixpath.dirname(filename)
@@ -141,7 +121,7 @@ def get_rel(archive, deps, id=None, cls=None):
     else:
         try:
             rel = next(deps.find(cls.rel_type))
-        except StopIteration: # no known dependency
+        except StopIteration:  # no known dependency
             return
 
     path = rel.target

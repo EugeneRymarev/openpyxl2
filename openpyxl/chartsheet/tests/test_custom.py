@@ -1,10 +1,10 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.worksheet.page import PageMargins
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.worksheet.page import PageMargins
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
@@ -25,17 +25,25 @@ class TestCustomChartsheetView:
         """
         xml = fromstring(src)
         customChartsheetView = CustomChartsheetView.from_tree(xml)
-        assert customChartsheetView.state == 'visible'
+        assert customChartsheetView.state == "visible"
         assert customChartsheetView.scale == 88
         assert customChartsheetView.pageMargins.left == 0.23622047244094491
 
     def test_write(self, CustomChartsheetView):
-
-        pageMargins = PageMargins(left=0.2362204724409449, right=0.2362204724409449, top=0.7480314960629921,
-                                  bottom=0.7480314960629921, header=0.3149606299212598, footer=0.3149606299212598)
-        customChartsheetView = CustomChartsheetView(guid="{C43F44F8-8CE9-4A07-A9A9-0646C7C6B826}", scale=88,
-                                                    zoomToFit=1,
-                                                    pageMargins=pageMargins)
+        pageMargins = PageMargins(
+            left=0.2362204724409449,
+            right=0.2362204724409449,
+            top=0.7480314960629921,
+            bottom=0.7480314960629921,
+            header=0.3149606299212598,
+            footer=0.3149606299212598,
+        )
+        customChartsheetView = CustomChartsheetView(
+            guid="{C43F44F8-8CE9-4A07-A9A9-0646C7C6B826}",
+            scale=88,
+            zoomToFit=1,
+            pageMargins=pageMargins,
+        )
         expected = """
         <customSheetView guid="{C43F44F8-8CE9-4A07-A9A9-0646C7C6B826}" scale="88" state="visible" zoomToFit="1">
             <pageMargins left="0.2362204724409449" right="0.2362204724409449" top="0.7480314960629921" bottom="0.7480314960629921" header="0.3149606299212598" footer="0.3149606299212598" />
@@ -67,19 +75,33 @@ class TestCustomChartsheetViews:
         """
         xml = fromstring(src)
         customChartsheetViews = CustomChartsheetViews.from_tree(xml)
-        assert customChartsheetViews.customSheetView[0].state == 'visible'
+        assert customChartsheetViews.customSheetView[0].state == "visible"
         assert customChartsheetViews.customSheetView[0].scale == 88
-        assert customChartsheetViews.customSheetView[0].pageMargins.left == 0.23622047244094491
+        assert (
+            customChartsheetViews.customSheetView[0].pageMargins.left
+            == 0.23622047244094491
+        )
 
     def test_write(self, CustomChartsheetViews):
         from ..custom import CustomChartsheetView
 
-        pageMargins = PageMargins(left=0.2362204724409449, right=0.2362204724409449, top=0.7480314960629921,
-                                  bottom=0.7480314960629921, header=0.3149606299212598, footer=0.3149606299212598)
-        customChartsheetView = CustomChartsheetView(guid="{C43F44F8-8CE9-4A07-A9A9-0646C7C6B826}", scale=88,
-                                                    zoomToFit=1,
-                                                    pageMargins=pageMargins)
-        customChartsheetViews = CustomChartsheetViews(customSheetView=[customChartsheetView])
+        pageMargins = PageMargins(
+            left=0.2362204724409449,
+            right=0.2362204724409449,
+            top=0.7480314960629921,
+            bottom=0.7480314960629921,
+            header=0.3149606299212598,
+            footer=0.3149606299212598,
+        )
+        customChartsheetView = CustomChartsheetView(
+            guid="{C43F44F8-8CE9-4A07-A9A9-0646C7C6B826}",
+            scale=88,
+            zoomToFit=1,
+            pageMargins=pageMargins,
+        )
+        customChartsheetViews = CustomChartsheetViews(
+            customSheetView=[customChartsheetView]
+        )
         expected = """
         <customSheetViews>
             <customSheetView guid="{C43F44F8-8CE9-4A07-A9A9-0646C7C6B826}" scale="88" state="visible" zoomToFit="1">

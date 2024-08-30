@@ -1,23 +1,29 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def PageMargins():
-    from .. page import PageMargins
+    from ..page import PageMargins
+
     return PageMargins
+
 
 class TestPageMargins:
 
     def test_ctor(self, PageMargins):
         pm = PageMargins()
-        assert dict(pm) == {'bottom': '1', 'footer': '0.5', 'header': '0.5',
-                            'left': '0.75', 'right': '0.75', 'top': '1'}
-
+        assert dict(pm) == {
+            "bottom": "1",
+            "footer": "0.5",
+            "header": "0.5",
+            "left": "0.75",
+            "right": "0.75",
+            "top": "1",
+        }
 
     def test_write(self, PageMargins):
         page_margins = PageMargins()
@@ -37,13 +43,15 @@ class TestPageMargins:
 
 @pytest.fixture
 def PrintPageSetup():
-    from .. page import PrintPageSetup
+    from ..page import PrintPageSetup
+
     return PrintPageSetup
 
 
 @pytest.fixture
 def DummyWorksheet():
     from openpyxl import Workbook
+
     wb = Workbook()
     return wb.active
 
@@ -60,10 +68,13 @@ class TestPageSetup:
         assert p.cellComments == None
         p.orientation = "default"
         assert p.orientation == "default"
-        p.id = 'a12'
-        assert dict(p) == {'scale':'1', 'paperHeight': '24.73mm',
-                           'orientation': 'default', 'id':'a12'}
-
+        p.id = "a12"
+        assert dict(p) == {
+            "scale": "1",
+            "paperHeight": "24.73mm",
+            "orientation": "default",
+            "id": "a12",
+        }
 
     def test_fitToPage(self, DummyWorksheet):
         ws = DummyWorksheet
@@ -72,14 +83,12 @@ class TestPageSetup:
         p.fitToPage = 1
         assert p.fitToPage == True
 
-
     def test_autoPageBreaks(self, DummyWorksheet):
         ws = DummyWorksheet
         p = ws.page_setup
         assert p.autoPageBreaks is None
         p.autoPageBreaks = 1
         assert p.autoPageBreaks == True
-
 
     def test_write(self, PrintPageSetup):
         page_setup = PrintPageSetup()
@@ -97,7 +106,8 @@ class TestPageSetup:
 
 @pytest.fixture
 def PrintOptions():
-    from .. page import PrintOptions
+    from ..page import PrintOptions
+
     return PrintOptions
 
 
@@ -108,7 +118,7 @@ class TestPrintOptions:
         assert dict(p) == {}
         p.horizontalCentered = True
         p.verticalCentered = True
-        assert dict(p) == {'verticalCentered': '1', 'horizontalCentered': '1'}
+        assert dict(p) == {"verticalCentered": "1", "horizontalCentered": "1"}
 
     def test_write(self, PrintOptions):
         print_options = PrintOptions()

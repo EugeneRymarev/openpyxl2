@@ -1,11 +1,9 @@
 from openpyxl import Workbook
-from openpyxl.worksheet.filters import (
-    FilterColumn,
-    CustomFilter,
-    CustomFilters,
-    DateGroupItem,
-    Filters,
-    )
+from openpyxl.worksheet.filters import CustomFilter
+from openpyxl.worksheet.filters import CustomFilters
+from openpyxl.worksheet.filters import DateGroupItem
+from openpyxl.worksheet.filters import FilterColumn
+from openpyxl.worksheet.filters import Filters
 
 wb = Workbook()
 ws = wb.active
@@ -25,7 +23,7 @@ data = [
     ["Blackberry", 3],
     ["Orange", 3],
     ["Raspberry", 3],
-    ["Banana", 3]
+    ["Banana", 3],
 ]
 
 for r in data:
@@ -33,9 +31,9 @@ for r in data:
 
 filters = ws.auto_filter
 filters.ref = "A1:B15"
-col = FilterColumn(colId=0) # for column A
-col.filters = Filters(filter=["Kiwi", "Apple", "Mango"]) # add selected values
-filters.filterColumn.append(col) # add filter to the worksheet
+col = FilterColumn(colId=0)  # for column A
+col.filters = Filters(filter=["Kiwi", "Apple", "Mango"])  # add selected values
+filters.filterColumn.append(col)  # add filter to the worksheet
 
 ws.auto_filter.add_sort_condition("B2:B15")
 

@@ -1,22 +1,21 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring, fromstring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def Scaling():
     from ..axis import Scaling
+
     return Scaling
 
 
 class TestScale:
 
-
     def test_ctor(self, Scaling):
-
         scale = Scaling()
         xml = tostring(scale.to_tree())
         expected = """
@@ -27,9 +26,7 @@ class TestScale:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Scaling):
-
         xml = """
         <scaling>
          <logBase val="10"/>
@@ -44,6 +41,7 @@ class TestScale:
 @pytest.fixture
 def _BaseAxis():
     from ..axis import _BaseAxis
+
     return _BaseAxis
 
 
@@ -68,10 +66,10 @@ class TestAxis:
         assert diff is None, diff
 
 
-
 @pytest.fixture
 def TextAxis():
     from ..axis import TextAxis
+
     return TextAxis
 
 
@@ -95,7 +93,6 @@ class TestTextAxis:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, TextAxis):
         src = """
@@ -130,6 +127,7 @@ class TestTextAxis:
 @pytest.fixture
 def NumericAxis():
     from ..axis import NumericAxis
+
     return NumericAxis
 
 
@@ -153,7 +151,6 @@ class TestValAx:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, NumericAxis):
         src = """
@@ -186,11 +183,11 @@ class TestValAx:
 @pytest.fixture
 def DateAxis():
     from ..axis import DateAxis
+
     return DateAxis
 
 
 class TestDateAx:
-
 
     def test_ctor(self, DateAxis):
         axis = DateAxis(axId=500, crossAx=10)
@@ -209,7 +206,6 @@ class TestDateAx:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, DateAxis):
         from openpyxl.chart.data_source import NumFmt
@@ -235,15 +231,25 @@ class TestDateAx:
         """
         node = fromstring(src)
         axis = DateAxis.from_tree(node)
-        assert axis == DateAxis(axId=20, crossAx=10, axPos="b", delete=False,
-                                numFmt=NumFmt("d-mmm", True), majorTickMark="out",
-                                crosses="autoZero", tickLblPos="nextTo", auto=True, lblOffset=100,
-                                baseTimeUnit="months")
+        assert axis == DateAxis(
+            axId=20,
+            crossAx=10,
+            axPos="b",
+            delete=False,
+            numFmt=NumFmt("d-mmm", True),
+            majorTickMark="out",
+            crosses="autoZero",
+            tickLblPos="nextTo",
+            auto=True,
+            lblOffset=100,
+            baseTimeUnit="months",
+        )
 
 
 @pytest.fixture
 def SeriesAxis():
     from ..axis import SeriesAxis
+
     return SeriesAxis
 
 
@@ -267,7 +273,6 @@ class TestSeriesAxis:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SeriesAxis):
         src = """
         <serAx>
@@ -287,6 +292,7 @@ class TestSeriesAxis:
 @pytest.fixture
 def DisplayUnitsLabel():
     from ..axis import DisplayUnitsLabel
+
     return DisplayUnitsLabel
 
 
@@ -301,7 +307,6 @@ class TestDispUnitsLabel:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DisplayUnitsLabel):
         src = """
         <dispUnitsLbl />
@@ -314,6 +319,7 @@ class TestDispUnitsLabel:
 @pytest.fixture
 def DisplayUnitsLabelList():
     from ..axis import DisplayUnitsLabelList
+
     return DisplayUnitsLabelList
 
 
@@ -328,7 +334,6 @@ class TestDisplayUnitList:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DisplayUnitsLabelList):
         src = """
         <dispUnits />
@@ -341,6 +346,7 @@ class TestDisplayUnitList:
 @pytest.fixture
 def ChartLines():
     from ..axis import ChartLines
+
     return ChartLines
 
 
@@ -354,7 +360,6 @@ class TestChartLines:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ChartLines):
         src = """

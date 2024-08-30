@@ -8,5 +8,5 @@ def namespaced(obj, tagname, namespace=None):
 
     namespace = getattr(obj, "namespace", None) or namespace
     if namespace is not None:
-        tagname = "{%s}%s" % (namespace, tagname)
+        tagname = f"{{{namespace}}}{tagname}"
     return tagname

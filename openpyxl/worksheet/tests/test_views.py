@@ -1,24 +1,25 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.xml.functions import fromstring, tostring
-
 import pytest
 
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def SheetView():
     from ..views import SheetView
+
     return SheetView
 
 
-@pytest.mark.parametrize("value, result",
-                         [
-                             (True, {'workbookViewId': '0', 'showGridLines':'1'}),
-                             (False, {'workbookViewId': '0', 'showGridLines':'0'})
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "value, result",
+    [
+        (True, {"workbookViewId": "0", "showGridLines": "1"}),
+        (False, {"workbookViewId": "0", "showGridLines": "0"}),
+    ],
+)
 def test_show_gridlines(SheetView, value, result):
     view = SheetView(showGridLines=value)
     assert dict(view) == result
@@ -35,8 +36,13 @@ def test_parse(SheetView):
     """
     xml = fromstring(src)
     view = SheetView.from_tree(xml)
-    assert dict(view) == {'tabSelected': '1', 'zoomScale': '200', 'workbookViewId':"0",
-                          'zoomScaleNormal': '200', 'zoomScalePageLayoutView': '200'}
+    assert dict(view) == {
+        "tabSelected": "1",
+        "zoomScale": "200",
+        "workbookViewId": "0",
+        "zoomScaleNormal": "200",
+        "zoomScalePageLayoutView": "200",
+    }
     assert len(view.selection) == 3
 
 
@@ -56,6 +62,7 @@ def test_serialise(SheetView):
 @pytest.fixture
 def SheetViewList():
     from ..views import SheetViewList
+
     return SheetViewList
 
 
@@ -73,7 +80,6 @@ class TestSheetViews:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, SheetViewList):
         src = """

@@ -1,25 +1,35 @@
 # Copyright (c) 2010-2024 openpyxl
-
 from zipfile import ZipFile
 
 import pytest
+
 from openpyxl.tests.helper import compare_xml
-from openpyxl.xml.functions import tostring, fromstring
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def Relationship():
     from ..relationship import Relationship
+
     return Relationship
 
 
 def test_ctor(Relationship):
-    rel = Relationship(type="drawing", Target="drawings.xml",
-                       TargetMode="external", Id="4")
+    rel = Relationship(
+        type="drawing",
+        Target="drawings.xml",
+        TargetMode="external",
+        Id="4",
+    )
 
-    assert dict(rel) == {'Id': '4', 'Target': 'drawings.xml', 'TargetMode':
-                         'external', 'Type':
-                         'http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing'}
+    expected = {
+        "Id": "4",
+        "Target": "drawings.xml",
+        "TargetMode": "external",
+        "Type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+    }
+    assert dict(rel) == expected
 
     expected = """<Relationship Id="4" Target="drawings.xml" TargetMode="external" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" />
     """
@@ -31,11 +41,19 @@ def test_ctor(Relationship):
 
 def test_sequence(Relationship):
     from ..relationship import RelationshipList
+
     rels = RelationshipList()
-    rels.append(Relationship(type="drawing", Target="drawings.xml",
-                             TargetMode="external", Id=""))
-    rels.append(Relationship(type="chart", Target="chart1.xml",
-                             TargetMode="", Id="chart"))
+    rels.append(
+        Relationship(
+            type="drawing",
+            Target="drawings.xml",
+            TargetMode="external",
+            Id="",
+        )
+    )
+    rels.append(
+        Relationship(type="chart", Target="chart1.xml", TargetMode="", Id="chart")
+    )
     xml = tostring(rels.to_tree())
     expected = """
     <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -50,11 +68,11 @@ def test_sequence(Relationship):
 @pytest.fixture
 def RelationshipList():
     from ..relationship import RelationshipList
+
     return RelationshipList
 
 
 class TestRelationshipList:
-
 
     def test_read(self, RelationshipList):
         xml = """
@@ -79,7 +97,6 @@ class TestRelationshipList:
         node = fromstring(xml)
         rels = RelationshipList.from_tree(node)
         assert len(rels) == 5
-
 
     def test_to_dict(self, RelationshipList):
         xml = """
@@ -106,29 +123,33 @@ class TestRelationshipList:
         assert set(rels.to_dict()) == {"rId3", "rId2", "rId1", "rId4", "rId5"}
 
 
-@pytest.mark.parametrize("filename, expected",
-                         [
-                             ("xl/_rels/workbook.xml.rels",
-                              [
-                                  'xl/theme/theme1.xml',
-                                  'xl/worksheets/sheet1.xml',
-                                  'xl/chartsheets/sheet1.xml',
-                                  'xl/sharedStrings.xml',
-                                  'xl/styles.xml',
-                              ]
-                              ),
-                             ("xl/chartsheets/_rels/sheet1.xml.rels",
-                              [
-                                  'xl/drawings/drawing1.xml',
-                              ]
-                              ),
-                         ]
+@pytest.mark.parametrize(
+    "filename, expected",
+    [
+        (
+            "xl/_rels/workbook.xml.rels",
+            [
+                "xl/theme/theme1.xml",
+                "xl/worksheets/sheet1.xml",
+                "xl/chartsheets/sheet1.xml",
+                "xl/sharedStrings.xml",
+                "xl/styles.xml",
+            ],
+        ),
+        (
+            "xl/chartsheets/_rels/sheet1.xml.rels",
+            [
+                "xl/drawings/drawing1.xml",
+            ],
+        ),
+    ],
 )
 def test_get_dependents(datadir, filename, expected):
     datadir.chdir()
     archive = ZipFile("bug137.xlsx")
 
     from ..relationship import get_dependents
+
     rels = get_dependents(archive, filename)
     assert [r.Target for r in rels] == expected
 
@@ -138,6 +159,7 @@ def test_get_external_link(datadir):
     archive = ZipFile("hyperlink.xlsx")
 
     from ..relationship import get_dependents
+
     rels = get_dependents(archive, "xl/worksheets/_rels/sheet1.xml.rels")
 
     assert [r.Target for r in rels] == ["http://www.readthedocs.org"]

@@ -1,18 +1,18 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import tostring
-from openpyxl.tests.helper import compare_xml
-
 from ..chartspace import PlotArea
-from ..pivot import PivotSource, PivotFormat
+from ..pivot import PivotFormat
+from ..pivot import PivotSource
 from ..series import Series
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def ChartBase():
     from .._chart import ChartBase
+
     return ChartBase
 
 
@@ -23,13 +23,11 @@ class TestChartBase:
         with pytest.raises(NotImplementedError):
             xml = tostring(chart.to_tree())
 
-
     def test_iadd(self, ChartBase):
         chart1 = ChartBase()
         chart2 = ChartBase()
         chart1 += chart2
         assert chart1._charts == [chart1, chart2]
-
 
     def test_invalid_add(self, ChartBase):
         chart = ChartBase()
@@ -37,11 +35,11 @@ class TestChartBase:
         with pytest.raises(TypeError):
             chart += s
 
-
     def test_set_catgories(self, ChartBase):
         from ..series import Series
+
         s1 = Series()
-        s1.__elements__ = ('cat',)
+        s1.__elements__ = ("cat",)
         chart = ChartBase()
         chart.ser = [s1]
         chart.set_categories("Sheet!A1:A4")
@@ -58,7 +56,6 @@ class TestChartBase:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_add_data_cols(self, ChartBase):
         chart = ChartBase()
         chart.ser = []
@@ -66,7 +63,6 @@ class TestChartBase:
         assert len(chart.ser) == 5
         assert chart.ser[0].val.numRef.f == "'Sheet'!$A$1:$A$4"
         assert chart.ser[-1].val.numRef.f == "'Sheet'!$E$1:$E$4"
-
 
     def test_add_data_rows(self, ChartBase):
         chart = ChartBase()
@@ -76,21 +72,17 @@ class TestChartBase:
         assert chart.ser[0].val.numRef.f == "'Sheet'!$A$1:$E$1"
         assert chart.ser[-1].val.numRef.f == "'Sheet'!$A$4:$E$4"
 
-
     def test_hash_function(self, ChartBase):
         chart = ChartBase()
         assert hash(chart) == hash(id(chart))
-
 
     def test_path(self, ChartBase):
         chart = ChartBase()
         assert chart.path == "/xl/charts/chart1.xml"
 
-
     def test_plot_area(self, ChartBase):
         chart = ChartBase()
         assert type(chart.plot_area) is PlotArea
-
 
     def test_save_twice(self, ChartBase):
         ChartBase.tagname = "DummyChart"
@@ -101,16 +93,13 @@ class TestChartBase:
         assert len(area._charts) == 1
         assert area._axes == []
 
-
     def test_axIds(self, ChartBase):
         chart = ChartBase()
         assert chart.axId == []
 
-
     def test_plot_visible_cells(self, ChartBase):
         chart = ChartBase()
         assert chart.visible_cells_only is True
-
 
     def test_plot_visible_cells(self, ChartBase):
         chart = ChartBase()
@@ -133,7 +122,6 @@ class TestChartBase:
         xml = tostring(tree)
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_pivot_source(self, ChartBase):
         chart = ChartBase()
@@ -160,7 +148,6 @@ class TestChartBase:
         xml = tostring(tree)
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_pivot_format(self, ChartBase):
         chart = ChartBase()
@@ -190,9 +177,9 @@ class TestChartBase:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_graphical_properties(self, ChartBase):
         from openpyxl.chart.shapes import GraphicalProperties
+
         chart = ChartBase()
         chart.graphical_properties = GraphicalProperties()
         tree = chart._write()
@@ -220,9 +207,9 @@ class TestChartBase:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_no_fill(self, ChartBase):
         from openpyxl.chart.shapes import GraphicalProperties
+
         chart = ChartBase()
         chart.graphical_properties = GraphicalProperties()
         chart.graphical_properties.noFill = True
@@ -250,9 +237,9 @@ class TestChartBase:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_no_border(self, ChartBase):
         from openpyxl.chart.shapes import GraphicalProperties
+
         chart = ChartBase()
         chart.graphical_properties = GraphicalProperties()
         chart.graphical_properties.line.noFill = True
@@ -281,7 +268,6 @@ class TestChartBase:
         xml = tostring(tree)
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_reindex(self, ChartBase):
         chart = ChartBase()

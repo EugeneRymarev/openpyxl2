@@ -1,17 +1,17 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
-from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.styles import Color
-
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.constants import SHEET_MAIN_NS
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def FormatObject():
     from ..rule import FormatObject
+
     return FormatObject
 
 
@@ -24,7 +24,6 @@ class TestFormatObject:
         assert cfvo.val == 3
         assert cfvo.gte is None
 
-
     def test_serialise(self, FormatObject):
         cfvo = FormatObject(type="percent", val=4)
         xml = tostring(cfvo.to_tree())
@@ -32,22 +31,21 @@ class TestFormatObject:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
-    @pytest.mark.parametrize("typ, value, expected",
-                             [
-                                 ('num', '5', 5.0),
-                                 ('percent', '70', 70),
-                                 ('max', 10, 10),
-                                 ('min', '4.2', 4.2),
-                                 ('formula', "=A2*4", "=A2*4"),
-                                 ('percentile', 10, 10),
-                                 ('formula', None, None),
-                             ]
-                             )
+    @pytest.mark.parametrize(
+        "typ, value, expected",
+        [
+            ("num", "5", 5.0),
+            ("percent", "70", 70),
+            ("max", 10, 10),
+            ("min", "4.2", 4.2),
+            ("formula", "=A2*4", "=A2*4"),
+            ("percentile", 10, 10),
+            ("formula", None, None),
+        ],
+    )
     def test_value_types(self, FormatObject, typ, value, expected):
         cfvo = FormatObject(type=typ, val=value)
         assert cfvo.val == expected
-
 
     def test_cell_reference(self, FormatObject):
         cfvo = FormatObject(type="num")
@@ -58,12 +56,14 @@ class TestFormatObject:
 @pytest.fixture
 def ColorScale():
     from ..rule import ColorScale
+
     return ColorScale
 
 
 @pytest.fixture
 def ColorScaleRule():
     from ..rule import ColorScaleRule
+
     return ColorScaleRule
 
 
@@ -82,7 +82,6 @@ class TestColorScale:
         cs = ColorScale.from_tree(xml)
         assert len(cs.cfvo) == 2
         assert len(cs.color) == 2
-
 
     def test_serialise(self, ColorScale, FormatObject):
         fo1 = FormatObject(type="min", val="0")
@@ -108,11 +107,15 @@ class TestColorScale:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_two_colors(self, ColorScaleRule):
-        cfRule = ColorScaleRule(start_type='min', start_value=None,
-                                start_color='FFAA0000', end_type='max', end_value=None,
-                                end_color='FF00AA00')
+        cfRule = ColorScaleRule(
+            start_type="min",
+            start_value=None,
+            start_color="FFAA0000",
+            end_type="max",
+            end_value=None,
+            end_color="FF00AA00",
+        )
         xml = tostring(cfRule.to_tree())
         expected = """
         <cfRule priority="0" type="colorScale">
@@ -127,12 +130,18 @@ class TestColorScale:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_three_colors(self, ColorScaleRule):
-        cfRule = ColorScaleRule(start_type='percentile', start_value=10,
-                                start_color='FFAA0000', mid_type='percentile', mid_value=50,
-                                mid_color='FF0000AA', end_type='percentile', end_value=90,
-                                end_color='FF00AA00')
+        cfRule = ColorScaleRule(
+            start_type="percentile",
+            start_value=10,
+            start_color="FFAA0000",
+            mid_type="percentile",
+            mid_value=50,
+            mid_color="FF0000AA",
+            end_type="percentile",
+            end_value=90,
+            end_color="FF00AA00",
+        )
         xml = tostring(cfRule.to_tree())
         expected = """
         <cfRule priority="0" type="colorScale">
@@ -153,6 +162,7 @@ class TestColorScale:
 @pytest.fixture
 def DataBar():
     from ..rule import DataBar
+
     return DataBar
 
 
@@ -171,11 +181,16 @@ class TestDataBar:
         assert len(db.cfvo) == 2
         assert db.color.value == "FF638EC6"
 
-
     def test_serialise(self, DataBar, FormatObject):
         fo1 = FormatObject(type="min", val="0")
         fo2 = FormatObject(type="percent", val="50")
-        db = DataBar(minLength=4, maxLength=10, cfvo=[fo1, fo2], color="FF2266", showValue=True)
+        db = DataBar(
+            minLength=4,
+            maxLength=10,
+            cfvo=[fo1, fo2],
+            color="FF2266",
+            showValue=True,
+        )
         xml = tostring(db.to_tree())
         expected = """
         <dataBar maxLength="10" minLength="4" showValue="1">
@@ -191,6 +206,7 @@ class TestDataBar:
 @pytest.fixture
 def IconSet():
     from ..rule import IconSet
+
     return IconSet
 
 
@@ -211,13 +227,17 @@ class TestIconSet:
         assert icon.iconSet == "5Rating"
         assert len(icon.cfvo) == 5
 
-
     def test_serialise(self, IconSet, FormatObject):
         fo1 = FormatObject(type="num", val="2")
         fo2 = FormatObject(type="num", val="4")
         fo3 = FormatObject(type="num", val="6")
         fo4 = FormatObject(type="percent", val="0")
-        icon = IconSet(cfvo=[fo1, fo2, fo3, fo4], iconSet="4ArrowsGray", reverse=True, showValue=False)
+        icon = IconSet(
+            cfvo=[fo1, fo2, fo3, fo4],
+            iconSet="4ArrowsGray",
+            reverse=True,
+            showValue=False,
+        )
         xml = tostring(icon.to_tree())
         expected = """
         <iconSet iconSet="4ArrowsGray" showValue="0" reverse="1">
@@ -234,6 +254,7 @@ class TestIconSet:
 @pytest.fixture
 def Rule():
     from ..rule import Rule
+
     return Rule
 
 
@@ -245,16 +266,15 @@ class TestRule:
             xml = fromstring(src.read())
 
         rules = []
-        for el in xml.findall("{%s}conditionalFormatting/{%s}cfRule" % (SHEET_MAIN_NS, SHEET_MAIN_NS)):
+        s = f"{{{SHEET_MAIN_NS}}}conditionalFormatting/{{{SHEET_MAIN_NS}}}cfRule"
+        for el in xml.findall(s):
             rules.append(Rule.from_tree(el))
 
         assert len(rules) == 30
-        assert rules[17].formula == ['2', '7']
-        assert rules[-1].formula == ["AD1>3",]
-
+        assert rules[17].formula == ["2", "7"]
+        assert rules[-1].formula == ["AD1>3"]
 
     def test_serialise(self, Rule):
-
         rule = Rule(type="cellIs", dxfId="26", priority="13", operator="between")
         rule.formula = ["2", "7"]
 
@@ -268,10 +288,12 @@ class TestRule:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_non_ascii_formula(self, Rule):
-
-        rule = Rule(type="cellIs", priority=10, formula=[b"D\xc3\xbcsseldorf".decode("utf-8")])
+        rule = Rule(
+            type="cellIs",
+            priority=10,
+            formula=[b"D\xc3\xbcsseldorf".decode("utf-8")],
+        )
 
         xml = tostring(rule.to_tree())
         expected = b"""
@@ -285,41 +307,53 @@ class TestRule:
 
 
 def test_formula_rule():
-    from ..rule import FormulaRule
     from openpyxl.styles.differential import DifferentialStyle
 
-    cf = FormulaRule(formula=['ISBLANK(C1)'], stopIfTrue=True)
-    assert dict(cf) == {'priority': '0', 'stopIfTrue': '1', 'type': 'expression'}
-    assert cf.formula == ['ISBLANK(C1)']
+    from ..rule import FormulaRule
+
+    cf = FormulaRule(formula=["ISBLANK(C1)"], stopIfTrue=True)
+    assert dict(cf) == {"priority": "0", "stopIfTrue": "1", "type": "expression"}
+    assert cf.formula == ["ISBLANK(C1)"]
     assert cf.dxf == DifferentialStyle()
 
 
 def test_cellis_rule():
-    from ..rule import CellIsRule
     from openpyxl.styles import PatternFill
 
-    red_fill = PatternFill(start_color='FFEE1111', end_color='FFEE1111',
-                           fill_type='solid')
+    from ..rule import CellIsRule
 
-    rule = CellIsRule(operator='<', formula=['C$1'], stopIfTrue=True, fill=red_fill)
-    assert dict(rule) == {'operator': 'lessThan', 'priority': '0', 'type': 'cellIs', 'stopIfTrue':'1'}
-    assert rule.formula == ['C$1']
+    red_fill = PatternFill(
+        start_color="FFEE1111",
+        end_color="FFEE1111",
+        fill_type="solid",
+    )
+
+    rule = CellIsRule(operator="<", formula=["C$1"], stopIfTrue=True, fill=red_fill)
+    assert dict(rule) == {
+        "operator": "lessThan",
+        "priority": "0",
+        "type": "cellIs",
+        "stopIfTrue": "1",
+    }
+    assert rule.formula == ["C$1"]
     assert rule.dxf.fill == red_fill
 
 
-@pytest.mark.parametrize("value, expansion",
-                         [
-                             ('<=', 'lessThanOrEqual'),
-                             ('>', 'greaterThan'),
-                             ('!=', 'notEqual'),
-                             ('=', 'equal'),
-                             ('>=', 'greaterThanOrEqual'),
-                             ('==', 'equal'),
-                             ('<', 'lessThan'),
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "value, expansion",
+    [
+        ("<=", "lessThanOrEqual"),
+        (">", "greaterThan"),
+        ("!=", "notEqual"),
+        ("=", "equal"),
+        (">=", "greaterThanOrEqual"),
+        ("==", "equal"),
+        ("<", "lessThan"),
+    ],
+)
 def test_operator_expansion(value, expansion):
     from ..rule import CellIsRule
+
     cf1 = CellIsRule(operator=value, formula=[])
     cf2 = CellIsRule(operator=expansion, formula=[])
     assert cf1.operator == expansion
@@ -328,7 +362,8 @@ def test_operator_expansion(value, expansion):
 
 def test_iconset_rule():
     from ..rule import IconSetRule
-    rule = IconSetRule('5Arrows', 'percent', [10, 20, 30, 40, 50])
+
+    rule = IconSetRule("5Arrows", "percent", [10, 20, 30, 40, 50])
     xml = tostring(rule.to_tree())
     expected = """
     <cfRule priority="0" type="iconSet">
@@ -347,8 +382,14 @@ def test_iconset_rule():
 
 def test_databar_rule():
     from ..rule import DataBarRule
-    rule = DataBarRule(start_type='percentile', start_value=10,
-                       end_type='percentile', end_value='90', color="FF638EC6")
+
+    rule = DataBarRule(
+        start_type="percentile",
+        start_value=10,
+        end_type="percentile",
+        end_value="90",
+        color="FF638EC6",
+    )
     xml = tostring(rule.to_tree())
     expected = """
     <cfRule type="dataBar" priority="0">

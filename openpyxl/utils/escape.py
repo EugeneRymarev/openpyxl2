@@ -1,9 +1,7 @@
 # Copyright (c) 2010-2024 openpyxl
-
 """
 OOXML has non-standard escaping for characters < \031
 """
-
 import re
 
 
@@ -27,7 +25,6 @@ def unescape(value):
     r"""
     Convert escaped strings to ASCIII: _x000a_ == \n
     """
-
 
     ESCAPED_REGEX = re.compile("_x([0-9A-Fa-f]{4})_")
 

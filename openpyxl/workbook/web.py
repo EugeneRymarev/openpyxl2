@@ -1,19 +1,13 @@
 # Copyright (c) 2010-2024 openpyxl
-
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Sequence,
-    String,
-    Float,
-    Integer,
-    Bool,
-    NoneSet,
-)
 
 
 class WebPublishObject(Serialisable):
-
     tagname = "webPublishingObject"
 
     id = Integer()
@@ -23,14 +17,15 @@ class WebPublishObject(Serialisable):
     title = String(allow_none=True)
     autoRepublish = Bool(allow_none=True)
 
-    def __init__(self,
-                 id=None,
-                 divId=None,
-                 sourceObject=None,
-                 destinationFile=None,
-                 title=None,
-                 autoRepublish=None,
-                ):
+    def __init__(
+        self,
+        id=None,
+        divId=None,
+        sourceObject=None,
+        destinationFile=None,
+        title=None,
+        autoRepublish=None,
+    ):
         self.id = id
         self.divId = divId
         self.sourceObject = sourceObject
@@ -40,20 +35,15 @@ class WebPublishObject(Serialisable):
 
 
 class WebPublishObjectList(Serialisable):
-
-    tagname ="webPublishingObjects"
+    tagname = "webPublishingObjects"
 
     count = Integer(allow_none=True)
     webPublishObject = Sequence(expected_type=WebPublishObject)
 
-    __elements__ = ('webPublishObject',)
+    __elements__ = ("webPublishObject",)
 
-    def __init__(self,
-                 count=None,
-                 webPublishObject=(),
-                ):
+    def __init__(self, count=None, webPublishObject=()):
         self.webPublishObject = webPublishObject
-
 
     @property
     def count(self):
@@ -61,7 +51,6 @@ class WebPublishObjectList(Serialisable):
 
 
 class WebPublishing(Serialisable):
-
     tagname = "webPublishing"
 
     css = Bool(allow_none=True)
@@ -69,24 +58,39 @@ class WebPublishing(Serialisable):
     longFileNames = Bool(allow_none=True)
     vml = Bool(allow_none=True)
     allowPng = Bool(allow_none=True)
-    targetScreenSize = NoneSet(values=(['544x376', '640x480', '720x512', '800x600',
-                                    '1024x768', '1152x882', '1152x900', '1280x1024', '1600x1200',
-                                    '1800x1440', '1920x1200']))
+    targetScreenSize = NoneSet(
+        values=(
+            [
+                "544x376",
+                "640x480",
+                "720x512",
+                "800x600",
+                "1024x768",
+                "1152x882",
+                "1152x900",
+                "1280x1024",
+                "1600x1200",
+                "1800x1440",
+                "1920x1200",
+            ]
+        )
+    )
     dpi = Integer(allow_none=True)
     codePage = Integer(allow_none=True)
     characterSet = String(allow_none=True)
 
-    def __init__(self,
-                 css=None,
-                 thicket=None,
-                 longFileNames=None,
-                 vml=None,
-                 allowPng=None,
-                 targetScreenSize='800x600',
-                 dpi=None,
-                 codePage=None,
-                 characterSet=None,
-                ):
+    def __init__(
+        self,
+        css=None,
+        thicket=None,
+        longFileNames=None,
+        vml=None,
+        allowPng=None,
+        targetScreenSize="800x600",
+        dpi=None,
+        codePage=None,
+        characterSet=None,
+    ):
         self.css = css
         self.thicket = thicket
         self.longFileNames = longFileNames

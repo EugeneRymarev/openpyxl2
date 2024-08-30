@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
+          xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
     <xdr:twoCellAnchor editAs="absolute">
         <xdr:from>
             <xdr:col>6</xdr:col>
@@ -126,11 +127,15 @@
                     </a:pathLst>
                 </a:custGeom>
                 <a:solidFill>
-                    <a:srgbClr xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0000FF" mc:Ignorable="a14" a14:legacySpreadsheetColorIndex="12"/>
+                    <a:srgbClr xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0000FF"
+                               mc:Ignorable="a14" a14:legacySpreadsheetColorIndex="12"/>
                 </a:solidFill>
                 <a:ln w="9525">
                     <a:solidFill>
-                        <a:srgbClr xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="000000" mc:Ignorable="a14" a14:legacySpreadsheetColorIndex="8"/>
+                        <a:srgbClr xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                                   xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="000000"
+                                   mc:Ignorable="a14" a14:legacySpreadsheetColorIndex="8"/>
                     </a:solidFill>
                     <a:miter lim="800000"/>
                     <a:headEnd/>
@@ -138,7 +143,8 @@
                 </a:ln>
             </xdr:spPr>
             <xdr:txBody>
-                <a:bodyPr vertOverflow="clip" wrap="square" lIns="27432" tIns="22860" rIns="27432" bIns="22860" anchor="ctr" upright="1"/>
+                <a:bodyPr vertOverflow="clip" wrap="square" lIns="27432" tIns="22860" rIns="27432" bIns="22860"
+                          anchor="ctr" upright="1"/>
                 <a:lstStyle/>
                 <a:p>
                     <a:pPr algn="ctr" rtl="0">
@@ -289,7 +295,9 @@
                 </a:solidFill>
                 <a:ln w="9525">
                     <a:solidFill>
-                        <a:srgbClr xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="000000" mc:Ignorable="a14" a14:legacySpreadsheetColorIndex="8"/>
+                        <a:srgbClr xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                                   xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="000000"
+                                   mc:Ignorable="a14" a14:legacySpreadsheetColorIndex="8"/>
                     </a:solidFill>
                     <a:miter lim="800000"/>
                     <a:headEnd/>
@@ -297,7 +305,8 @@
                 </a:ln>
             </xdr:spPr>
             <xdr:txBody>
-                <a:bodyPr vertOverflow="clip" wrap="square" lIns="27432" tIns="22860" rIns="27432" bIns="22860" anchor="ctr" upright="1"/>
+                <a:bodyPr vertOverflow="clip" wrap="square" lIns="27432" tIns="22860" rIns="27432" bIns="22860"
+                          anchor="ctr" upright="1"/>
                 <a:lstStyle/>
                 <a:p>
                     <a:pPr algn="ctr" rtl="0">
@@ -311,7 +320,7 @@
                             <a:latin typeface="Arial"/>
                             <a:cs typeface="Arial"/>
                         </a:rPr>
-                        <a:t>Create </a:t>
+                        <a:t>Create</a:t>
                     </a:r>
                 </a:p>
             </xdr:txBody>

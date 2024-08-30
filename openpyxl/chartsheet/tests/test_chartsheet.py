@@ -1,12 +1,14 @@
 # Copyright (c) 2010-2024 openpyxl
+import pytest
 
+from ..views import ChartsheetView
+from ..views import ChartsheetViewList
+from openpyxl.tests.helper import compare_xml
 from openpyxl.worksheet.drawing import Drawing
 from openpyxl.worksheet.page import PageMargins
-from ..views import ChartsheetView, ChartsheetViewList
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
-from openpyxl.xml.functions import fromstring, tostring
-from openpyxl.tests.helper import compare_xml
-import pytest
 
 class DummyWorkbook:
 
@@ -20,6 +22,7 @@ def Chartsheet():
     from ..chartsheet import Chartsheet
 
     return Chartsheet
+
 
 class TestChartsheet:
 
@@ -44,12 +47,17 @@ class TestChartsheet:
         assert chart.sheetViews.sheetView[0].tabSelected == True
 
     def test_write(self, Chartsheet):
-
-        sheetview = ChartsheetView(tabSelected=True, zoomScale=80, workbookViewId=0, zoomToFit=True)
+        sheetview = ChartsheetView(
+            tabSelected=True, zoomScale=80, workbookViewId=0, zoomToFit=True
+        )
         chartsheetViews = ChartsheetViewList(sheetView=[sheetview])
-        pageMargins = PageMargins(left=0.7, right=0.7, top=0.75, bottom=0.75, header=0.3, footer=0.3)
+        pageMargins = PageMargins(
+            left=0.7, right=0.7, top=0.75, bottom=0.75, header=0.3, footer=0.3
+        )
         drawing = Drawing("rId1")
-        item = Chartsheet(sheetViews=chartsheetViews, pageMargins=pageMargins, drawing=drawing)
+        item = Chartsheet(
+            sheetViews=chartsheetViews, pageMargins=pageMargins, drawing=drawing
+        )
         expected = """
         <chartsheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
@@ -64,11 +72,8 @@ class TestChartsheet:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_write_charts(self, Chartsheet):
-
         class DummyChart:
-
             pass
 
         cs = Chartsheet(parent=DummyWorkbook())

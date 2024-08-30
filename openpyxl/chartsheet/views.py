@@ -1,11 +1,8 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.descriptors import (
-    Bool,
-    Integer,
-    Typed,
-    Sequence
-)
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.serialisable import Serialisable
 
@@ -21,13 +18,14 @@ class ChartsheetView(Serialisable):
 
     __elements__ = ()
 
-    def __init__(self,
-                 tabSelected=None,
-                 zoomScale=None,
-                 workbookViewId=0,
-                 zoomToFit=True,
-                 extLst=None,
-                 ):
+    def __init__(
+        self,
+        tabSelected=None,
+        zoomScale=None,
+        workbookViewId=0,
+        zoomToFit=True,
+        extLst=None,
+    ):
         self.tabSelected = tabSelected
         self.zoomScale = zoomScale
         self.workbookViewId = workbookViewId
@@ -37,15 +35,12 @@ class ChartsheetView(Serialisable):
 class ChartsheetViewList(Serialisable):
     tagname = "sheetViews"
 
-    sheetView = Sequence(expected_type=ChartsheetView, )
+    sheetView = Sequence(expected_type=ChartsheetView)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('sheetView',)
+    __elements__ = ("sheetView",)
 
-    def __init__(self,
-                 sheetView=None,
-                 extLst=None,
-                 ):
+    def __init__(self, sheetView=None, extLst=None):
         if sheetView is None:
             sheetView = [ChartsheetView()]
         self.sheetView = sheetView

@@ -1,64 +1,41 @@
 # Copyright (c) 2010-2024 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Bool,
-    NoneSet,
-    Integer,
-    Sequence,
-    Alias,
-)
-from openpyxl.descriptors.nested import (
-    NestedText,
-    NestedNoneSet,
-)
-from openpyxl.descriptors.excel import Relation
-
-from openpyxl.packaging.relationship import (
-    Relationship,
-    RelationshipList,
-)
-from openpyxl.utils import coordinate_to_tuple
-from openpyxl.utils.units import (
-    cm_to_EMU,
-    pixels_to_EMU,
-)
-from openpyxl.drawing.image import Image
-
-from openpyxl.xml.constants import SHEET_DRAWING_NS
-
-from openpyxl.chart._chart import ChartBase
-from .xdr import (
-    XDRPoint2D,
-    XDRPositiveSize2D,
-)
-from .fill import Blip
 from .connector import Shape
-from .graphic import (
-    GroupShape,
-    GraphicFrame,
-    )
+from .fill import Blip
 from .geometry import PresetGeometry2D
+from .graphic import GraphicFrame
+from .graphic import GroupShape
 from .picture import PictureFrame
 from .relation import ChartRelation
+from .xdr import XDRPoint2D
+from .xdr import XDRPositiveSize2D
+from openpyxl.chart._chart import ChartBase
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.excel import Relation
+from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.image import Image
+from openpyxl.packaging.relationship import Relationship
+from openpyxl.packaging.relationship import RelationshipList
+from openpyxl.utils import coordinate_to_tuple
+from openpyxl.utils.units import cm_to_EMU
+from openpyxl.utils.units import pixels_to_EMU
+from openpyxl.xml.constants import SHEET_DRAWING_NS
 
 
 class AnchorClientData(Serialisable):
-
     fLocksWithSheet = Bool(allow_none=True)
     fPrintsWithSheet = Bool(allow_none=True)
 
-    def __init__(self,
-                 fLocksWithSheet=None,
-                 fPrintsWithSheet=None,
-                 ):
+    def __init__(self, fLocksWithSheet=None, fPrintsWithSheet=None):
         self.fLocksWithSheet = fLocksWithSheet
         self.fPrintsWithSheet = fPrintsWithSheet
 
 
 class AnchorMarker(Serialisable):
-
     tagname = "marker"
 
     col = NestedText(expected_type=int)
@@ -66,12 +43,7 @@ class AnchorMarker(Serialisable):
     row = NestedText(expected_type=int)
     rowOff = NestedText(expected_type=int)
 
-    def __init__(self,
-                 col=0,
-                 colOff=0,
-                 row=0,
-                 rowOff=0,
-                 ):
+    def __init__(self, col=0, colOff=0, row=0, rowOff=0):
         self.col = col
         self.colOff = colOff
         self.row = row
@@ -79,8 +51,7 @@ class AnchorMarker(Serialisable):
 
 
 class _AnchorBase(Serialisable):
-
-    #one of
+    # one of
     sp = Typed(expected_type=Shape, allow_none=True)
     shape = Alias("sp")
     grpSp = Typed(expected_type=GroupShape, allow_none=True)
@@ -93,18 +64,26 @@ class _AnchorBase(Serialisable):
 
     clientData = Typed(expected_type=AnchorClientData)
 
-    __elements__ = ('sp', 'grpSp', 'graphicFrame',
-                    'cxnSp', 'pic', 'contentPart', 'clientData')
+    __elements__ = (
+        "sp",
+        "grpSp",
+        "graphicFrame",
+        "cxnSp",
+        "pic",
+        "contentPart",
+        "clientData",
+    )
 
-    def __init__(self,
-                 clientData=None,
-                 sp=None,
-                 grpSp=None,
-                 graphicFrame=None,
-                 cxnSp=None,
-                 pic=None,
-                 contentPart=None
-                 ):
+    def __init__(
+        self,
+        clientData=None,
+        sp=None,
+        grpSp=None,
+        graphicFrame=None,
+        cxnSp=None,
+        pic=None,
+        contentPart=None,
+    ):
         if clientData is None:
             clientData = AnchorClientData()
         self.clientData = clientData
@@ -117,7 +96,6 @@ class _AnchorBase(Serialisable):
 
 
 class AbsoluteAnchor(_AnchorBase):
-
     tagname = "absoluteAnchor"
 
     pos = Typed(expected_type=XDRPoint2D)
@@ -131,13 +109,9 @@ class AbsoluteAnchor(_AnchorBase):
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
 
-    __elements__ = ('pos', 'ext') + _AnchorBase.__elements__
+    __elements__ = ("pos", "ext") + _AnchorBase.__elements__
 
-    def __init__(self,
-                 pos=None,
-                 ext=None,
-                 **kw
-                ):
+    def __init__(self, pos=None, ext=None, **kw):
         if pos is None:
             pos = XDRPoint2D(0, 0)
         self.pos = pos
@@ -148,7 +122,6 @@ class AbsoluteAnchor(_AnchorBase):
 
 
 class OneCellAnchor(_AnchorBase):
-
     tagname = "oneCellAnchor"
 
     _from = Typed(expected_type=AnchorMarker)
@@ -162,14 +135,9 @@ class OneCellAnchor(_AnchorBase):
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
 
-    __elements__ = ('_from', 'ext') + _AnchorBase.__elements__
+    __elements__ = ("_from", "ext") + _AnchorBase.__elements__
 
-
-    def __init__(self,
-                 _from=None,
-                 ext=None,
-                 **kw
-                ):
+    def __init__(self, _from=None, ext=None, **kw):
         if _from is None:
             _from = AnchorMarker()
         self._from = _from
@@ -180,10 +148,9 @@ class OneCellAnchor(_AnchorBase):
 
 
 class TwoCellAnchor(_AnchorBase):
-
     tagname = "twoCellAnchor"
 
-    editAs = NoneSet(values=(['twoCell', 'oneCell', 'absolute']))
+    editAs = NoneSet(values=(["twoCell", "oneCell", "absolute"]))
     _from = Typed(expected_type=AnchorMarker)
     to = Typed(expected_type=AnchorMarker)
 
@@ -195,14 +162,9 @@ class TwoCellAnchor(_AnchorBase):
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
 
-    __elements__ = ('_from', 'to') + _AnchorBase.__elements__
+    __elements__ = ("_from", "to") + _AnchorBase.__elements__
 
-    def __init__(self,
-                 editAs=None,
-                 _from=None,
-                 to=None,
-                 **kw
-                 ):
+    def __init__(self, editAs=None, _from=None, to=None, **kw):
         self.editAs = editAs
         if _from is None:
             _from = AnchorMarker()
@@ -222,8 +184,8 @@ def _check_anchor(obj):
     if not isinstance(anchor, _AnchorBase):
         row, col = coordinate_to_tuple(anchor.upper())
         anchor = OneCellAnchor()
-        anchor._from.row = row -1
-        anchor._from.col = col -1
+        anchor._from.row = row - 1
+        anchor._from.col = col - 1
         if isinstance(obj, ChartBase):
             anchor.ext.width = cm_to_EMU(obj.width)
             anchor.ext.height = cm_to_EMU(obj.height)
@@ -234,11 +196,10 @@ def _check_anchor(obj):
 
 
 class SpreadsheetDrawing(Serialisable):
-
     tagname = "wsDr"
     mime_type = "application/vnd.openxmlformats-officedocument.drawing+xml"
     _rel_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"
-    _path = PartName="/xl/drawings/drawing{0}.xml"
+    _path = PartName = "/xl/drawings/drawing{0}.xml"
     _id = None
 
     twoCellAnchor = Sequence(expected_type=TwoCellAnchor, allow_none=True)
@@ -247,11 +208,7 @@ class SpreadsheetDrawing(Serialisable):
 
     __elements__ = ("twoCellAnchor", "oneCellAnchor", "absoluteAnchor")
 
-    def __init__(self,
-                 twoCellAnchor=(),
-                 oneCellAnchor=(),
-                 absoluteAnchor=(),
-                 ):
+    def __init__(self, twoCellAnchor=(), oneCellAnchor=(), absoluteAnchor=()):
         self.twoCellAnchor = twoCellAnchor
         self.oneCellAnchor = oneCellAnchor
         self.absoluteAnchor = absoluteAnchor
@@ -259,18 +216,14 @@ class SpreadsheetDrawing(Serialisable):
         self.images = []
         self._rels = []
 
-
     def __hash__(self):
         """
         Just need to check for identity
         """
         return id(self)
 
-
     def __bool__(self):
         return bool(self.charts) or bool(self.images)
-
-
 
     def _write(self):
         """
@@ -288,7 +241,7 @@ class SpreadsheetDrawing(Serialisable):
                 if not child:
                     anchor.pic = self._picture_frame(idx)
                 else:
-                    child.blipFill.blip.embed = "rId{0}".format(idx)
+                    child.blipFill.blip.embed = f"rId{idx}"
 
             anchors.append(anchor)
             self._rels.append(rel)
@@ -302,34 +255,31 @@ class SpreadsheetDrawing(Serialisable):
                 self.absoluteAnchor.append(a)
 
         tree = self.to_tree()
-        tree.set('xmlns', SHEET_DRAWING_NS)
+        tree.set("xmlns", SHEET_DRAWING_NS)
         return tree
-
 
     def _chart_frame(self, idx):
         chart_rel = ChartRelation(f"rId{idx}")
         frame = GraphicFrame()
         nv = frame.nvGraphicFramePr.cNvPr
         nv.id = idx
-        nv.name = "Chart {0}".format(idx)
+        nv.name = f"Chart {idx}"
         frame.graphic.graphicData.chart = chart_rel
         return frame
-
 
     def _picture_frame(self, idx):
         pic = PictureFrame()
         pic.nvPicPr.cNvPr.descr = "Picture"
         pic.nvPicPr.cNvPr.id = idx
-        pic.nvPicPr.cNvPr.name = "Image {0}".format(idx)
+        pic.nvPicPr.cNvPr.name = f"Image {idx}"
 
         pic.blipFill.blip = Blip()
-        pic.blipFill.blip.embed = "rId{0}".format(idx)
+        pic.blipFill.blip.embed = f"rId{idx}"
         pic.blipFill.blip.cstate = "print"
 
         pic.spPr.prstGeom = PresetGeometry2D(prst="rect")
         pic.spPr.ln = None
         return pic
-
 
     def _write_rels(self):
         rels = RelationshipList()
@@ -337,11 +287,9 @@ class SpreadsheetDrawing(Serialisable):
             rels.append(r)
         return rels.to_tree()
 
-
     @property
     def path(self):
         return self._path.format(self._id)
-
 
     @property
     def _chart_rels(self):
@@ -359,7 +307,6 @@ class SpreadsheetDrawing(Serialisable):
                     rel.anchor.graphicFrame = None
                     rels.append(rel)
         return rels
-
 
     @property
     def _blip_rels(self):

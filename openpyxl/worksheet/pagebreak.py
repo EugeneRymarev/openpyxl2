@@ -1,15 +1,11 @@
 # Copyright (c) 2010-2024 openpyxl
-
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Integer,
-    Bool,
-    Sequence,
-)
 
 
 class Break(Serialisable):
-
     tagname = "brk"
 
     id = Integer(allow_none=True)
@@ -18,13 +14,7 @@ class Break(Serialisable):
     man = Bool(allow_none=True)
     pt = Bool(allow_none=True)
 
-    def __init__(self,
-                 id=0,
-                 min=0,
-                 max=16383,
-                 man=True,
-                 pt=None,
-                ):
+    def __init__(self, id=0, min=0, max=16383, man=True, pt=None):
         self.id = id
         self.min = min
         self.max = max
@@ -33,41 +23,31 @@ class Break(Serialisable):
 
 
 class RowBreak(Serialisable):
-
     tagname = "rowBreaks"
 
     count = Integer(allow_none=True)
     manualBreakCount = Integer(allow_none=True)
     brk = Sequence(expected_type=Break, allow_none=True)
 
-    __elements__ = ('brk',)
-    __attrs__ = ("count", "manualBreakCount",)
+    __elements__ = ("brk",)
+    __attrs__ = ("count", "manualBreakCount")
 
-    def __init__(self,
-                 count=None,
-                 manualBreakCount=None,
-                 brk=(),
-                ):
+    def __init__(self, count=None, manualBreakCount=None, brk=()):
         self.brk = brk
-
 
     def __bool__(self):
         return len(self.brk) > 0
 
-
     def __len__(self):
         return len(self.brk)
-
 
     @property
     def count(self):
         return len(self)
 
-
     @property
     def manualBreakCount(self):
         return len(self)
-
 
     def append(self, brk=None):
         """
@@ -75,7 +55,7 @@ class RowBreak(Serialisable):
         """
         vals = list(self.brk)
         if not isinstance(brk, Break):
-            brk = Break(id=self.count+1)
+            brk = Break(id=self.count + 1)
         vals.append(brk)
         self.brk = vals
 
@@ -84,7 +64,6 @@ PageBreak = RowBreak
 
 
 class ColBreak(RowBreak):
-
     tagname = "colBreaks"
 
     count = RowBreak.count

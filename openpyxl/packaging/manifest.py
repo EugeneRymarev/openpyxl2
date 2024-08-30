@@ -1,38 +1,35 @@
 # Copyright (c) 2010-2024 openpyxl
-
 """
 File manifest
 """
-from mimetypes import MimeTypes
 import os.path
+from mimetypes import MimeTypes
 
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import String, Sequence
+from openpyxl.xml.constants import ACTIVEX
+from openpyxl.xml.constants import ARC_CONTENT_TYPES
+from openpyxl.xml.constants import ARC_STYLE
+from openpyxl.xml.constants import ARC_THEME
+from openpyxl.xml.constants import CONTYPES_NS
+from openpyxl.xml.constants import CTRL
+from openpyxl.xml.constants import STYLES_TYPE
+from openpyxl.xml.constants import THEME_TYPE
+from openpyxl.xml.constants import VBA
 from openpyxl.xml.functions import fromstring
-from openpyxl.xml.constants import (
-    ARC_CONTENT_TYPES,
-    ARC_THEME,
-    ARC_STYLE,
-    THEME_TYPE,
-    STYLES_TYPE,
-    CONTYPES_NS,
-    ACTIVEX,
-    CTRL,
-    VBA,
-)
 from openpyxl.xml.functions import tostring
 
 # initialise mime-types
 mimetypes = MimeTypes()
-mimetypes.add_type('application/xml', ".xml")
-mimetypes.add_type('application/vnd.openxmlformats-package.relationships+xml', ".rels")
+mimetypes.add_type("application/xml", ".xml")
+mimetypes.add_type("application/vnd.openxmlformats-package.relationships+xml", ".rels")
 mimetypes.add_type("application/vnd.ms-office.vbaProject", ".bin")
 mimetypes.add_type("application/vnd.openxmlformats-officedocument.vmlDrawing", ".vml")
 mimetypes.add_type("image/x-emf", ".emf")
 
 
 class FileExtension(Serialisable):
-
     tagname = "Default"
 
     Extension = String()
@@ -44,7 +41,6 @@ class FileExtension(Serialisable):
 
 
 class Override(Serialisable):
-
     tagname = "Override"
 
     PartName = String()
@@ -61,15 +57,20 @@ DEFAULT_TYPES = [
 ]
 
 DEFAULT_OVERRIDE = [
-    Override("/" + ARC_STYLE, STYLES_TYPE), # Styles
-    Override("/" + ARC_THEME, THEME_TYPE), # Theme
-    Override("/docProps/core.xml", "application/vnd.openxmlformats-package.core-properties+xml"),
-    Override("/docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml")
+    Override("/" + ARC_STYLE, STYLES_TYPE),  # Styles
+    Override("/" + ARC_THEME, THEME_TYPE),  # Theme
+    Override(
+        "/docProps/core.xml",
+        "application/vnd.openxmlformats-package.core-properties+xml",
+    ),
+    Override(
+        "/docProps/app.xml",
+        "application/vnd.openxmlformats-officedocument.extended-properties+xml",
+    ),
 ]
 
 
 class Manifest(Serialisable):
-
     tagname = "Types"
 
     Default = Sequence(expected_type=FileExtension, unique=True)
@@ -78,10 +79,7 @@ class Manifest(Serialisable):
 
     __elements__ = ("Default", "Override")
 
-    def __init__(self,
-                 Default=(),
-                 Override=(),
-                 ):
+    def __init__(self, Default=(), Override=()):
         if not Default:
             Default = DEFAULT_TYPES
         self.Default = Default
@@ -89,11 +87,9 @@ class Manifest(Serialisable):
             Override = DEFAULT_OVERRIDE
         self.Override = Override
 
-
     @property
     def filenames(self):
         return [part.PartName for part in self.Override]
-
 
     @property
     def extensions(self):
@@ -102,8 +98,9 @@ class Manifest(Serialisable):
         Skip parts without extensions
         """
         exts = {os.path.splitext(part.PartName)[-1] for part in self.Override}
-        return [(ext[1:], mimetypes.types_map[True][ext]) for ext in sorted(exts) if ext]
-
+        return [
+            (ext[1:], mimetypes.types_map[True][ext]) for ext in sorted(exts) if ext
+        ]
 
     def to_tree(self):
         """
@@ -118,7 +115,6 @@ class Manifest(Serialisable):
         tree.set("xmlns", CONTYPES_NS)
         return tree
 
-
     def __contains__(self, content_type):
         """
         Check whether a particular content type is contained
@@ -126,7 +122,6 @@ class Manifest(Serialisable):
         for t in self.Override:
             if t.ContentType == content_type:
                 return True
-
 
     def find(self, content_type):
         """
@@ -137,7 +132,6 @@ class Manifest(Serialisable):
         except StopIteration:
             return
 
-
     def findall(self, content_type):
         """
         Find all elements of a specific content-type
@@ -145,7 +139,6 @@ class Manifest(Serialisable):
         for t in self.Override:
             if t.ContentType == content_type:
                 yield t
-
 
     def append(self, obj):
         """
@@ -155,7 +148,6 @@ class Manifest(Serialisable):
         ct = Override(PartName=obj.path, ContentType=obj.mime_type)
         self.Override.append(ct)
 
-
     def _write(self, archive, workbook):
         """
         Write manifest to the archive
@@ -164,7 +156,6 @@ class Manifest(Serialisable):
         self._write_vba(workbook)
         self._register_mimetypes(filenames=archive.namelist())
         archive.writestr(self.path, tostring(self.to_tree()))
-
 
     def _register_mimetypes(self, filenames):
         """
@@ -177,7 +168,6 @@ class Manifest(Serialisable):
             mime = mimetypes.types_map[True][ext]
             fe = FileExtension(ext[1:], mime)
             self.Default.append(fe)
-
 
     def _write_vba(self, workbook):
         """

@@ -1,13 +1,15 @@
 # Copyright (c) 2010-2024 openpyxl
-
 import pytest
 
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def LineProperties():
     from ..line import LineProperties
+
     return LineProperties
 
 
@@ -25,7 +27,6 @@ class TestLineProperties:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_color(self, LineProperties):
         line = LineProperties(w=10)
         line.solidFill = "FF0000"
@@ -40,7 +41,6 @@ class TestLineProperties:
             """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, LineProperties):
         src = """
@@ -57,6 +57,7 @@ class TestLineProperties:
 @pytest.fixture
 def LineEndProperties():
     from ..line import LineEndProperties
+
     return LineEndProperties
 
 
@@ -71,7 +72,6 @@ class TestLineEndProperties:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, LineEndProperties):
         src = """
         <end />
@@ -84,6 +84,7 @@ class TestLineEndProperties:
 @pytest.fixture
 def DashStop():
     from ..line import DashStop
+
     return DashStop
 
 
@@ -97,7 +98,6 @@ class TestDashStop:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, DashStop):
         src = """
