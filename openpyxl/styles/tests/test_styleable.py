@@ -129,3 +129,85 @@ class TestNamedStyle:
         assert s1.pivotButton is False
         s1.pivotButton = True
         assert s1.pivotButton is True
+
+
+def test_styles_for_merged_cells(tmpdir):
+    """
+    Test styles for merged cells
+    """
+    tmpdir.chdir()
+    from openpyxl import Workbook
+    from openpyxl.styles.alignment import Alignment
+    from openpyxl.styles.borders import BORDER_THIN
+    from openpyxl.styles.borders import Border
+    from openpyxl.styles.borders import Side
+    from openpyxl.styles.colors import BLACK
+    from openpyxl.styles.fills import FILL_PATTERN_DARKGRAY
+    from openpyxl.styles.fills import PatternFill
+    from openpyxl.styles.fonts import Font
+    from openpyxl.styles.numbers import FORMAT_GENERAL
+    from openpyxl.styles.numbers import FORMAT_NUMBER_00
+    from openpyxl.styles.protection import Protection
+
+    alignment = Alignment(horizontal="center", vertical="center")
+
+    side = Side(style=BORDER_THIN, color=BLACK)
+    border = Border(left=side, right=side, top=side, bottom=side)
+
+    fill = PatternFill(fill_type=FILL_PATTERN_DARKGRAY)
+
+    font = Font(name="Arial", size=9)
+
+    style = NamedStyle("test_style", border=border)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.merge_cells("A1:B2")
+    ws["A1"].alignment = alignment
+    ws["A1"].border = border
+    ws["A1"].fill = fill
+    ws["A1"].font = font
+    ws["A1"].number_format = FORMAT_NUMBER_00
+    ws["A1"].protection = Protection(False, True)
+    ws.merge_cells("A3:B3")
+    ws["A3"].style = style
+
+    # TODO
+    # A bug that requires mandatory fixing.
+    # You can't use write-read, because when reading ReadOnly,
+    # the style property is not loaded, and when reading normally,
+    # the applied styles for MergedCell objects are lost.
+    # from openpyxl import load_workbook
+    # xlsx_file = "merged_cells_styles.xlsx"
+    # wb.save(xlsx_file)
+    # wb = load_workbook(xlsx_file, read_only=True)
+    # ws = wb.active
+
+    for row in ws["A1:B2"]:
+        for cell in row:
+            assert cell.alignment == alignment
+            assert cell.border == border
+            assert cell.fill == fill
+            assert cell.font == font
+            assert cell.number_format == FORMAT_NUMBER_00
+            assert cell.protection == Protection(False, True)
+    assert ws["A3"].style == style
+    assert ws["B3"].style == style
+    del ws["A1"].alignment
+    del ws["A1"].border
+    del ws["A1"].fill
+    del ws["A1"].font
+    del ws["A1"].number_format
+    del ws["A1"].protection
+    del ws["A3"].style
+    for row in ws["A1:B2"]:
+        for cell in row:
+            assert cell.alignment == Alignment()
+            assert cell.border == Border()
+            assert cell.fill == PatternFill()
+            assert cell.font == Font()
+            assert cell.number_format == FORMAT_GENERAL
+            assert cell.protection == Protection()
+    assert ws["A3"].style == "Normal"
+    assert ws["B3"].style == "Normal"
+

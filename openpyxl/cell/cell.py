@@ -16,11 +16,16 @@ from copy import copy
 
 from openpyxl.cell.rich_text import CellRichText
 from openpyxl.compat import NUMERIC_TYPES
+from openpyxl.styles import Alignment
+from openpyxl.styles import Border
+from openpyxl.styles import Font
+from openpyxl.styles import PatternFill
+from openpyxl.styles import Protection
 from openpyxl.styles import is_date_format
 from openpyxl.styles import numbers
-from openpyxl.styles.styleable import NumberFormatDescriptor
+from openpyxl.styles.numbers import FORMAT_GENERAL
+from openpyxl.styles.styleable import NamedStyleDescriptor
 from openpyxl.styles.styleable import StyleableObject
-from openpyxl.styles.styleable import StyleDescriptor
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.exceptions import IllegalCharacterError
 from openpyxl.worksheet.formula import ArrayFormula
@@ -286,6 +291,117 @@ class Cell(StyleableObject):
         elif value is None and self._comment:
             self._comment.unbind()
         self._comment = value
+
+    def set_style_to_merged_cells(self, key, value):
+        if self.coordinate in self.parent.merged_cells:
+            rows = self.parent[self.parent.merged_cells[self.coordinate]]
+            for row in rows:
+                for cell in row:
+                    if cell != self:
+                        if key != 'style':
+                            setattr(cell, key, value)
+                        else:
+                            NamedStyleDescriptor().__set__(cell, value)
+
+    @property
+    def alignment(self):
+        return self._alignment
+
+    @alignment.setter
+    def alignment(self, value):
+        self._alignment = value
+        self.set_style_to_merged_cells("alignment", value)
+
+    @alignment.deleter
+    def alignment(self):
+        self._alignment = Alignment()
+        self.set_style_to_merged_cells("alignment", Alignment())
+
+    @property
+    def border(self):
+        return self._border
+
+    @border.setter
+    def border(self, value):
+        self._border = value
+        self.set_style_to_merged_cells("border", value)
+
+    @border.deleter
+    def border(self):
+        self._border = Border()
+        self.set_style_to_merged_cells("border", Border())
+
+    @property
+    def fill(self):
+        return self._fill
+
+    @fill.setter
+    def fill(self, value):
+        self._fill = value
+        self.set_style_to_merged_cells("fill", value)
+
+    @fill.deleter
+    def fill(self):
+        self._fill = PatternFill()
+        self.set_style_to_merged_cells("fill", PatternFill())
+
+    @property
+    def font(self):
+        return self._font
+
+    @font.setter
+    def font(self, value):
+        self._font = value
+        self.set_style_to_merged_cells("font", value)
+
+    @font.deleter
+    def font(self):
+        self._font = Font()
+        self.set_style_to_merged_cells("font", Font())
+
+    @property
+    def number_format(self):
+        return self._number_format
+
+    @number_format.setter
+    def number_format(self, value):
+        self._number_format = value
+        self.set_style_to_merged_cells("number_format", value)
+
+    @number_format.deleter
+    def number_format(self):
+        self._number_format = FORMAT_GENERAL
+        self.set_style_to_merged_cells("number_format", FORMAT_GENERAL)
+
+    @property
+    def protection(self):
+        return self._protection
+
+    @protection.setter
+    def protection(self, value):
+        self._protection = value
+        self.set_style_to_merged_cells("protection", value)
+
+    @protection.deleter
+    def protection(self):
+        self._protection = Protection()
+        self.set_style_to_merged_cells("protection", Protection())
+
+    @property
+    def style(self):
+        return NamedStyleDescriptor().__get__(self)
+
+    @style.setter
+    def style(self, value):
+        NamedStyleDescriptor().__set__(self, value)
+        style = NamedStyleDescriptor().__get__(self)
+        self.set_style_to_merged_cells("style", style)
+
+    @style.deleter
+    def style(self):
+        NamedStyleDescriptor().__set__(self, "Normal")
+        self.set_style_to_merged_cells("style", "Normal")
+
 
 
 class MergedCell(StyleableObject):

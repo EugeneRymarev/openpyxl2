@@ -107,13 +107,12 @@ class StyleableObject:
     Base class for styleble objects implementing proxy and lookup functions
     """
 
-    font = StyleDescriptor("_fonts", "fontId")
-    fill = StyleDescriptor("_fills", "fillId")
-    border = StyleDescriptor("_borders", "borderId")
-    number_format = NumberFormatDescriptor()
-    protection = StyleDescriptor("_protections", "protectionId")
-    alignment = StyleDescriptor("_alignments", "alignmentId")
-    style = NamedStyleDescriptor()
+    _alignment = StyleDescriptor("_alignments", "alignmentId")
+    _border = StyleDescriptor("_borders", "borderId")
+    _fill = StyleDescriptor("_fills", "fillId")
+    _font = StyleDescriptor("_fonts", "fontId")
+    _number_format = NumberFormatDescriptor()
+    _protection = StyleDescriptor("_protections", "protectionId")
     quotePrefix = StyleArrayDescriptor("quotePrefix")
     pivotButton = StyleArrayDescriptor("pivotButton")
 
@@ -136,3 +135,87 @@ class StyleableObject:
         if self._style is None:
             return False
         return any(self._style)
+
+    @property
+    def alignment(self):
+        return self._alignment
+
+    @alignment.setter
+    def alignment(self, value):
+        self._alignment = value
+
+    @alignment.deleter
+    def alignment(self):
+        self._alignment = StyleDescriptor("_alignments", "alignmentId")
+
+    @property
+    def border(self):
+        return self._border
+
+    @border.setter
+    def border(self, value):
+        self._border = value
+
+    @border.deleter
+    def border(self):
+        self._border = StyleDescriptor("_borders", "borderId")
+
+    @property
+    def fill(self):
+        return self._fill
+
+    @fill.setter
+    def fill(self, value):
+        self._fill = value
+
+    @fill.deleter
+    def fill(self):
+        self._fill = StyleDescriptor("_fills", "fillId")
+
+    @property
+    def font(self):
+        return self._font
+
+    @font.setter
+    def font(self, value):
+        self._font = value
+
+    @font.deleter
+    def font(self):
+        self._font = StyleDescriptor("_fonts", "fontId")
+
+    @property
+    def number_format(self):
+        return self._number_format
+
+    @number_format.setter
+    def number_format(self, value):
+        self._number_format = value
+
+    @number_format.deleter
+    def number_format(self):
+        self._number_format = NumberFormatDescriptor()
+
+    @property
+    def protection(self):
+        return self._protection
+
+    @protection.setter
+    def protection(self, value):
+        self._protection = value
+
+    @protection.deleter
+    def protection(self):
+        self._protection = StyleDescriptor("_protections", "protectionId")
+
+    @property
+    def style(self):
+        return NamedStyleDescriptor().__get__(self)
+
+    @style.setter
+    def style(self, value):
+        NamedStyleDescriptor().__set__(self, value)
+
+    @style.deleter
+    def style(self):
+        NamedStyleDescriptor().__set__(self, "Normal")
