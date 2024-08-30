@@ -279,3 +279,14 @@ class TestNamedStyleList:
         styles = NamedStyleList()
         with pytest.raises(KeyError):
             styles["special"]
+
+    def test_styles_equal(self, NamedStyle):
+        style1 = NamedStyle(name="special")
+        style2 = NamedStyle(name="special")
+        assert style1 == style2
+        style1 = "special"
+        style2 = NamedStyle(name="special")
+        assert style1 == style2
+        style1 = NamedStyle(name="special")
+        style2 = "special"
+        assert style1 == style2

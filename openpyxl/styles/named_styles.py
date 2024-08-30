@@ -1,4 +1,5 @@
 # Copyright (c) 2010-2024 openpyxl
+from ..utils.exceptions import NotNamedStyleOrStrException
 from .alignment import Alignment
 from .borders import Border
 from .cell_style import CellStyle
@@ -124,6 +125,13 @@ class NamedStyle(Serialisable):
             xfId=self._style.xfId,
         )
         return named
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
+        elif isinstance(other, NamedStyle):
+            return self.name == other.name
+        raise NotNamedStyleOrStrException("Right argument must be NamedStyle or str")
 
 
 class NamedStyleList(list):

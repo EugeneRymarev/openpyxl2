@@ -34,3 +34,7 @@ class WorkbookAlreadySaved(Exception):
 
 class CellNotMergedException(Exception):
     """Error while trying to get list of merged cells"""
+
+
+class NotNamedStyleOrStrException(Exception):
+    """Error while trying to compare NamedStyle not another NamedStyle or str"""
