@@ -389,13 +389,12 @@ class Cell(StyleableObject):
 
     @property
     def style(self):
-        return NamedStyleDescriptor().__get__(self)
+        return NamedStyleDescriptor().__get__(self, None)
 
     @style.setter
     def style(self, value):
         NamedStyleDescriptor().__set__(self, value)
-        style = NamedStyleDescriptor().__get__(self)
-        self.set_style_to_merged_cells("style", style)
+        self.set_style_to_merged_cells("style", value)
 
     @style.deleter
     def style(self):

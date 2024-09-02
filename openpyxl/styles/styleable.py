@@ -210,7 +210,7 @@ class StyleableObject:
 
     @property
     def style(self):
-        return NamedStyleDescriptor().__get__(self)
+        return NamedStyleDescriptor().__get__(self, None)
 
     @style.setter
     def style(self, value):
