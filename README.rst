@@ -1,6 +1,37 @@
-.. image:: https://coveralls.io/repos/bitbucket/openpyxl/openpyxl/badge.svg?branch=default
-    :target: https://coveralls.io/bitbucket/openpyxl/openpyxl?branch=default
+.. image:: https://coveralls.io/repos/github/EugeneRymarev/openpyxl2/badge.svg?branch=master
+    :target: https://coveralls.io/github/EugeneRymarev/openpyxl2?branch=master
     :alt: coverage status
+
+
+About This Fork
+---------------
+
+This is a fork of the `original library <https://foss.heptapod.net/openpyxl/openpyxl>`_.
+
+I made it because I disagree with the author's opinion on some issues regarding the result of some functions. The list of differences will be provided below.
+
+
+Differences
+-----------
+
+* All code (except documentation) is processed by Black and reorder-python-imports modules
+* MultiCellRange can now return a CellRange for any of the merged cells.
+* Now you can compare NamedStyle styles and style names
+* Now Alignment, Border, Font, Fill, Protection, NumberFormat and Style are applied to all merged cells. Explanation below.
+
+Explanation
+-----------
+At the moment, the function of applying styles to all merged cells works only when saving and when reading in read-only mode.
+
+If you read a file with merged cells, then MergedCell will not have any of the properties - they are replaced by the _clean_merge_range function.
+
+As a result, after reading and saving, the styles of merged cells are lost.
+
+This behavior will be fixed in the future.
+
+In progress
+------------
+* Fix the problem with the insert_rows, insert_cols, delete_rows, delete_cols functions so that the result of executing these functions matches the result of executing similar actions in Excel.
 
 Introduction
 ------------
