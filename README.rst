@@ -1,4 +1,4 @@
-.. image:: https://coveralls.io/repos/bitbucket/openpyxl/openpyxl/badge.svg?branch=default
+.. image:: image:: https://foss.heptapod.net/openpyxl/openpyxl/badges/branch/default/coverage.svg
     :target: https://coveralls.io/bitbucket/openpyxl/openpyxl?branch=default
     :alt: coverage status
 
