@@ -1,4 +1,4 @@
-.. image:: https://coveralls.io/repos/bitbucket/openpyxl/openpyxl/badge.svg?branch=default
+.. image:: image:: https://foss.heptapod.net/openpyxl/openpyxl/badges/branch/default/coverage.svg
     :target: https://coveralls.io/bitbucket/openpyxl/openpyxl?branch=default
     :alt: coverage status
 
@@ -50,10 +50,10 @@ Sample code::
 Documentation
 -------------
 
-The documentation is at: https://openpyxl.readthedocs.io
+The documentation is at: https://openpyxl.pages.heptapod.net/openpyxl/index.html
 
 * installation methods
 * code examples
 * instructions for contributing
 
-Release notes: https://openpyxl.readthedocs.io/en/stable/changes.html
+Release notes: https://openpyxl.pages.heptapod.net/openpyxl/changes.html
