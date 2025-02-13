@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 
 def hash_password(plaintext_password=''):

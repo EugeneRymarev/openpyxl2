@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 """Workbook is the top-level container for all document information."""
 from copy import copy
