@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 from io import BytesIO
 
@@ -39,7 +39,7 @@ class Image:
     rel_type = IMAGE_NS
 
     # Also know as Alt Text, but the xml tag refers to 'descr'
-    desc = None 
+    desc = None
 
     def __init__(self, img, desc = None):
 
