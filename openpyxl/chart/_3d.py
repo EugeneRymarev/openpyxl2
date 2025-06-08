@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 from openpyxl.descriptors import Typed, Alias
 from openpyxl.descriptors.serialisable import Serialisable
@@ -102,4 +102,4 @@ class _3DBase(Serialisable):
         if backWall is None:
             backWall = Surface()
         self.backWall = backWall
-        super(_3DBase, self).__init__()
+        super().__init__()

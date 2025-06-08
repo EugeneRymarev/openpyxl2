@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 import pytest
 
@@ -28,6 +28,7 @@ class TestTitle:
               </a:p>
             </rich>
           </tx>
+          <overlay val="0" />
         </title>
         """
         diff = compare_xml(xml, expected)
@@ -62,6 +63,7 @@ def test_title_maker():
                   <a:defRPr />
                 </a:pPr>
                 <a:r>
+                  <a:rPr sz="1800" />
                   <a:t>Two-line</a:t>
                 </a:r>
               </a:p>
@@ -70,11 +72,13 @@ def test_title_maker():
                   <a:defRPr />
                 </a:pPr>
                 <a:r>
+                  <a:rPr sz="1800" />
                   <a:t>Text</a:t>
                 </a:r>
               </a:p>
             </rich>
           </tx>
+    <overlay val="0" />
     </title>
     """
     diff = compare_xml(xml, expected)

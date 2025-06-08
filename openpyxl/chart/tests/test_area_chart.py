@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 import pytest
 
@@ -110,6 +110,7 @@ class TestAreaChart:
            </plotArea>
            <legend>
              <legendPos val="r"></legendPos>
+             <overlay val="0" />
            </legend>
            <plotVisOnly val="1" />
            <dispBlanksAs val="gap"></dispBlanksAs>

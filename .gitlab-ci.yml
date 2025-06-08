@@ -19,6 +19,7 @@ test-optional:
   script:
     tox -e lxml,nolxml,pandas,numpy,nopillow,xfail,defusedxml,keep_vba
 
+
 test-docs:
    <<: *unit
    script:
@@ -30,11 +31,13 @@ test-docs:
      paths:
      - docs.zip
 
+
 test-python38:
   <<: *unit
   image: python:3.8
   variables:
     TOXENV: py38
+
 
 test-python39:
   <<: *unit
@@ -42,11 +45,13 @@ test-python39:
   variables:
     TOXENV: py39
 
+
 test-python310:
   <<: *unit
   image: python:3.10
   variables:
     TOXENV: py310
+
 
 test-python311:
   <<: *unit
@@ -54,23 +59,25 @@ test-python311:
   variables:
     TOXENV: py311
 
+
 test-python312:
   <<: *unit
   image: python:3.12
   variables:
     TOXENV: py312
 
-# test-python313:
-#   <<: *unit
-#   image: python:3.13-rc
-#   variables:
-#     TOXENV: py313
+test-python313:
+  <<: *unit
+  image: python:3.13
+  variables:
+    TOXENV: py313
 
 # test-pypy3:
 #   <<: *unit
 #   image: pypy:3
 #   variables:
 #     TOXENV: pypy3
+
 
 test-coverage:
   <<: *unit

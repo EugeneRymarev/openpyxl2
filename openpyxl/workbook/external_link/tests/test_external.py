@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 from zipfile import ZipFile
 
@@ -150,7 +150,7 @@ def test_write_workbook(datadir, tmpdir):
     src.close()
 
     from openpyxl import load_workbook
-    wb = load_workbook("book1.xlsx")
+    wb = load_workbook("book1.xlsx", keep_links=True)
     tmpdir.chdir()
     wb.save("book1.xlsx")
 

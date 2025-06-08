@@ -1,9 +1,8 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.descriptors import (
     Typed,
-    Integer,
     Alias,
     Sequence,
 )
@@ -62,7 +61,7 @@ class Legend(Serialisable):
                  legendPos="r",
                  legendEntry=(),
                  layout=None,
-                 overlay=None,
+                 overlay=False,
                  spPr=None,
                  txPr=None,
                  extLst=None,

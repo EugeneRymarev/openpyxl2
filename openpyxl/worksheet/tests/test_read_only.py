@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 
 from io import BytesIO
 from zipfile import ZipFile
@@ -238,10 +238,12 @@ def test_implementation_compatbility(ReadOnlyWorksheet, DummyWorkbook):
                     '_print_cols',
                     '_print_rows',
                     '_rels',
+                    '_shapes',
                     '_tables',
                     'auto_filter',
                     'col_breaks',
                     'column_dimensions',
+                    'controls',
                     'conditional_formatting',
                     'data_validations',
                     'legacy_drawing',

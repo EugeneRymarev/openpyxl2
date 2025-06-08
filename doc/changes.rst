@@ -1,6 +1,52 @@
+3.2.0 (unreleased)
+==================
+
+
+New Features
+------------
+
+* Support Active X elements
+* Support Form Controls
+* Support for documents with volatile dependencies
+* Support for documents with external connections
+
+
+Deprecations
+------------
+
+* Python 3.6 is no longer supported
+* Cell.internal_value has been removed
+
+
+Changes
+-------
+
+* Workbooks use ISO dates by default
+* Workbooks no longer load external links by default `load_workbook(keep_links=False)`
+
+
+Bugfixes
+--------
+
+* `#1855 <https://foss.heptapod.net/openpyxl/openpyxl/-/issues/1855>`_ Openpyxl implicitly allows 1900-02-29
+
+
+3.1.6 (unreleased)
+==================
+
+
+Bugfixes
+--------
+
+* Make title and legend default settings explicit to workaround weird Excel bugs
+
+
 3.1.5 (2024-06-28)
 ==================
 
+
+Bugfixes
+--------
 
 * `#2187 <https://foss.heptapod.net/openpyxl/openpyxl/-/issues/2187>`_ Test fails due to change in Numpy API
 * `#2198 <https://foss.heptapod.net/openpyxl/openpyxl/-/issues/2198>`_ Excel is very fussy about the version number
@@ -9,6 +55,10 @@
 
 3.1.4 (2024-06-12)
 ==================
+
+
+Bugfixes
+--------
 
 * `#2189 <https://foss.heptapod.net/openpyxl/openpyxl/-/issues/2189>`_ Assigning named styles doesn't work
 * `#2190 <https://foss.heptapod.net/openpyxl/openpyxl/-/issues/2190>`_ Problems caused when saving workbooks created by LibreOffice
@@ -55,7 +105,6 @@ Changes
 
 * `#1963 <https://foss.heptapod.net/openpyxl/openpyxl/-/issues/1963>`_ Cannot read worksheets in read-only mode with locally scoped definitions
 * `#1974 <https://foss.heptapod.net/openpyxl/openpyxl/-/issues/1974>`_ Empty custom properties cause invalid files
-
 
 
 

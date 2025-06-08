@@ -1,5 +1,5 @@
 
-# Copyright (c) 2010-2024 openpyxl
+# Copyright (c) 2010-2025 openpyxl
 import pytest
 
 from openpyxl.xml.functions import fromstring, tostring
@@ -19,6 +19,7 @@ class TestLegend:
         expected = """
         <legend>
           <legendPos val="r" />
+          <overlay val="0" />
         </legend>
         """
         diff = compare_xml(xml, expected)
