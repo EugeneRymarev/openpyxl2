@@ -1,11 +1,9 @@
 # Copyright (c) 2010-2025 openpyxl
-
+from openpyxl.descriptors import Integer
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import String
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Sequence,
-    String,
-    Integer,
-)
+
 
 class FunctionGroup(Serialisable):
 
@@ -13,9 +11,10 @@ class FunctionGroup(Serialisable):
 
     name = String()
 
-    def __init__(self,
-                 name=None,
-                ):
+    def __init__(
+        self,
+        name=None,
+    ):
         self.name = name
 
 
@@ -26,11 +25,12 @@ class FunctionGroupList(Serialisable):
     builtInGroupCount = Integer(allow_none=True)
     functionGroup = Sequence(expected_type=FunctionGroup, allow_none=True)
 
-    __elements__ = ('functionGroup',)
+    __elements__ = ("functionGroup",)
 
-    def __init__(self,
-                 builtInGroupCount=16,
-                 functionGroup=(),
-                ):
+    def __init__(
+        self,
+        builtInGroupCount=16,
+        functionGroup=(),
+    ):
         self.builtInGroupCount = builtInGroupCount
         self.functionGroup = functionGroup

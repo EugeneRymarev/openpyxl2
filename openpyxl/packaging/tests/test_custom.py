@@ -1,14 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-import pytest
 import datetime
 
-from openpyxl.xml.functions import fromstring, tostring
+import pytest
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def CustomDocumentProperty():
     from ..custom import _CustomDocumentProperty
+
     return _CustomDocumentProperty
 
 
@@ -27,7 +29,6 @@ class TestCustomDocumentProperty:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, CustomDocumentProperty):
         src = """
         <property name="PropName1" pid="0" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}">
@@ -36,7 +37,11 @@ class TestCustomDocumentProperty:
         """
         node = fromstring(src)
         prop = CustomDocumentProperty.from_tree(node)
-        assert prop.filetime == datetime.datetime(2020, 8, 24, hour=20, minute=19, second=22) and prop.name == "PropName1"
+        assert (
+            prop.filetime
+            == datetime.datetime(2020, 8, 24, hour=20, minute=19, second=22)
+            and prop.name == "PropName1"
+        )
 
         src = """
         <property name="PropName4" pid="0" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" linkTarget="ExampleName">
@@ -46,7 +51,6 @@ class TestCustomDocumentProperty:
         node = fromstring(src)
         prop = CustomDocumentProperty.from_tree(node)
         assert prop.linkTarget == "ExampleName" and prop.name == "PropName4"
-
 
     def test_read_empty(self, CustomDocumentProperty):
         src = """
@@ -58,9 +62,9 @@ class TestCustomDocumentProperty:
         prop = CustomDocumentProperty.from_tree(node)
         assert prop.type == "lpwstr"
 
-
     def test_write_empty(self, CustomDocumentProperty):
         from openpyxl.xml.constants import VTYPES_NS
+
         prop = CustomDocumentProperty(name="A name", lpwstr=None)
         node = prop.to_tree()
         expected = """
@@ -76,16 +80,20 @@ class TestCustomDocumentProperty:
 @pytest.fixture
 def CustomDocumentPropertyList():
     from ..custom import _CustomDocumentPropertyList
+
     return _CustomDocumentPropertyList
 
 
 class TestCustomDocumentProperyList:
 
-
     def test_ctor(self, CustomDocumentPropertyList, CustomDocumentProperty):
 
-        prop1 = CustomDocumentProperty(name="PropName1", filetime=datetime.datetime(2020, 8, 24, 20, 19, 22))
-        prop2 = CustomDocumentProperty(name="PropName2", linkTarget="ExampleName", lpwstr="")
+        prop1 = CustomDocumentProperty(
+            name="PropName1", filetime=datetime.datetime(2020, 8, 24, 20, 19, 22)
+        )
+        prop2 = CustomDocumentProperty(
+            name="PropName2", linkTarget="ExampleName", lpwstr=""
+        )
         prop3 = CustomDocumentProperty(name="PropName3", r8=2.5)
 
         props = CustomDocumentPropertyList(property=[prop1, prop2, prop3])
@@ -107,7 +115,6 @@ class TestCustomDocumentProperyList:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, CustomDocumentPropertyList, CustomDocumentProperty):
         src = """
         <Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
@@ -126,11 +133,14 @@ class TestCustomDocumentProperyList:
         props = CustomDocumentPropertyList.from_tree(node)
 
         assert props.customProps == [
-            CustomDocumentProperty(name="PropName1", filetime=datetime.datetime(2020, 8, 24, 20, 19, 22), pid=2),
+            CustomDocumentProperty(
+                name="PropName1",
+                filetime=datetime.datetime(2020, 8, 24, 20, 19, 22),
+                pid=2,
+            ),
             CustomDocumentProperty(name="PropName2", r8=2.5, pid=3),
             CustomDocumentProperty(name="PropName3", bool=True, pid=4),
         ]
-
 
     def test_len(self, CustomDocumentPropertyList):
         props = CustomDocumentPropertyList()
@@ -140,6 +150,7 @@ class TestCustomDocumentProperyList:
 @pytest.fixture
 def CustomPropertyList():
     from ..custom import CustomPropertyList
+
     return CustomPropertyList
 
 
@@ -152,25 +163,25 @@ from ..custom import (
     LinkProperty,
 )
 
-class TestTypedPropertyList:
 
+class TestTypedPropertyList:
 
     def test_ctor(self, CustomPropertyList):
         prop_list = CustomPropertyList()
         assert prop_list.props == []
 
-
     def test_len(self, CustomPropertyList):
         prop_list = CustomPropertyList()
-        assert len(prop_list) ==  0
-
+        assert len(prop_list) == 0
 
     def test_repr(self, CustomPropertyList):
         prop_list = CustomPropertyList()
         prop_list.append(StringProperty(name="PropName1", value="Something"))
 
-        assert repr(prop_list) == "CustomPropertyList containing [StringProperty, name=PropName1, value=Something]"
-
+        assert (
+            repr(prop_list)
+            == "CustomPropertyList containing [StringProperty, name=PropName1, value=Something]"
+        )
 
     def test_get_item(self, CustomPropertyList):
         prop_list = CustomPropertyList()
@@ -179,13 +190,11 @@ class TestTypedPropertyList:
 
         assert prop_list["PropName1"] == prop
 
-
     def test_get_item_missing(self, CustomPropertyList):
-        prop_list =  CustomPropertyList()
+        prop_list = CustomPropertyList()
 
         with pytest.raises(KeyError):
             prop_list["PropName1"]
-
 
     def test_delete(self, CustomPropertyList):
         prop_list = CustomPropertyList()
@@ -194,13 +203,11 @@ class TestTypedPropertyList:
         del prop_list["a prop"]
         assert prop_list.props == []
 
-
     def test_delete_missing(self, CustomPropertyList):
-        prop_list =  CustomPropertyList()
+        prop_list = CustomPropertyList()
 
         with pytest.raises(KeyError):
             del prop_list["PropName1"]
-
 
     def test_string(self, CustomPropertyList):
         prop = StringProperty(name="PropName1", value="Something")
@@ -219,7 +226,6 @@ class TestTypedPropertyList:
 
         assert diff is None, diff
 
-
     def test_int(self, CustomPropertyList):
         prop = IntProperty(name="PropName1", value=15)
         prop_list = CustomPropertyList()
@@ -236,7 +242,6 @@ class TestTypedPropertyList:
         diff = compare_xml(xml, expected)
 
         assert diff is None, diff
-
 
     def test_float(self, CustomPropertyList):
         prop = IntProperty(name="PropName1", value=15)
@@ -255,7 +260,6 @@ class TestTypedPropertyList:
 
         assert diff is None, diff
 
-
     def test_bool(self, CustomPropertyList):
         prop = BoolProperty(name="PropName1", value=False)
         prop_list = CustomPropertyList()
@@ -273,9 +277,10 @@ class TestTypedPropertyList:
 
         assert diff is None, diff
 
-
     def test_datetime(self, CustomPropertyList):
-        prop = DateTimeProperty(name="PropName1", value=datetime.datetime(2022, 5, 31, 12, 55, 13))
+        prop = DateTimeProperty(
+            name="PropName1", value=datetime.datetime(2022, 5, 31, 12, 55, 13)
+        )
         prop_list = CustomPropertyList()
         prop_list.append(prop)
 
@@ -290,7 +295,6 @@ class TestTypedPropertyList:
         diff = compare_xml(xml, expected)
 
         assert diff is None, diff
-
 
     def test_link(self, CustomPropertyList):
         prop = LinkProperty(name="PropName1", value="A link")
@@ -309,23 +313,20 @@ class TestTypedPropertyList:
 
         assert diff is None, diff
 
-
     def test_names(self, CustomPropertyList):
         prop1 = StringProperty(name="PropName1", value="Something")
         prop2 = LinkProperty(name="PropName2", value="A link")
-        prop_list= CustomPropertyList()
+        prop_list = CustomPropertyList()
         prop_list.props = [prop1, prop2]
         assert prop_list.names == ["PropName1", "PropName2"]
-
 
     def test_duplicate(self, CustomPropertyList):
         prop1 = StringProperty(name="PropName1", value="Something")
         prop2 = LinkProperty(name="PropName1", value="A link")
-        prop_list= CustomPropertyList()
+        prop_list = CustomPropertyList()
         prop_list.props = [prop1]
         with pytest.raises(ValueError):
             prop_list.append(prop2)
-
 
     def test_from_link(self, CustomPropertyList):
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
@@ -338,7 +339,6 @@ class TestTypedPropertyList:
 
         assert new_props.props[0] == LinkProperty(name="PropName1", value="A link")
 
-
     def test_from_datetime(self, CustomPropertyList):
 
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
@@ -349,8 +349,9 @@ class TestTypedPropertyList:
         tree = fromstring(src)
         new_props = CustomPropertyList.from_tree(tree)
 
-        assert new_props.props[0] == DateTimeProperty(name="PropName1", value=datetime.datetime(2022, 5, 31, 12, 55, 13))
-
+        assert new_props.props[0] == DateTimeProperty(
+            name="PropName1", value=datetime.datetime(2022, 5, 31, 12, 55, 13)
+        )
 
     def test_from_string(self, CustomPropertyList):
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
@@ -363,7 +364,6 @@ class TestTypedPropertyList:
 
         assert new_props.props[0] == StringProperty(name="PropName1", value="Something")
 
-
     def test_from_empty_string(self, CustomPropertyList):
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
           <property name="PropName1" pid="2" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}">
@@ -374,7 +374,6 @@ class TestTypedPropertyList:
         new_props = CustomPropertyList.from_tree(tree)
 
         assert new_props.props[0] == StringProperty(name="PropName1", value=None)
-
 
     def test_from_float(self, CustomPropertyList):
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
@@ -387,7 +386,6 @@ class TestTypedPropertyList:
 
         assert new_props.props[0] == FloatProperty(name="PropName1", value=15)
 
-
     def test_from_int(self, CustomPropertyList):
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
           <property name="PropName1" pid="2" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}">
@@ -398,7 +396,6 @@ class TestTypedPropertyList:
         new_props = CustomPropertyList.from_tree(tree)
 
         assert new_props.props[0] == IntProperty(name="PropName1", value=15)
-
 
     def test_from_bool(self, CustomPropertyList):
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
@@ -411,7 +408,6 @@ class TestTypedPropertyList:
 
         assert new_props.props[0] == BoolProperty(name="PropName1", value=False)
 
-
     def test_unknown_type(self, CustomPropertyList, recwarn):
         src = """<Properties xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties">
           <property name="PropName1" pid="2" fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}">
@@ -422,7 +418,6 @@ class TestTypedPropertyList:
 
         new_props = CustomPropertyList.from_tree(tree)
         assert recwarn.pop().category == UserWarning
-
 
     def test_cant_adapt(self, CustomPropertyList):
         from ..custom import _TypedProperty

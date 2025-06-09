@@ -1,18 +1,18 @@
 # Copyright (c) 2010-2025 openpyxl
-import pytest
-
 from io import BytesIO
 from zipfile import ZipFile
 
+import pytest
 from openpyxl.packaging.manifest import Manifest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def PivotField():
     from ..table import PivotField
+
     return PivotField
 
 
@@ -27,7 +27,6 @@ class TestPivotField:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PivotField):
         src = """
         <pivotField />
@@ -40,6 +39,7 @@ class TestPivotField:
 @pytest.fixture
 def FieldItem():
     from ..table import FieldItem
+
     return FieldItem
 
 
@@ -54,7 +54,6 @@ class TestFieldItem:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, FieldItem):
         src = """
         <item m="1" x="2"/>
@@ -67,6 +66,7 @@ class TestFieldItem:
 @pytest.fixture
 def RowColItem():
     from ..table import RowColItem
+
     return RowColItem
 
 
@@ -83,7 +83,6 @@ class TestRowColItem:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, RowColItem):
         src = """
         <i r="1">
@@ -98,6 +97,7 @@ class TestRowColItem:
 @pytest.fixture
 def DataField():
     from ..table import DataField
+
     return DataField
 
 
@@ -112,19 +112,21 @@ class TestDataField:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DataField):
         src = """
         <dataField name="Sum of impressions" fld="4" baseField="0" baseItem="0"/>
         """
         node = fromstring(src)
         df = DataField.from_tree(node)
-        assert df == DataField(fld=4, name="Sum of impressions", baseField=0, baseItem=0)
+        assert df == DataField(
+            fld=4, name="Sum of impressions", baseField=0, baseItem=0
+        )
 
 
 @pytest.fixture
 def Location():
     from ..table import Location
+
     return Location
 
 
@@ -139,19 +141,21 @@ class TestLocation:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Location):
         src = """
         <location ref="A3:E14" firstHeaderRow="1" firstDataRow="2" firstDataCol="1"/>
         """
         node = fromstring(src)
         loc = Location.from_tree(node)
-        assert loc == Location(ref="A3:E14", firstHeaderRow=1, firstDataRow=2, firstDataCol=1)
+        assert loc == Location(
+            ref="A3:E14", firstHeaderRow=1, firstDataRow=2, firstDataCol=1
+        )
 
 
 @pytest.fixture
 def PivotTableStyle():
     from ..table import PivotTableStyle
+
     return PivotTableStyle
 
 
@@ -166,16 +170,18 @@ class TestPivotTableStyle:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PivotTableStyle):
         src = """
         <pivotTableStyleInfo name="PivotStyleMedium4" showRowHeaders="1" showColHeaders="1" showRowStripes="0" showColStripes="0" showLastColumn="1"/>
         """
         node = fromstring(src)
         style = PivotTableStyle.from_tree(node)
-        assert style == PivotTableStyle(name="PivotStyleMedium4",
-                                        showRowHeaders=True, showColHeaders=True, showLastColumn=True)
-
+        assert style == PivotTableStyle(
+            name="PivotStyleMedium4",
+            showRowHeaders=True,
+            showColHeaders=True,
+            showLastColumn=True,
+        )
 
     def test_no_name(self, PivotTableStyle):
         src = """
@@ -189,6 +195,7 @@ class TestPivotTableStyle:
 @pytest.fixture
 def TableDefinition():
     from ..table import TableDefinition
+
     return TableDefinition
 
 
@@ -198,11 +205,22 @@ def DummyPivotTable(TableDefinition, Location):
     Create a minimal pivot table
     """
     loc = Location(ref="A3:E14", firstHeaderRow=1, firstDataRow=2, firstDataCol=1)
-    defn = TableDefinition(name="PivotTable1", cacheId=68,
-                                applyWidthHeightFormats=True, dataCaption="Values", updatedVersion=4,
-                                createdVersion=4, gridDropZones=True, minRefreshableVersion=3,
-                                outlineData=True, useAutoFormatting=True, location=loc, indent=0,
-                                itemPrintTitles=True, outline=True)
+    defn = TableDefinition(
+        name="PivotTable1",
+        cacheId=68,
+        applyWidthHeightFormats=True,
+        dataCaption="Values",
+        updatedVersion=4,
+        createdVersion=4,
+        gridDropZones=True,
+        minRefreshableVersion=3,
+        outlineData=True,
+        useAutoFormatting=True,
+        location=loc,
+        indent=0,
+        itemPrintTitles=True,
+        outline=True,
+    )
     return defn
 
 
@@ -219,7 +237,6 @@ class TestPivotTableDefinition:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DummyPivotTable, TableDefinition):
         src = """
         <pivotTableDefinition name="PivotTable1"  applyNumberFormats="0" applyBorderFormats="0" applyFontFormats="0" applyPatternFormats="0" applyAlignmentFormats="0" applyWidthHeightFormats="1" cacheId="68" asteriskTotals="0" chartFormat="0" colGrandTotals="1" compact="1" compactData="1" dataCaption="Values" dataOnRows="0" disableFieldList="0" editData="0" enableDrill="1" enableFieldProperties="1" enableWizard="1" fieldListSortAscending="0" fieldPrintTitles="0" updatedVersion="4" minRefreshableVersion="3" useAutoFormatting="1" itemPrintTitles="1" createdVersion="4" indent="0" outline="1" outlineData="1" gridDropZones="1" immersive="1"  mdxSubqueries="0" mergeItem="0" multipleFieldFilters="0" pageOverThenDown="0" pageWrap="0" preserveFormatting="1" printDrill="0" published="0" rowGrandTotals="1" showCalcMbrs="1" showDataDropDown="1" showDataTips="1" showDrill="1" showDropZones="1" showEmptyCol="0" showEmptyRow="0" showError="0" showHeaders="1" showItems="1" showMemberPropertyTips="1" showMissing="1" showMultipleLabel="1" subtotalHiddenItems="0" visualTotals="1">
@@ -229,7 +246,6 @@ class TestPivotTableDefinition:
         node = fromstring(src)
         defn = TableDefinition.from_tree(node)
         assert defn == DummyPivotTable
-
 
     def test_write(self, DummyPivotTable):
         out = BytesIO()
@@ -241,7 +257,6 @@ class TestPivotTableDefinition:
         assert archive.namelist() == [defn.path[1:]]
         assert manifest.find(defn.mime_type)
 
-
     @pytest.mark.xfail
     def test_formatted_fields(self, TableDefinition, datadir):
         datadir.chdir()
@@ -249,12 +264,13 @@ class TestPivotTableDefinition:
             xml = src.read()
         tree = fromstring(xml)
         table = TableDefinition.from_tree(tree)
-        assert table.formatted_fields()== {'Count': [2, 1], 'Duration (minutes)': [3]}
+        assert table.formatted_fields() == {"Count": [2, 1], "Duration (minutes)": [3]}
 
 
 @pytest.fixture
 def PageField():
     from ..table import PageField
+
     return PageField
 
 
@@ -269,7 +285,6 @@ class TestPageField:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PageField):
         src = """
         <pageField fld="64" hier="-1"/>
@@ -282,6 +297,7 @@ class TestPageField:
 @pytest.fixture
 def Reference():
     from ..table import Reference
+
     return Reference
 
 
@@ -298,7 +314,6 @@ class TestReference:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Reference):
         src = """
         <reference field="4294967294" count="1" selected="0">
@@ -313,6 +328,7 @@ class TestReference:
 @pytest.fixture
 def PivotArea():
     from ..table import PivotArea
+
     return PivotArea
 
 
@@ -327,7 +343,6 @@ class TestPivotArea:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PivotArea):
         src = """
         <pivotArea type="data" outline="0" fieldPosition="0" />
@@ -340,6 +355,7 @@ class TestPivotArea:
 @pytest.fixture
 def ChartFormat():
     from ..table import ChartFormat
+
     return ChartFormat
 
 
@@ -357,7 +373,6 @@ class TestChartFormat:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ChartFormat, PivotArea):
         src = """
         <chartFormat chart="0" format="12" series="1">
@@ -373,6 +388,7 @@ class TestChartFormat:
 @pytest.fixture
 def PivotFilter():
     from ..table import PivotFilter
+
     return PivotFilter
 
 
@@ -384,6 +400,7 @@ def Autofilter():
         CustomFilter,
         CustomFilters,
     )
+
     cf1 = CustomFilter(operator="greaterThanOrEqual", val="1")
     cf2 = CustomFilter(operator="lessThanOrEqual", val="2")
     filters = CustomFilters(_and=True, customFilter=(cf1, cf2))
@@ -395,7 +412,9 @@ def Autofilter():
 class TestPivotFilter:
 
     def test_ctor(self, PivotFilter, Autofilter):
-        flt = PivotFilter(fld=0, id=6, evalOrder=-1, type="dateBetween", autoFilter=Autofilter)
+        flt = PivotFilter(
+            fld=0, id=6, evalOrder=-1, type="dateBetween", autoFilter=Autofilter
+        )
         xml = tostring(flt.to_tree())
         expected = """
         <filter fld="0" type="dateBetween" evalOrder="-1" id="6">
@@ -412,7 +431,6 @@ class TestPivotFilter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PivotFilter, Autofilter):
         src = """
         <filter fld="0" type="dateBetween" evalOrder="-1" id="6">
@@ -428,13 +446,15 @@ class TestPivotFilter:
         """
         node = fromstring(src)
         flt = PivotFilter.from_tree(node)
-        assert flt == PivotFilter(fld=0, id=6, evalOrder=-1, type="dateBetween", autoFilter=Autofilter)
-
+        assert flt == PivotFilter(
+            fld=0, id=6, evalOrder=-1, type="dateBetween", autoFilter=Autofilter
+        )
 
 
 @pytest.fixture
 def Format():
     from ..table import Format
+
     return Format
 
 
@@ -452,7 +472,6 @@ class TestFormat:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Format, PivotArea):
         src = """
         <format action="blank">
@@ -461,13 +480,16 @@ class TestFormat:
         """
         node = fromstring(src)
         fmt = Format.from_tree(node)
-        area = PivotArea(outline=False, fieldPosition=False, labelOnly=True, dataOnly=False)
+        area = PivotArea(
+            outline=False, fieldPosition=False, labelOnly=True, dataOnly=False
+        )
         assert fmt == Format(action="blank", pivotArea=area)
 
 
 @pytest.fixture
 def ConditionalFormat():
     from ..table import ConditionalFormat
+
     return ConditionalFormat
 
 
@@ -482,7 +504,6 @@ class TestConditionalFormat:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ConditionalFormat):
         src = """
         <conditionalFormat priority="4" scope="selection"></conditionalFormat>
@@ -492,10 +513,10 @@ class TestConditionalFormat:
         assert fmt == ConditionalFormat(priority=4)
 
 
-
 @pytest.fixture
 def ConditionalFormatList():
     from ..table import ConditionalFormatList
+
     return ConditionalFormatList
 
 
@@ -513,7 +534,6 @@ class TestConditionalFormatList:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ConditionalFormatList, ConditionalFormat):
         src = """
         <conditionalFormats>
@@ -523,7 +543,6 @@ class TestConditionalFormatList:
         node = fromstring(src)
         fmts = ConditionalFormatList.from_tree(node)
         assert fmts.conditionalFormat == [ConditionalFormat(priority=4)]
-
 
     def test_by_priority(self, ConditionalFormatList):
         src = """
@@ -567,7 +586,6 @@ class TestConditionalFormatList:
         fmts = ConditionalFormatList.from_tree(node)
         prios = fmts.by_priority()
         assert list(prios.keys()) == [(0, 3), (1, 2), (1, 1)]
-
 
     @pytest.mark.xfail
     def test_dedupe(self, ConditionalFormatList):

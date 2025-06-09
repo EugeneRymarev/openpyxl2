@@ -1,12 +1,12 @@
 # Copyright (c) 2010-2025 openpyxl
-import pytest
-
 from io import BytesIO
 from zipfile import ZipFile
 
+import pytest
 from openpyxl.packaging.manifest import Manifest
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 from ..record import Text
 
@@ -14,6 +14,7 @@ from ..record import Text
 @pytest.fixture
 def CacheField():
     from ..cache import CacheField
+
     return CacheField
 
 
@@ -28,7 +29,6 @@ class TestCacheField:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, CacheField):
         src = """
         <cacheField name="ID"/>
@@ -41,6 +41,7 @@ class TestCacheField:
 @pytest.fixture
 def CacheFieldList():
     from ..cache import CacheFieldList
+
     return CacheFieldList
 
 
@@ -61,6 +62,7 @@ class TestCacheFieldList:
 @pytest.fixture
 def SharedItems():
     from ..cache import SharedItems
+
     return SharedItems
 
 
@@ -80,7 +82,6 @@ class TestSharedItems:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SharedItems):
         src = """
         <sharedItems count="3">
@@ -98,6 +99,7 @@ class TestSharedItems:
 @pytest.fixture
 def WorksheetSource():
     from ..cache import WorksheetSource
+
     return WorksheetSource
 
 
@@ -112,7 +114,6 @@ class TestWorksheetSource:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, WorksheetSource):
         src = """
         <worksheetSource name="mydata"/>
@@ -125,6 +126,7 @@ class TestWorksheetSource:
 @pytest.fixture
 def CacheSource():
     from ..cache import CacheSource
+
     return CacheSource
 
 
@@ -142,7 +144,6 @@ class TestCacheSource:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, CacheSource, WorksheetSource):
         src = """
         <cacheSource type="worksheet">
@@ -158,6 +159,7 @@ class TestCacheSource:
 @pytest.fixture
 def Query():
     from ..cache import Query
+
     return Query
 
 
@@ -170,7 +172,6 @@ class TestQuery:
         expected = """<query mdx="[Description]"/>"""
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, Query):
         src = """
@@ -190,6 +191,7 @@ class TestQuery:
 @pytest.fixture
 def TupleCache():
     from ..cache import TupleCache
+
     return TupleCache
 
 
@@ -208,7 +210,6 @@ class TestTupleCache:
 
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, TupleCache):
         src = """
@@ -231,6 +232,7 @@ class TestTupleCache:
 @pytest.fixture
 def PCDSDTCEntries():
     from ..cache import PCDSDTCEntries
+
     return PCDSDTCEntries
 
 
@@ -238,6 +240,7 @@ class TestPCDSDTCEntries:
 
     def test_ctor(self, PCDSDTCEntries):
         from ..fields import Number
+
         entries = PCDSDTCEntries(n=Number(v=1))
         xml = tostring(entries.to_tree())
         expected = """
@@ -249,9 +252,9 @@ class TestPCDSDTCEntries:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PCDSDTCEntries):
         from ..fields import Text
+
         src = """
             <entries>
                 <s v="test"/>
@@ -266,16 +269,26 @@ class TestPCDSDTCEntries:
 @pytest.fixture
 def CacheDefinition():
     from ..cache import CacheDefinition
+
     return CacheDefinition
 
 
 @pytest.fixture
-def DummyCache(CacheDefinition, WorksheetSource, CacheSource, CacheField, CacheFieldList, TupleCache):
+def DummyCache(
+    CacheDefinition,
+    WorksheetSource,
+    CacheSource,
+    CacheField,
+    CacheFieldList,
+    TupleCache,
+):
     ws = WorksheetSource(name="Sheet1")
     source = CacheSource(type="worksheet", worksheetSource=ws)
     fields = CacheFieldList(cacheField=[CacheField(name="field1")])
     tuples = TupleCache()
-    cache = CacheDefinition(cacheSource=source, cacheFields=fields, tupleCache=tuples, saveData=True)
+    cache = CacheDefinition(
+        cacheSource=source, cacheFields=fields, tupleCache=tuples, saveData=True
+    )
     return cache
 
 
@@ -290,7 +303,6 @@ class TestPivotCacheDefinition:
         assert cache.recordCount == 17
         assert cache.cacheFields.count == 6
 
-
     def test_read_tuple_cache(self, CacheDefinition, datadir):
         # Different sample with use of tupleCache
         datadir.chdir()
@@ -301,7 +313,6 @@ class TestPivotCacheDefinition:
         assert cache.recordCount == 0
         assert cache.tupleCache.entries.count == 1
         assert cache.has_olap_cache == True
-
 
     def test_to_tree(self, DummyCache):
         cache = DummyCache
@@ -323,10 +334,8 @@ class TestPivotCacheDefinition:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_path(self, DummyCache):
         assert DummyCache.path == "/xl/pivotCache/pivotCacheDefinition1.xml"
-
 
     def test_write(self, DummyCache):
         out = BytesIO()
@@ -340,10 +349,10 @@ class TestPivotCacheDefinition:
         assert manifest.find(DummyCache.mime_type)
 
 
-
 @pytest.fixture
 def CacheHierarchy():
     from ..cache import CacheHierarchy
+
     return CacheHierarchy
 
 
@@ -374,7 +383,6 @@ class TestCacheHierarchy:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, CacheHierarchy):
         src = """
         <cacheHierarchy uniqueName="[Interval].[Date]" caption="Date" attribute="1"
@@ -396,12 +404,13 @@ class TestCacheHierarchy:
             count=0,
             unbalanced=False,
             displayFolder="",
-            )
+        )
 
 
 @pytest.fixture
 def MeasureDimensionMap():
     from ..cache import MeasureDimensionMap
+
     return MeasureDimensionMap
 
 
@@ -416,7 +425,6 @@ class TestMeasureDimensionMap:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, MeasureDimensionMap):
         src = """
         <map />
@@ -429,6 +437,7 @@ class TestMeasureDimensionMap:
 @pytest.fixture
 def MeasureGroup():
     from ..cache import MeasureGroup
+
     return MeasureGroup
 
 
@@ -443,7 +452,6 @@ class TestMeasureGroup:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, MeasureGroup):
         src = """
         <measureGroup name="name" caption="caption"/>
@@ -456,13 +464,16 @@ class TestMeasureGroup:
 @pytest.fixture
 def PivotDimension():
     from ..cache import PivotDimension
+
     return PivotDimension
 
 
 class TestPivotDimension:
 
     def test_ctor(self, PivotDimension):
-        pd = PivotDimension(measure=True, name="name", uniqueName="name", caption="caption")
+        pd = PivotDimension(
+            measure=True, name="name", uniqueName="name", caption="caption"
+        )
         xml = tostring(pd.to_tree())
         expected = """
         <dimension caption="caption" measure="1" name="name" uniqueName="name" />
@@ -470,34 +481,42 @@ class TestPivotDimension:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PivotDimension):
         src = """
         <dimension caption="caption" measure="1" name="name" uniqueName="name" />
         """
         node = fromstring(src)
         pd = PivotDimension.from_tree(node)
-        assert pd == PivotDimension(measure=True, name="name", uniqueName="name", caption="caption")
+        assert pd == PivotDimension(
+            measure=True, name="name", uniqueName="name", caption="caption"
+        )
 
 
 @pytest.fixture
 def CalculatedMember():
     from ..cache import CalculatedMember
+
     return CalculatedMember
 
 
 class TestCalculatedMember:
 
     def test_ctor(self, CalculatedMember):
-        cm = CalculatedMember(name="name", mdx="mdx", memberName="member",
-                              hierarchy="yes", parent="parent", solveOrder=1, set=True)
+        cm = CalculatedMember(
+            name="name",
+            mdx="mdx",
+            memberName="member",
+            hierarchy="yes",
+            parent="parent",
+            solveOrder=1,
+            set=True,
+        )
         xml = tostring(cm.to_tree())
         expected = """
         <calculatedMember hierarchy="yes" mdx="mdx" memberName="member" name="name" parent="parent" set="1" solveOrder="1" />
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, CalculatedMember):
         src = """
@@ -511,6 +530,7 @@ class TestCalculatedMember:
 @pytest.fixture
 def CalculatedItem():
     from ..cache import CalculatedItem
+
     return CalculatedItem
 
 
@@ -518,6 +538,7 @@ class TestCalculatedItem:
 
     def test_ctor(self, CalculatedItem):
         from openpyxl.pivot.cache import PivotArea
+
         item = CalculatedItem(formula="SUM(15)", pivotArea=PivotArea(cacheIndex=1))
         xml = tostring(item.to_tree())
 
@@ -529,7 +550,6 @@ class TestCalculatedItem:
 
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, CalculatedItem, datadir):
         datadir.chdir()
@@ -544,6 +564,7 @@ class TestCalculatedItem:
 @pytest.fixture
 def ServerFormat():
     from ..cache import ServerFormat
+
     return ServerFormat
 
 
@@ -558,7 +579,6 @@ class TestServerFormat:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ServerFormat):
         src = """
         <serverFormat  culture="x" format="y" />
@@ -571,13 +591,16 @@ class TestServerFormat:
 @pytest.fixture
 def OLAPSet():
     from ..cache import OLAPSet
+
     return OLAPSet
 
 
 class TestOLAPSet:
 
     def test_ctor(self, OLAPSet):
-        olap_set = OLAPSet(count=1, maxRank=2, setDefinition="TestSet", queryFailed=False)
+        olap_set = OLAPSet(
+            count=1, maxRank=2, setDefinition="TestSet", queryFailed=False
+        )
         xml = tostring(olap_set.to_tree())
         expected = """
         <set count="1" maxRank="2" setDefinition="TestSet" queryFailed="0" />
@@ -585,36 +608,40 @@ class TestOLAPSet:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, OLAPSet):
         src = """
         <set count="3" maxRank="5" setDefinition="Other" queryFailed="1" />
         """
         node = fromstring(src)
         olap_set = OLAPSet.from_tree(node)
-        assert olap_set == OLAPSet(count=3, maxRank=5, setDefinition="Other", queryFailed=True)
+        assert olap_set == OLAPSet(
+            count=3, maxRank=5, setDefinition="Other", queryFailed=True
+        )
 
 
 @pytest.fixture
 def OLAPKPI():
     from ..cache import OLAPKPI
+
     return OLAPKPI
 
 
 class TestOLAPKPI:
 
     def test_ctor(self, OLAPKPI):
-        kpi = OLAPKPI(uniqueName="TestKPI",
-                      caption="TestCaption",
-                      displayFolder="Folder\\Display",
-                      measureGroup="TestMeasure",
-                      parent="TestParent",
-                      value="TestValue",
-                      goal="[Measures].[Goals]",
-                      status="TestStatus",
-                      trend="TestTrend",
-                      weight="",
-                      time="TestTime")
+        kpi = OLAPKPI(
+            uniqueName="TestKPI",
+            caption="TestCaption",
+            displayFolder="Folder\\Display",
+            measureGroup="TestMeasure",
+            parent="TestParent",
+            value="TestValue",
+            goal="[Measures].[Goals]",
+            status="TestStatus",
+            trend="TestTrend",
+            weight="",
+            time="TestTime",
+        )
         xml = tostring(kpi.to_tree())
         expected = """
         <kpi uniqueName="TestKPI" caption="TestCaption"
@@ -624,7 +651,6 @@ class TestOLAPKPI:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def from_xml(self, OLAPKPI):
         xml = """
@@ -643,6 +669,7 @@ class TestOLAPKPI:
 @pytest.fixture
 def GroupMember():
     from ..cache import GroupMember
+
     return GroupMember
 
 
@@ -671,17 +698,20 @@ class TestGroupMember:
 @pytest.fixture
 def LevelGroup():
     from ..cache import LevelGroup
+
     return LevelGroup
 
 
 class TestLevelGroup:
 
     def test_ctor(self, LevelGroup):
-        level = LevelGroup(name="CategoryXl_Grp_1",
-                           uniqueName="[Product].[Product Categories]",
-                           caption="Group1",
-                           uniqueParent="[Product].[Product Categories].[All Products]",
-                           id=1)
+        level = LevelGroup(
+            name="CategoryXl_Grp_1",
+            uniqueName="[Product].[Product Categories]",
+            caption="Group1",
+            uniqueParent="[Product].[Product Categories].[All Products]",
+            id=1,
+        )
         xml = tostring(level.to_tree())
 
         expected = """
@@ -708,16 +738,16 @@ class TestLevelGroup:
 @pytest.fixture
 def GroupLevel():
     from ..cache import GroupLevel
+
     return GroupLevel
 
 
 class TestGroupLevel:
 
     def test_ctor(self, GroupLevel):
-        group = GroupLevel(uniqueName="TestGroup",
-                           caption="TestCaption",
-                           user=True,
-                           customRollUp=True)
+        group = GroupLevel(
+            uniqueName="TestGroup", caption="TestCaption", user=True, customRollUp=True
+        )
         xml = tostring(group.to_tree())
 
         expected = """
@@ -751,6 +781,7 @@ class TestGroupLevel:
 @pytest.fixture
 def FieldUsage():
     from ..cache import FieldUsage
+
     return FieldUsage
 
 
@@ -774,6 +805,7 @@ class TestFieldUsage:
 @pytest.fixture
 def GroupItems():
     from ..cache import GroupItems
+
     return GroupItems
 
 
@@ -781,6 +813,7 @@ class TestGroupItems:
 
     def test_ctor(self, GroupItems):
         from ..record import Text
+
         group = GroupItems(s=[Text(v="1-2"), Text(v="3-4")])
         xml = tostring(group.to_tree())
 
@@ -812,6 +845,7 @@ class TestGroupItems:
 @pytest.fixture
 def RangePr():
     from ..cache import RangePr
+
     return RangePr
 
 
@@ -825,9 +859,9 @@ class TestRangePr:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, RangePr):
         from datetime import datetime
+
         xml = """<rangePr groupBy="months" startDate="2002-01-01T00:00:00"  endDate="2006-05-06T00:00:00"/>"""
         node = fromstring(xml)
         rangepr = RangePr.from_tree(node)
@@ -838,6 +872,7 @@ class TestRangePr:
 @pytest.fixture
 def FieldGroup():
     from ..cache import FieldGroup
+
     return FieldGroup
 
 
@@ -872,6 +907,7 @@ class TestFieldGroup:
 @pytest.fixture
 def RangeSet():
     from ..cache import RangeSet
+
     return RangeSet
 
 
@@ -886,7 +922,6 @@ class TestRangeSet:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, RangeSet):
         xml = """<rangeSet i1="4" i2="4" ref="A1:B3" sheet="Sheet5" />"""
         node = fromstring(xml)
@@ -898,7 +933,9 @@ class TestRangeSet:
 @pytest.fixture
 def PageItem():
     from ..cache import PageItem
+
     return PageItem
+
 
 class TestPageItem:
 
@@ -919,6 +956,7 @@ class TestPageItem:
 @pytest.fixture
 def Consolidation():
     from ..cache import Consolidation
+
     return Consolidation
 
 
@@ -926,6 +964,7 @@ class TestConsolidation:
 
     def test_ctor(self, Consolidation):
         from ..cache import RangeSet
+
         cons = Consolidation(autoPage=True, rangeSets=[RangeSet(i1=1, ref="A1:B3")])
         xml = tostring(cons.to_tree())
         expected = """
@@ -959,21 +998,28 @@ class TestConsolidation:
 @pytest.fixture
 def CacheDefinitionCollection():
     from ..cache import CacheDefinitionCollection
+
     return CacheDefinitionCollection
 
 
 class TestCacheDefinitionCollection:
 
-
-    def test_sort(self, CacheSource, CacheDefinition, CacheFieldList, CacheDefinitionCollection):
+    def test_sort(
+        self, CacheSource, CacheDefinition, CacheFieldList, CacheDefinitionCollection
+    ):
 
         caches = CacheDefinitionCollection()
 
-        for possible in ['worksheet', 'external', 'consolidation', 'scenario']:
+        for possible in ["worksheet", "external", "consolidation", "scenario"]:
             source = CacheSource(type=possible)
 
             cache = CacheDefinition(cacheSource=source, cacheFields=CacheFieldList())
             caches.append(cache)
 
         entries = caches.by_type()
-        assert [source for source, group in entries] == ["consolidation", "external", "scenario", "worksheet"]
+        assert [source for source, group in entries] == [
+            "consolidation",
+            "external",
+            "scenario",
+            "worksheet",
+        ]

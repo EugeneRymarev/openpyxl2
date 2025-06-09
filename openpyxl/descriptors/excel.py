@@ -1,20 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-
 """
 Excel specific descriptors
 """
-
-from openpyxl.xml.constants import REL_NS
 from openpyxl.compat import safe_string
+from openpyxl.xml.constants import REL_NS
 from openpyxl.xml.functions import Element
 
-from . import (
-    MatchPattern,
-    MinMax,
-    Integer,
-    String,
-    Sequence,
-)
+from . import Integer
+from . import MatchPattern
+from . import MinMax
+from . import Sequence
+from . import String
 from .serialisable import Serialisable
 
 
@@ -33,6 +29,7 @@ class TextPoint(MinMax):
     Size in hundredths of points.
     In theory other units of measurement can be used but these are unbounded
     """
+
     expected_type = int
 
     min = -400000
@@ -44,7 +41,7 @@ Coordinate = Integer
 
 class Percentage(MinMax):
 
-    pattern = r"((100)|([0-9][0-9]?))(\.[0-9][0-9]?)?%" # strict
+    pattern = r"((100)|([0-9][0-9]?))(\.[0-9][0-9]?)?%"  # strict
     min = -1000000
     max = 1000000
 
@@ -59,9 +56,10 @@ class Extension(Serialisable):
 
     uri = String()
 
-    def __init__(self,
-                 uri=None,
-                ):
+    def __init__(
+        self,
+        uri=None,
+    ):
         self.uri = uri
 
 
@@ -69,9 +67,10 @@ class ExtensionList(Serialisable):
 
     ext = Sequence(expected_type=Extension)
 
-    def __init__(self,
-                 ext=(),
-                ):
+    def __init__(
+        self,
+        ext=(),
+    ):
         self.ext = ext
 
 

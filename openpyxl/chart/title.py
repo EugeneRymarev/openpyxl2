@@ -1,49 +1,44 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Alias,
-)
-
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.text import CharacterProperties
+from openpyxl.drawing.text import Paragraph
+from openpyxl.drawing.text import ParagraphProperties
+from openpyxl.drawing.text import RegularTextRun
 
-from .text import Text, RichText
 from .layout import Layout
 from .shapes import GraphicalProperties
-
-from openpyxl.drawing.text import (
-    Paragraph,
-    RegularTextRun,
-    ParagraphProperties,
-    CharacterProperties,
-)
+from .text import RichText
+from .text import Text
 
 
 class Title(Serialisable):
     tagname = "title"
 
     tx = Typed(expected_type=Text, allow_none=True)
-    text = Alias('tx')
+    text = Alias("tx")
     layout = Typed(expected_type=Layout, allow_none=True)
     overlay = NestedBool(allow_none=True)
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
-    graphicalProperties = Alias('spPr')
+    graphicalProperties = Alias("spPr")
     txPr = Typed(expected_type=RichText, allow_none=True)
-    body = Alias('txPr')
+    body = Alias("txPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('tx', 'layout', 'overlay', 'spPr', 'txPr')
+    __elements__ = ("tx", "layout", "overlay", "spPr", "txPr")
 
-    def __init__(self,
-                 tx=None,
-                 layout=None,
-                 overlay=False,
-                 spPr=None,
-                 txPr=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        tx=None,
+        layout=None,
+        overlay=False,
+        spPr=None,
+        txPr=None,
+        extLst=None,
+    ):
         if tx is None:
             tx = Text()
         self.tx = tx
@@ -53,13 +48,16 @@ class Title(Serialisable):
         self.txPr = txPr
 
 
-
 def title_maker(text):
     title = Title()
     paraprops = ParagraphProperties()
     paraprops.defRPr = CharacterProperties()
-    paras = [Paragraph(r=[RegularTextRun(t=s, rPr=CharacterProperties(sz=1800))],
-                       pPr=paraprops) for s in text.split("\n")]
+    paras = [
+        Paragraph(
+            r=[RegularTextRun(t=s, rPr=CharacterProperties(sz=1800))], pPr=paraprops
+        )
+        for s in text.split("\n")
+    ]
 
     title.tx.rich.paragraphs = paras
     return title

@@ -1,14 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-import pytest
-
 from datetime import datetime
 
-from openpyxl.xml.functions import fromstring, tostring
+import pytest
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def Error():
     from ..record import Error
+
     return Error
 
 
@@ -23,7 +25,6 @@ class TestError:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Error):
         src = """
         <e v="error" />
@@ -36,6 +37,7 @@ class TestError:
 @pytest.fixture
 def Boolean():
     from ..record import Boolean
+
     return Boolean
 
 
@@ -50,7 +52,6 @@ class TestBoolean:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Boolean):
         src = """
         <b />
@@ -63,6 +64,7 @@ class TestBoolean:
 @pytest.fixture
 def Missing():
     from ..record import Missing
+
     return Missing
 
 
@@ -77,7 +79,6 @@ class TestMissing:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Missing):
         src = """
         <m />
@@ -90,6 +91,7 @@ class TestMissing:
 @pytest.fixture
 def Number():
     from ..record import Number
+
     return Number
 
 
@@ -104,7 +106,6 @@ class TestNumber:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Number):
         src = """
         <n v="15" />
@@ -117,6 +118,7 @@ class TestNumber:
 @pytest.fixture
 def Text():
     from ..record import Text
+
     return Text
 
 
@@ -131,7 +133,6 @@ class TestText:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Text):
         src = """
         <s v="UCLA" />
@@ -140,9 +141,11 @@ class TestText:
         text = Text.from_tree(node)
         assert text == Text(v="UCLA")
 
+
 @pytest.fixture
 def Index():
     from ..record import Index
+
     return Index
 
 
@@ -157,7 +160,6 @@ class TestIndex:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Index):
         src = """
         <x v="1" />
@@ -170,6 +172,7 @@ class TestIndex:
 @pytest.fixture
 def DateTimeField():
     from ..record import DateTimeField
+
     return DateTimeField
 
 
@@ -184,7 +187,6 @@ class TestDateTimeField:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DateTimeField):
         src = """
         <d v="2016-03-24T00:00:00"/>
@@ -197,6 +199,7 @@ class TestDateTimeField:
 @pytest.fixture
 def TupleList():
     from ..record import TupleList
+
     return TupleList
 
 
@@ -204,6 +207,7 @@ class TestTupleList:
 
     def test_ctor(self, TupleList):
         from ..fields import Tuple
+
         record = TupleList(tpl=Tuple(item=1))
         xml = tostring(record.to_tree())
         expected = """
@@ -214,9 +218,9 @@ class TestTupleList:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, TupleList):
         from ..fields import Tuple
+
         src = """
         <tpls c="1">
             <tpl hier="1" item="4294967295"/>

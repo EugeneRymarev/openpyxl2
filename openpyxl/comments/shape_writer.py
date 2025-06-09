@@ -1,24 +1,22 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.xml.functions import (
-    tostring,
-    fromstring,
-)
-
 from openpyxl.utils import (
     coordinate_to_tuple,
 )
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 vmlns = "urn:schemas-microsoft-com:vml"
 officens = "urn:schemas-microsoft-com:office:office"
 excelns = "urn:schemas-microsoft-com:office:excel"
 
-nsmap = {"o": officens,
-         "v": vmlns,
-         "x": excelns,
-         }
+nsmap = {
+    "o": officens,
+    "v": vmlns,
+    "x": excelns,
+}
 
 VML_ROOT = f"""<xml xmlns:v="{vmlns}"  xmlns:o="{officens}"  xmlns:x="{excelns}" />"""
+
 
 class ShapeWriter:
     """
@@ -28,10 +26,8 @@ class ShapeWriter:
     vml = None
     vml_path = None
 
-
     def __init__(self, comments):
         self.comments = comments
-
 
     def add_comment_shapetype(self):
         xml = """
@@ -48,7 +44,6 @@ xmlns:v="urn:schemas-microsoft-com:vml">
   </v:shapetype></xml>"""
         tree = fromstring(xml)
         return [el for el in tree]
-
 
     def write(self, root):
 
@@ -84,14 +79,15 @@ def _shape_factory(coord, comment):
     """
     row, column = coordinate_to_tuple(coord)
 
-    style = {"position": "absolute",
-             "margin-left": "59.25pt",
-             "margin-top": "1.5pt",
-             "width": f"{comment.width}px",
-             "height": f"{comment.height}px",
-             "z-index": 1,
-             "visibility": "hidden",
-             }
+    style = {
+        "position": "absolute",
+        "margin-left": "59.25pt",
+        "margin-top": "1.5pt",
+        "width": f"{comment.width}px",
+        "height": f"{comment.height}px",
+        "z-index": 1,
+        "visibility": "hidden",
+    }
     style = ";".join(f"{k}:{v}" for k, v in style.items())
 
     xml = f"""

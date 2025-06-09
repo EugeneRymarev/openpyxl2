@@ -1,5 +1,4 @@
 # Copyright (c) 2010-2025 openpyxl
-
 from io import BytesIO
 
 try:
@@ -21,7 +20,7 @@ from openpyxl.packaging.relationship import Relationship
 
 def _import_image(img):
     if not PILImage:
-        raise ImportError('You must install Pillow to fetch image objects')
+        raise ImportError("You must install Pillow to fetch image objects")
 
     if not isinstance(img, PILImage.Image):
         img = PILImage.open(img)
@@ -41,7 +40,7 @@ class Image:
     # Also know as Alt Text, but the xml tag refers to 'descr'
     desc = None
 
-    def __init__(self, img, desc = None):
+    def __init__(self, img, desc=None):
 
         self.ref = img
         mark_to_close = isinstance(img, str)
@@ -57,14 +56,13 @@ class Image:
             # PIL instances created for metadata should be closed.
             image.close()
 
-
     def _data(self):
         """
         Return image data, convert to supported types if necessary
         """
         img = _import_image(self.ref)
         # don't convert these file formats
-        if self.format in ['GIF', 'JPEG', 'PNG', "WMF", "EMF"]:
+        if self.format in ["GIF", "JPEG", "PNG", "WMF", "EMF"]:
             img.fp.seek(0)
             fp = img.fp
         else:
@@ -76,22 +74,18 @@ class Image:
         fp.close()
         return data
 
-
     @property
     def path(self):
         return self._path.format(self._id, self.format.lower())
 
-
     def __eq__(self, other):
         return self.ref == other.ref
-
 
     def _write(self, archive):
         archive.writestr(self.path[1:], self._data())
 
 
 class ImageGroup(Strict):
-
     """
     A way of grouping pictures in shapes
     """
@@ -99,23 +93,15 @@ class ImageGroup(Strict):
     images = Sequence(expected_type=Image)
     counter = Integer()
 
-
-    def __init__(self,
-                 images=(),
-                 counter=counter,
-                 archive=None,
-                 anchor=None):
+    def __init__(self, images=(), counter=counter, archive=None, anchor=None):
         self.images = images
         self.counter = 0
         self.anchor = anchor
-
 
     def append(self, img):
         self.images.append(img)
         self.images = self.images
 
-
     @property
     def name(self):
         return f"Group {self.counter}"
-

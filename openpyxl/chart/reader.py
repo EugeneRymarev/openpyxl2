@@ -1,8 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
-
 """
 Read a chart
 """
+
 
 def read_chart(chartspace):
     cs = chartspace

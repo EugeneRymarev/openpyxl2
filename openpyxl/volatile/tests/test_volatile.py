@@ -1,18 +1,18 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def VolTopicRef():
     from ..volatile import VolTopicRef
+
     return VolTopicRef
 
 
 class TestVolTopicRef:
-
 
     def test_ctor(self, VolTopicRef):
         ref = VolTopicRef(r="A1", s=3)
@@ -22,7 +22,6 @@ class TestVolTopicRef:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, VolTopicRef):
         src = """
@@ -36,11 +35,11 @@ class TestVolTopicRef:
 @pytest.fixture
 def VolMain():
     from ..volatile import VolMain
+
     return VolMain
 
 
 class TestVolMain:
-
 
     def test_ctor(self, VolMain):
         main = VolMain(first="ThisDataModel")
@@ -51,10 +50,9 @@ class TestVolMain:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
-
     def test_from_xml(self, VolMain):
         from ..volatile import VolTopic
+
         src = """
         <main first="ThisWorkbookDataModel">
             <tp t="e">
@@ -64,21 +62,27 @@ class TestVolMain:
         """
         node = fromstring(src)
         main = VolMain.from_tree(node)
-        assert main == VolMain(first="ThisWorkbookDataModel", tp=[VolTopic(t="e", v="#N/A")])
+        assert main == VolMain(
+            first="ThisWorkbookDataModel", tp=[VolTopic(t="e", v="#N/A")]
+        )
 
 
 @pytest.fixture
 def VolType():
     from ..volatile import VolType
+
     return VolType
 
 
 class TestVolType:
 
-
     def test_ctor(self, VolType):
         from ..volatile import VolMain, VolTopic
-        typ = VolType(main=[VolMain(first="teststring", tp=[VolTopic(t="s", v='aaa: 4447')])], type="realTimeData")
+
+        typ = VolType(
+            main=[VolMain(first="teststring", tp=[VolTopic(t="s", v="aaa: 4447")])],
+            type="realTimeData",
+        )
         xml = tostring(typ.to_tree())
         expected = """
         <volType type="realTimeData">
@@ -91,7 +95,6 @@ class TestVolType:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, VolType):
         src = """
@@ -114,14 +117,14 @@ class TestVolType:
 @pytest.fixture
 def VolTopic():
     from ..volatile import VolTopic
+
     return VolTopic
 
 
 class TestVolTopic:
 
-
     def test_ctor(self, VolTopic):
-        topic = VolTopic(t="s", v='aaa: 4447')
+        topic = VolTopic(t="s", v="aaa: 4447")
         xml = tostring(topic.to_tree())
         expected = """
         <tp t="s">
@@ -131,9 +134,9 @@ class TestVolTopic:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, VolTopic):
         from ..volatile import VolTopicRef
+
         src = """
             <tp t="e">
                 <v>#N/A</v>
@@ -143,22 +146,33 @@ class TestVolTopic:
         """
         node = fromstring(src)
         topic = VolTopic.from_tree(node)
-        assert topic == VolTopic(t="e", v="#N/A", stp="1", tr=[VolTopicRef(r="A1", s=1)])
+        assert topic == VolTopic(
+            t="e", v="#N/A", stp="1", tr=[VolTopicRef(r="A1", s=1)]
+        )
 
 
 @pytest.fixture
 def VolTypes():
     from ..volatile import VolTypesList
+
     return VolTypesList
 
 
 class TestVolTypes:
 
-
     def test_ctor(self, VolTypes):
         from ..volatile import VolMain, VolTopic, VolType
 
-        typ = VolTypes(volType=[VolType(main=[VolMain(first="teststring", tp=[VolTopic(t="s", v='aaa: 4447')])], type="realTimeData")])
+        typ = VolTypes(
+            volType=[
+                VolType(
+                    main=[
+                        VolMain(first="teststring", tp=[VolTopic(t="s", v="aaa: 4447")])
+                    ],
+                    type="realTimeData",
+                )
+            ]
+        )
         xml = tostring(typ.to_tree())
         expected = """
         <volTypes xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
@@ -173,7 +187,6 @@ class TestVolTypes:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, VolTypes):
         src = """

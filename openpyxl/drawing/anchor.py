@@ -1,28 +1,20 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Bool,
-    NoneSet,
-    Alias,
-)
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Bool
+from openpyxl.descriptors import NoneSet
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.nested import (
     NestedText,
 )
-from openpyxl.descriptors.excel import Relation
+from openpyxl.descriptors.serialisable import Serialisable
 
-
-from .xdr import (
-    XDRPoint2D,
-    XDRPositiveSize2D,
-)
 from .connector import Shape
-from .graphic import (
-    GroupShape,
-    GraphicFrame,
-    )
+from .graphic import GraphicFrame
+from .graphic import GroupShape
 from .picture import PictureFrame
+from .xdr import XDRPoint2D
+from .xdr import XDRPositiveSize2D
 
 
 class AnchorClientData(Serialisable):
@@ -30,10 +22,11 @@ class AnchorClientData(Serialisable):
     fLocksWithSheet = Bool(allow_none=True)
     fPrintsWithSheet = Bool(allow_none=True)
 
-    def __init__(self,
-                 fLocksWithSheet=None,
-                 fPrintsWithSheet=None,
-                 ):
+    def __init__(
+        self,
+        fLocksWithSheet=None,
+        fPrintsWithSheet=None,
+    ):
         self.fLocksWithSheet = fLocksWithSheet
         self.fPrintsWithSheet = fPrintsWithSheet
 
@@ -47,12 +40,13 @@ class AnchorMarker(Serialisable):
     row = NestedText(expected_type=int)
     rowOff = NestedText(expected_type=int)
 
-    def __init__(self,
-                 col=0,
-                 colOff=0,
-                 row=0,
-                 rowOff=0,
-                 ):
+    def __init__(
+        self,
+        col=0,
+        colOff=0,
+        row=0,
+        rowOff=0,
+    ):
         self.col = col
         self.colOff = colOff
         self.row = row
@@ -61,7 +55,7 @@ class AnchorMarker(Serialisable):
 
 class _AnchorBase(Serialisable):
 
-    #one of
+    # one of
     sp = Typed(expected_type=Shape, allow_none=True)
     shape = Alias("sp")
     grpSp = Typed(expected_type=GroupShape, allow_none=True)
@@ -74,18 +68,26 @@ class _AnchorBase(Serialisable):
 
     clientData = Typed(expected_type=AnchorClientData)
 
-    __elements__ = ('sp', 'grpSp', 'graphicFrame',
-                    'cxnSp', 'pic', 'contentPart', 'clientData')
+    __elements__ = (
+        "sp",
+        "grpSp",
+        "graphicFrame",
+        "cxnSp",
+        "pic",
+        "contentPart",
+        "clientData",
+    )
 
-    def __init__(self,
-                 clientData=None,
-                 sp=None,
-                 grpSp=None,
-                 graphicFrame=None,
-                 cxnSp=None,
-                 pic=None,
-                 contentPart=None
-                 ):
+    def __init__(
+        self,
+        clientData=None,
+        sp=None,
+        grpSp=None,
+        graphicFrame=None,
+        cxnSp=None,
+        pic=None,
+        contentPart=None,
+    ):
         if clientData is None:
             clientData = AnchorClientData()
         self.clientData = clientData
@@ -95,7 +97,6 @@ class _AnchorBase(Serialisable):
         self.cxnSp = cxnSp
         self.pic = pic
         self.contentPart = contentPart
-
 
     @property
     def _content(self):
@@ -127,13 +128,9 @@ class AbsoluteAnchor(_AnchorBase):
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
 
-    __elements__ = ('pos', 'ext') + _AnchorBase.__elements__
+    __elements__ = ("pos", "ext") + _AnchorBase.__elements__
 
-    def __init__(self,
-                 pos=None,
-                 ext=None,
-                 **kw
-                ):
+    def __init__(self, pos=None, ext=None, **kw):
         if pos is None:
             pos = XDRPoint2D(0, 0)
         self.pos = pos
@@ -158,14 +155,9 @@ class OneCellAnchor(_AnchorBase):
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
 
-    __elements__ = ('_from', 'ext') + _AnchorBase.__elements__
+    __elements__ = ("_from", "ext") + _AnchorBase.__elements__
 
-
-    def __init__(self,
-                 _from=None,
-                 ext=None,
-                 **kw
-                ):
+    def __init__(self, _from=None, ext=None, **kw):
         if _from is None:
             _from = AnchorMarker()
         self._from = _from
@@ -179,7 +171,7 @@ class TwoCellAnchor(_AnchorBase):
 
     tagname = "twoCellAnchor"
 
-    editAs = NoneSet(values=(['twoCell', 'oneCell', 'absolute']))
+    editAs = NoneSet(values=(["twoCell", "oneCell", "absolute"]))
     _from = Typed(expected_type=AnchorMarker)
     to = Typed(expected_type=AnchorMarker)
 
@@ -191,14 +183,9 @@ class TwoCellAnchor(_AnchorBase):
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
 
-    __elements__ = ('_from', 'to') + _AnchorBase.__elements__
+    __elements__ = ("_from", "to") + _AnchorBase.__elements__
 
-    def __init__(self,
-                 editAs=None,
-                 _from=None,
-                 to=None,
-                 **kw
-                 ):
+    def __init__(self, editAs=None, _from=None, to=None, **kw):
         self.editAs = editAs
         if _from is None:
             _from = AnchorMarker()

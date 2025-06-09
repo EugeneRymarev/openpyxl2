@@ -8,17 +8,19 @@ import pytest
 def Image():
     """Image class"""
     from openpyxl.drawing import Image
+
     return Image
 
 
 # utility fixtures
+
 
 @pytest.fixture
 def ws(Workbook):
     """Empty worksheet titled 'data'"""
     wb = Workbook()
     ws = wb.active
-    ws.title = 'data'
+    ws.title = "data"
     return ws
 
 
@@ -27,6 +29,7 @@ def datadir():
     """DATADIR as a LocalPath"""
     import os
     from py.path import local as LocalPath
+
     here = os.path.split(__file__)[0]
     DATADIR = os.path.join(here, "data")
     return LocalPath(DATADIR)

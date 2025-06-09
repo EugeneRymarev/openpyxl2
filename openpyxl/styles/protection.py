@@ -1,5 +1,4 @@
 # Copyright (c) 2010-2025 openpyxl
-
 from openpyxl.descriptors import Bool
 from openpyxl.descriptors.serialisable import Serialisable
 

@@ -1,16 +1,15 @@
 # Copyright (c) 2010-2025 openpyxl
-
 import pytest
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 from ..base import Integer
-from ..serialisable import Serialisable
 from ..container import ElementList
+from ..serialisable import Serialisable
 
-from openpyxl.tests.helper import compare_xml
-from openpyxl.xml.functions import tostring, fromstring
 
 class TestElementList:
-
 
     def ctor(self):
         container = ElementList()
@@ -35,18 +34,15 @@ class RelList(ElementList):
 
 class TestRelList:
 
-
     def test_ctor(self):
         els = [Relation() for i in range(3)]
         container = RelList(els)
         assert len(container) == 3
 
-
     def test_invalid_append(self):
         container = RelList()
         with pytest.raises(TypeError):
             container.append(4)
-
 
     def test_to_tree(self):
         container = RelList()
@@ -58,7 +54,6 @@ class TestRelList:
         </relationships>"""
         diff = compare_xml(tostring(xml), expected)
         assert diff is None, diff
-
 
     def test_from_tree(self):
         xml = """

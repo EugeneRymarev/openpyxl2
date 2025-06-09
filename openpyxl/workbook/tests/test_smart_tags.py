@@ -1,12 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def SmartTag():
     from ..smart_tags import SmartTag
+
     return SmartTag
 
 
@@ -21,7 +23,6 @@ class TestSmartTag:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SmartTag):
         src = """
         <smartTagType />
@@ -34,6 +35,7 @@ class TestSmartTag:
 @pytest.fixture
 def SmartTagList():
     from ..smart_tags import SmartTagList
+
     return SmartTagList
 
 
@@ -48,7 +50,6 @@ class TestSmartTagList:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SmartTagList):
         src = """
         <smartTagTypes />
@@ -61,6 +62,7 @@ class TestSmartTagList:
 @pytest.fixture
 def SmartTagProperties():
     from ..smart_tags import SmartTagProperties
+
     return SmartTagProperties
 
 
@@ -74,7 +76,6 @@ class TestSmartTagProperties:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, SmartTagProperties):
         src = """

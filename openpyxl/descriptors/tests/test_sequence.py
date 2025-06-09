@@ -1,10 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring, Element
 from openpyxl.tests.helper import compare_xml
-from ..serialisable import Serialisable
+from openpyxl.xml.functions import Element
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 from ..base import Integer
+from ..serialisable import Serialisable
+
 
 @pytest.fixture
 def Sequence():
@@ -45,10 +48,13 @@ class TestPrimitive:
 
     def test_to_tree(self, Dummy):
 
-        dummy = Dummy([1, '2', 3])
+        dummy = Dummy([1, "2", 3])
 
         root = Element("root")
-        for node in Dummy.value.to_tree("el", dummy.value, ):
+        for node in Dummy.value.to_tree(
+            "el",
+            dummy.value,
+        ):
             root.append(node)
 
         xml = tostring(root)
@@ -61,7 +67,6 @@ class TestPrimitive:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, Dummy):
         src = """
@@ -111,7 +116,6 @@ class TestComplex:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Sequence):
         src = """
         <root>
@@ -135,7 +139,8 @@ class TestComplex:
 
 @pytest.fixture
 def ValueSequence():
-    from .. sequence import ValueSequence
+    from ..sequence import ValueSequence
+
     return ValueSequence
 
 
@@ -161,7 +166,6 @@ class TestValueSequence:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_tree(self, ValueSequence):
         class Dummy(Serialisable):
@@ -192,14 +196,15 @@ class TestValueSequence:
 @pytest.fixture
 def NestedSequence():
     from ..sequence import NestedSequence
+
     return NestedSequence
 
 
 from openpyxl.styles import Font
 
+
 @pytest.fixture
 def ComplexObject(NestedSequence):
-
 
     class Complex(Serialisable):
 
@@ -214,7 +219,6 @@ def ComplexObject(NestedSequence):
 
 
 class TestNestedSequence:
-
 
     def test_ctor(self, ComplexObject):
         style = ComplexObject()
@@ -236,13 +240,12 @@ class TestNestedSequence:
           </fonts>
         </style>
         """
-        tree = style.__class__.fonts.to_tree('fonts', style.fonts)
+        tree = style.__class__.fonts.to_tree("fonts", style.fonts)
         tree = style.to_tree()
         xml = tostring(tree)
         diff = compare_xml(xml, expected)
 
         assert diff is None, diff
-
 
     def test_from_tree(self, ComplexObject):
         xml = """
@@ -278,6 +281,7 @@ class Larry(Serialisable):
     def __init__(self, value):
         self.value = value
 
+
 class Curly(Serialisable):
 
     tagname = "c"
@@ -299,12 +303,14 @@ class Mo(Serialisable):
 @pytest.fixture
 def MultiSequence():
     from ..sequence import MultiSequence
+
     return MultiSequence
 
 
 @pytest.fixture
 def MultiSequencePart():
     from ..sequence import MultiSequencePart
+
     return MultiSequencePart
 
 
@@ -326,18 +332,15 @@ def Stooge(MultiSequence, MultiSequencePart):
 
 class TestMultiSequence:
 
-
     def test_elements(self, Stooge):
 
         assert Stooge.__elements__ == ("_stooges",)
-
 
     def test_attrs(self, Stooge):
 
         dummy = Stooge()
 
         assert Stooge.__attrs__ == ()
-
 
     def test_to_tree(self, Stooge):
 
@@ -360,7 +363,6 @@ class TestMultiSequence:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, Stooge):
         src = """

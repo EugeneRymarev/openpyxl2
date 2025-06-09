@@ -1,13 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def LineChart():
     from ..line_chart import LineChart
+
     return LineChart
 
 
@@ -26,7 +27,6 @@ class TestLineChart:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, LineChart):
         src = """
         <lineChart>
@@ -40,7 +40,6 @@ class TestLineChart:
         assert chart.axId == [10, 100]
         assert chart.grouping == "stacked"
 
-
     def test_axes(self, LineChart):
         chart = LineChart()
         assert set(chart._axes) == set([10, 100])
@@ -49,6 +48,7 @@ class TestLineChart:
 @pytest.fixture
 def LineChart3D():
     from ..line_chart import LineChart3D
+
     return LineChart3D
 
 
@@ -67,7 +67,6 @@ class TestLineChart3D:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, LineChart3D):
         src = """

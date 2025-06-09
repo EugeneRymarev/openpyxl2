@@ -1,7 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.descriptors.excel import Relation
+from openpyxl.descriptors.serialisable import Serialisable
 
 
 class Drawing(Serialisable):

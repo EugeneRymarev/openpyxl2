@@ -1,17 +1,15 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.xml.constants import DRAWING_NS
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Bool,
-    Integer,
-    String,
-    NoneSet,
-)
+from openpyxl.descriptors import Bool
+from openpyxl.descriptors import Integer
+from openpyxl.descriptors import NoneSet
+from openpyxl.descriptors import String
+from openpyxl.descriptors import Typed
 from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.xml.constants import DRAWING_NS
 
-from .geometry import GroupTransform2D, Scene3D
+from .geometry import GroupTransform2D
+from .geometry import Scene3D
 from .text import Hyperlink
 
 
@@ -19,18 +17,34 @@ class GroupShapeProperties(Serialisable):
 
     tagname = "grpSpPr"
 
-    bwMode = NoneSet(values=(['clr', 'auto', 'gray', 'ltGray', 'invGray',
-                          'grayWhite', 'blackGray', 'blackWhite', 'black', 'white', 'hidden']))
+    bwMode = NoneSet(
+        values=(
+            [
+                "clr",
+                "auto",
+                "gray",
+                "ltGray",
+                "invGray",
+                "grayWhite",
+                "blackGray",
+                "blackWhite",
+                "black",
+                "white",
+                "hidden",
+            ]
+        )
+    )
     xfrm = Typed(expected_type=GroupTransform2D, allow_none=True)
     scene3d = Typed(expected_type=Scene3D, allow_none=True)
     extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
 
-    def __init__(self,
-                 bwMode=None,
-                 xfrm=None,
-                 scene3d=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        bwMode=None,
+        xfrm=None,
+        scene3d=None,
+        extLst=None,
+    ):
         self.bwMode = bwMode
         self.xfrm = xfrm
         self.scene3d = scene3d
@@ -59,21 +73,22 @@ class GroupLocking(Serialisable):
 
     __elements__ = ()
 
-    def __init__(self,
-                 noGrp=None,
-                 noUngrp=None,
-                 noSelect=None,
-                 noRot=None,
-                 noChangeAspect=None,
-                 noChangeArrowheads=None,
-                 noMove=None,
-                 noResize=None,
-                 noEditPoints=None,
-                 noAdjustHandles=None,
-                 noChangeShapeType=None,
-                 noTextEdit=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        noGrp=None,
+        noUngrp=None,
+        noSelect=None,
+        noRot=None,
+        noChangeAspect=None,
+        noChangeArrowheads=None,
+        noMove=None,
+        noResize=None,
+        noEditPoints=None,
+        noAdjustHandles=None,
+        noChangeShapeType=None,
+        noTextEdit=None,
+        extLst=None,
+    ):
         self.noGrp = noGrp
         self.noUngrp = noUngrp
         self.noSelect = noSelect
@@ -97,10 +112,11 @@ class NonVisualGroupDrawingShapeProps(Serialisable):
 
     __elements__ = ("grpSpLocks",)
 
-    def __init__(self,
-                 grpSpLocks=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        grpSpLocks=None,
+        extLst=None,
+    ):
         self.grpSpLocks = grpSpLocks
 
 
@@ -114,11 +130,12 @@ class NonVisualDrawingShapeProps(Serialisable):
 
     __elements__ = ("spLocks",)
 
-    def __init__(self,
-                 spLocks=None,
-                 txBox=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        spLocks=None,
+        txBox=None,
+        extLst=None,
+    ):
         self.spLocks = spLocks
         self.txBox = txBox
 
@@ -138,16 +155,17 @@ class NonVisualDrawingProps(Serialisable):
 
     __elements__ = ("hlinkClick", "hlinkHover")
 
-    def __init__(self,
-                 id=None,
-                 name=None,
-                 descr=None,
-                 hidden=None,
-                 title=None,
-                 hlinkClick=None,
-                 hlinkHover=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        id=None,
+        name=None,
+        descr=None,
+        hidden=None,
+        title=None,
+        hlinkClick=None,
+        hlinkHover=None,
+        extLst=None,
+    ):
         self.id = id
         self.name = name
         self.descr = descr
@@ -156,6 +174,7 @@ class NonVisualDrawingProps(Serialisable):
         self.hlinkClick = hlinkClick
         self.hlinkHover = hlinkHover
         self.extLst = extLst
+
 
 class NonVisualGroupShape(Serialisable):
 
@@ -166,10 +185,10 @@ class NonVisualGroupShape(Serialisable):
 
     __elements__ = ("cNvPr", "cNvGrpSpPr")
 
-    def __init__(self,
-                 cNvPr=None,
-                 cNvGrpSpPr=None,
-                ):
+    def __init__(
+        self,
+        cNvPr=None,
+        cNvGrpSpPr=None,
+    ):
         self.cNvPr = cNvPr
         self.cNvGrpSpPr = cNvGrpSpPr
-

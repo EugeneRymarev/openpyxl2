@@ -1,12 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def OuterShadow():
     from ..effect import OuterShadow
+
     return OuterShadow
 
 
@@ -23,7 +25,6 @@ class TestOuterShadow:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, OuterShadow):
         src = """
         <outerShdw blurRad="38100" dist="38100" dir="2700000" algn="tl">
@@ -33,12 +34,15 @@ class TestOuterShadow:
         """
         node = fromstring(src)
         shadow = OuterShadow.from_tree(node)
-        assert shadow == OuterShadow(algn="tl", blurRad=38100, dist=38100, dir=2700000, srgbClr="000000")
+        assert shadow == OuterShadow(
+            algn="tl", blurRad=38100, dist=38100, dir=2700000, srgbClr="000000"
+        )
 
 
 @pytest.fixture
 def TintEffect():
     from ..effect import TintEffect
+
     return TintEffect
 
 
@@ -53,7 +57,6 @@ class TestTintEffect:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, TintEffect):
         src = """
         <tint hue="56" amt="85" />
@@ -66,6 +69,7 @@ class TestTintEffect:
 @pytest.fixture
 def LuminanceEffect():
     from ..effect import LuminanceEffect
+
     return LuminanceEffect
 
 
@@ -79,7 +83,6 @@ class TestLuminanceEffect:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, LuminanceEffect):
         src = """

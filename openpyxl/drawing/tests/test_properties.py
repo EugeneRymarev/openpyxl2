@@ -1,14 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def NonVisualDrawingProps():
     from ..properties import NonVisualDrawingProps
+
     return NonVisualDrawingProps
 
 
@@ -23,7 +23,6 @@ class TestNonVisualDrawingProps:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, NonVisualDrawingProps):
         src = """
          <cNvPr id="3" name="Chart 2"></cNvPr>
@@ -36,6 +35,7 @@ class TestNonVisualDrawingProps:
 @pytest.fixture
 def NonVisualGroupDrawingShapeProps():
     from ..properties import NonVisualGroupDrawingShapeProps
+
     return NonVisualGroupDrawingShapeProps
 
 
@@ -50,7 +50,6 @@ class TestNonVisualGroupDrawingShapeProps:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, NonVisualGroupDrawingShapeProps):
         src = """
         <cNvGrpSpPr />
@@ -63,16 +62,21 @@ class TestNonVisualGroupDrawingShapeProps:
 @pytest.fixture
 def NonVisualGroupShape():
     from ..properties import NonVisualGroupShape
+
     return NonVisualGroupShape
 
 
 class TestNonVisualGroupShape:
 
-
-    def test_ctor(self, NonVisualGroupShape, NonVisualDrawingProps, NonVisualGroupDrawingShapeProps):
+    def test_ctor(
+        self,
+        NonVisualGroupShape,
+        NonVisualDrawingProps,
+        NonVisualGroupDrawingShapeProps,
+    ):
         props = NonVisualGroupShape(
             cNvPr=NonVisualDrawingProps(id=2208, name="Group 1"),
-            cNvGrpSpPr=NonVisualGroupDrawingShapeProps()
+            cNvGrpSpPr=NonVisualGroupDrawingShapeProps(),
         )
         xml = tostring(props.to_tree())
         expected = """
@@ -84,8 +88,12 @@ class TestNonVisualGroupShape:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
-    def test_from_xml(self, NonVisualGroupShape, NonVisualDrawingProps, NonVisualGroupDrawingShapeProps):
+    def test_from_xml(
+        self,
+        NonVisualGroupShape,
+        NonVisualDrawingProps,
+        NonVisualGroupDrawingShapeProps,
+    ):
         src = """
         <nvGrpSpPr>
              <cNvPr id="2208" name="Group 1" />
@@ -96,13 +104,14 @@ class TestNonVisualGroupShape:
         props = NonVisualGroupShape.from_tree(node)
         assert props == NonVisualGroupShape(
             cNvPr=NonVisualDrawingProps(id=2208, name="Group 1"),
-            cNvGrpSpPr=NonVisualGroupDrawingShapeProps()
-            )
+            cNvGrpSpPr=NonVisualGroupDrawingShapeProps(),
+        )
 
 
 @pytest.fixture
 def GroupLocking():
     from ..properties import GroupLocking
+
     return GroupLocking
 
 
@@ -117,7 +126,6 @@ class TestGroupLocking:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, GroupLocking):
         src = """
         <grpSpLocks />
@@ -130,9 +138,12 @@ class TestGroupLocking:
 @pytest.fixture
 def GroupShapeProperties():
     from ..properties import GroupShapeProperties
+
     return GroupShapeProperties
 
+
 from ..geometry import Point2D, PositiveSize2D, GroupTransform2D
+
 
 class TestGroupShapeProperties:
 
@@ -158,7 +169,6 @@ class TestGroupShapeProperties:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, GroupShapeProperties):
         src = """
         <grpSpPr />
@@ -171,6 +181,7 @@ class TestGroupShapeProperties:
 @pytest.fixture
 def NonVisualDrawingShapeProps():
     from ..properties import NonVisualDrawingShapeProps
+
     return NonVisualDrawingShapeProps
 
 
@@ -184,7 +195,6 @@ class TestNonVisualDrawingShapeProps:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, NonVisualDrawingShapeProps):
         src = """

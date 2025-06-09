@@ -1,13 +1,14 @@
-
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def PivotSource():
     from ..pivot import PivotSource
+
     return PivotSource
 
 
@@ -27,7 +28,6 @@ class TestPivotSource:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, PivotSource):
         src = """
         <pivotSource>
@@ -43,6 +43,7 @@ class TestPivotSource:
 @pytest.fixture
 def PivotFormat():
     from ..pivot import PivotFormat
+
     return PivotFormat
 
 
@@ -58,7 +59,6 @@ class TestPivotFormat:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, PivotFormat):
         src = """

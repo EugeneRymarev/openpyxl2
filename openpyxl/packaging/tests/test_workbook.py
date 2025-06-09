@@ -1,12 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def WorkbookPackage():
     from ..workbook import WorkbookPackage
+
     return WorkbookPackage
 
 
@@ -23,7 +25,6 @@ class TestWorkbookPackage:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, WorkbookPackage):
         src = """
@@ -43,4 +44,6 @@ def test_read_workbook_code_name(datadir, WorkbookPackage):
     node = fromstring(xml)
     parser = WorkbookPackage.from_tree(node)
 
-    assert parser.properties.codeName == u'\u042d\u0442\u0430\u041a\u043d\u0438\u0433\u0430'
+    assert (
+        parser.properties.codeName == "\u042d\u0442\u0430\u041a\u043d\u0438\u0433\u0430"
+    )

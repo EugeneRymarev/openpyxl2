@@ -1,12 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def PieChart():
     from ..pie_chart import PieChart
+
     return PieChart
 
 
@@ -23,7 +25,6 @@ class TestPieChart:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, PieChart):
         src = """
@@ -43,6 +44,7 @@ class TestPieChart:
 @pytest.fixture
 def PieChart3D():
     from ..pie_chart import PieChart3D
+
     return PieChart3D
 
 
@@ -63,6 +65,7 @@ class TestPieChart3D:
 @pytest.fixture
 def DoughnutChart():
     from ..pie_chart import DoughnutChart
+
     return DoughnutChart
 
 
@@ -81,7 +84,6 @@ class TestDoughnutChart:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, DoughnutChart):
         src = """
         <doughnutChart>
@@ -99,6 +101,7 @@ class TestDoughnutChart:
 @pytest.fixture
 def ProjectedPieChart():
     from ..pie_chart import ProjectedPieChart
+
     return ProjectedPieChart
 
 
@@ -118,7 +121,6 @@ class TestProjectedPieChart:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ProjectedPieChart):
         src = """
@@ -150,6 +152,7 @@ class TestProjectedPieChart:
 @pytest.fixture
 def CustomSplit():
     from ..pie_chart import CustomSplit
+
     return CustomSplit
 
 
@@ -167,7 +170,6 @@ class TestCustomSplit:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, CustomSplit):
         src = """

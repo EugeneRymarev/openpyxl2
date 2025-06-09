@@ -1,14 +1,15 @@
-
 # Copyright (c) 2010-2025 openpyxl
-
 from warnings import warn
 
-from openpyxl.xml.functions import fromstring
-from openpyxl.packaging.relationship import get_rel, get_rels_path, get_dependents
-from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
-from openpyxl.drawing.image import PILImage, ImageGroup
 from openpyxl.chart.chartspace import ChartSpace
 from openpyxl.chart.reader import read_chart
+from openpyxl.drawing.image import ImageGroup
+from openpyxl.drawing.image import PILImage
+from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
+from openpyxl.packaging.relationship import get_dependents
+from openpyxl.packaging.relationship import get_rel
+from openpyxl.packaging.relationship import get_rels_path
+from openpyxl.xml.functions import fromstring
 
 
 def find_images(archive, path):
@@ -32,8 +33,10 @@ def find_images(archive, path):
     try:
         drawing = SpreadsheetDrawing.from_tree(tree)
     except TypeError:
-        warn(f"DrawingML support is incomplete and limited to charts and images only." +
-             "Shapes and other elements may be lost from {path}.")
+        warn(
+            f"DrawingML support is incomplete and limited to charts and images only."
+            + "Shapes and other elements may be lost from {path}."
+        )
         return charts, images, shapes
 
     shapes = drawing._shapes
@@ -57,7 +60,7 @@ def find_images(archive, path):
             chart.hidden = True
         charts.append(chart)
 
-    if not PILImage: # Pillow not installed, drop images
+    if not PILImage:  # Pillow not installed, drop images
         return charts, images, shapes
 
     for blip in drawing._blip_rels:
@@ -71,7 +74,9 @@ def find_images(archive, path):
         img_group.anchor = group.pop(0)
         for blip in group:
             image = blip._read(deps, archive)
-            image.properties = blip.properties # need xfrm to position the image within the anchor
+            image.properties = (
+                blip.properties
+            )  # need xfrm to position the image within the anchor
             img_group.append(image)
         images.append(img_group)
 

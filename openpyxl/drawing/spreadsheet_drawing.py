@@ -1,43 +1,28 @@
 # Copyright (c) 2010-2025 openpyxl
-
+from openpyxl.chart._chart import ChartBase
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import String
+from openpyxl.descriptors import Typed
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Sequence,
-    String,
-    Typed,
-)
-
-from openpyxl.packaging.relationship import (
-    Relationship,
-    RelationshipList,
-)
+from openpyxl.drawing.image import Image
+from openpyxl.drawing.image import ImageGroup
+from openpyxl.packaging.relationship import Relationship
+from openpyxl.packaging.relationship import RelationshipList
 from openpyxl.utils import coordinate_to_tuple
-from openpyxl.utils.units import (
-    cm_to_EMU,
-    pixels_to_EMU,
-)
-from openpyxl.drawing.image import (
-    Image,
-    ImageGroup,
-)
-
+from openpyxl.utils.units import cm_to_EMU
+from openpyxl.utils.units import pixels_to_EMU
 from openpyxl.xml.constants import SHEET_DRAWING_NS
 
-from openpyxl.chart._chart import ChartBase
+from .anchor import _AnchorBase
+from .anchor import AbsoluteAnchor
+from .anchor import OneCellAnchor
+from .anchor import TwoCellAnchor
 from .fill import Blip
-from .graphic import (
-     GraphicFrame,
-     GroupShape,
-    )
 from .geometry import PresetGeometry2D
+from .graphic import GraphicFrame
+from .graphic import GroupShape
 from .picture import PictureFrame
 from .relation import ChartRelation
-from .anchor import (
-    AbsoluteAnchor,
-    OneCellAnchor,
-    TwoCellAnchor,
-    _AnchorBase,
-)
 
 
 def _check_anchor(obj):
@@ -49,8 +34,8 @@ def _check_anchor(obj):
     if not isinstance(anchor, _AnchorBase):
         row, col = coordinate_to_tuple(anchor.upper())
         anchor = OneCellAnchor()
-        anchor._from.row = row -1
-        anchor._from.col = col -1
+        anchor._from.row = row - 1
+        anchor._from.col = col - 1
         if isinstance(obj, ChartBase):
             anchor.ext.width = cm_to_EMU(obj.width)
             anchor.ext.height = cm_to_EMU(obj.height)
@@ -58,7 +43,6 @@ def _check_anchor(obj):
             anchor.ext.width = pixels_to_EMU(obj.width)
             anchor.ext.height = pixels_to_EMU(obj.height)
     return anchor
-
 
 
 class Choice(Serialisable):
@@ -71,12 +55,9 @@ class Choice(Serialisable):
     absoluteAnchor = Typed(expected_type=AbsoluteAnchor, allow_none=True)
     Requires = String()
 
-
-    def __init__(self,
-                 twoCellAnchor=None,
-                 oneCellAnchor=None,
-                 absoluteAnchor=None,
-                 Requires=None):
+    def __init__(
+        self, twoCellAnchor=None, oneCellAnchor=None, absoluteAnchor=None, Requires=None
+    ):
         self.Requires = Requires
         self.twoCellAnchor = twoCellAnchor
         self.oneCellAnchor = oneCellAnchor
@@ -84,13 +65,11 @@ class Choice(Serialisable):
 
 
 class AlternateContent(Serialisable):
-    """Markup AlternateContent
-    """
+    """Markup AlternateContent"""
 
     tagname = "AlternateContent"
 
     Choice = Typed(expected_type=Choice)
-
 
     def __init__(self, Choice=None):
         self.Choice = Choice
@@ -100,8 +79,10 @@ class SpreadsheetDrawing(Serialisable):
 
     tagname = "wsDr"
     mime_type = "application/vnd.openxmlformats-officedocument.drawing+xml"
-    _rel_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"
-    _path = PartName="/xl/drawings/drawing{0}.xml"
+    _rel_type = (
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"
+    )
+    _path = PartName = "/xl/drawings/drawing{0}.xml"
     _id = None
 
     twoCellAnchor = Sequence(expected_type=TwoCellAnchor)
@@ -109,14 +90,19 @@ class SpreadsheetDrawing(Serialisable):
     absoluteAnchor = Sequence(expected_type=AbsoluteAnchor)
     AlternateContent = Sequence(expected_type=AlternateContent)
 
-    __elements__ = ("twoCellAnchor", "oneCellAnchor", "absoluteAnchor",)
+    __elements__ = (
+        "twoCellAnchor",
+        "oneCellAnchor",
+        "absoluteAnchor",
+    )
 
-    def __init__(self,
-                 twoCellAnchor=(),
-                 oneCellAnchor=(),
-                 absoluteAnchor=(),
-                 AlternateContent=(),
-                 ):
+    def __init__(
+        self,
+        twoCellAnchor=(),
+        oneCellAnchor=(),
+        absoluteAnchor=(),
+        AlternateContent=(),
+    ):
         self.twoCellAnchor = twoCellAnchor
         self.oneCellAnchor = oneCellAnchor
         self.absoluteAnchor = absoluteAnchor
@@ -133,17 +119,14 @@ class SpreadsheetDrawing(Serialisable):
                 elif obj.Choice.absoluteAnchor:
                     self.absoluteAnchor.append(obj.Choice.absoluteAnchor)
 
-
     def __hash__(self):
         """
         Just need to check for identity
         """
         return id(self)
 
-
     def __bool__(self):
         return bool(self.charts) or bool(self.images) or bool(self.shapes)
-
 
     def _write(self):
         """
@@ -173,7 +156,7 @@ class SpreadsheetDrawing(Serialisable):
                     rel = Relationship(type="image", Target=img.path)
                     self._rels.append(rel)
                     pic.blipFill.blip.embed = rel.Id
-                    rel = None # reset to stop it being added twice
+                    rel = None  # reset to stop it being added twice
 
             else:
                 link = getattr(obj.nvSpPr.cNvPr, "hlinkClick")
@@ -199,9 +182,8 @@ class SpreadsheetDrawing(Serialisable):
                 self.absoluteAnchor.append(a)
 
         tree = self.to_tree()
-        tree.set('xmlns', SHEET_DRAWING_NS)
+        tree.set("xmlns", SHEET_DRAWING_NS)
         return tree
-
 
     def _chart_frame(self, idx, frame=None):
         chart_rel = ChartRelation(f"rId{idx}")
@@ -212,8 +194,7 @@ class SpreadsheetDrawing(Serialisable):
         frame.graphic.graphicData.chart = chart_rel
         return frame
 
-
-    def _picture_frame(self, idx, desc = None):
+    def _picture_frame(self, idx, desc=None):
         pic = PictureFrame()
         pic.nvPicPr.cNvPr.descr = desc
 
@@ -228,15 +209,12 @@ class SpreadsheetDrawing(Serialisable):
         pic.spPr.ln = None
         return pic
 
-
     def _write_rels(self):
         return self._rels.to_tree()
-
 
     @property
     def path(self):
         return self._path.format(self._id)
-
 
     @property
     def _chart_rels(self):
@@ -253,7 +231,6 @@ class SpreadsheetDrawing(Serialisable):
                     rel.anchor = anchor
                     rels.append(rel)
         return rels
-
 
     @property
     def _blip_rels(self):
@@ -275,7 +252,6 @@ class SpreadsheetDrawing(Serialisable):
                     rels.append(img)
 
         return rels
-
 
     @property
     def _group_rels(self):
@@ -299,7 +275,6 @@ class SpreadsheetDrawing(Serialisable):
                 rels.append(group)
 
         return rels
-
 
     @property
     def _shapes(self):

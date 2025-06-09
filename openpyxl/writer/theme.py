@@ -1,5 +1,4 @@
 # Copyright (c) 2010-2025 openpyxl
-
 """Write the theme xml based on a fixed string."""
 
 
@@ -285,6 +284,7 @@ theme_xml = """<?xml version="1.0"?>
   <a:extraClrSchemeLst/>
 </a:theme>
 """
+
 
 def write_theme():
     """Write the theme xml."""

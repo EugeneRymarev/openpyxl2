@@ -1,16 +1,12 @@
 # Copyright (c) 2010-2025 openpyxl
-
-
 """Read an xlsx file into Python"""
-
 # Python stdlib
-from zipfile import (
-    ZipFile,
-
-)
-from io import BytesIO
 import os.path
 import warnings
+from io import BytesIO
+from zipfile import (
+    ZipFile,
+)
 
 from openpyxl.pivot.table import TableDefinition
 
@@ -57,10 +53,7 @@ from openpyxl.worksheet._read_only import ReadOnlyWorksheet
 from openpyxl.worksheet._reader import WorksheetReader
 from openpyxl.chartsheet import Chartsheet
 from openpyxl.worksheet.table import Table
-from openpyxl.worksheet.controls import (
-    FormControl,
-    ActiveXControl
-)
+from openpyxl.worksheet.controls import FormControl, ActiveXControl
 from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
 from openpyxl.drawing.legacy import LegacyDrawing
 from openpyxl.drawing.image import Image
@@ -72,7 +65,7 @@ from openpyxl.xml.functions import fromstring
 from .drawings import find_images
 
 
-SUPPORTED_FORMATS = ('.xlsx', '.xlsm', '.xltx', '.xltm')
+SUPPORTED_FORMATS = (".xlsx", ".xlsm", ".xltx", ".xltm")
 
 
 def _validate_archive(filename):
@@ -84,27 +77,32 @@ def _validate_archive(filename):
     will raised. Otherwise the filename (resp. file-like object) will
     forwarded to zipfile.ZipFile returning a ZipFile-Instance.
     """
-    is_file_like = hasattr(filename, 'read')
+    is_file_like = hasattr(filename, "read")
     if not is_file_like:
         file_format = os.path.splitext(filename)[-1].lower()
         if file_format not in SUPPORTED_FORMATS:
-            if file_format == '.xls':
-                msg = ('openpyxl does not support the old .xls file format, '
-                       'please use xlrd to read this file, or convert it to '
-                       'the more recent .xlsx file format.')
-            elif file_format == '.xlsb':
-                msg = ('openpyxl does not support binary format .xlsb, '
-                       'please convert this file to .xlsx format if you want '
-                       'to open it with openpyxl')
+            if file_format == ".xls":
+                msg = (
+                    "openpyxl does not support the old .xls file format, "
+                    "please use xlrd to read this file, or convert it to "
+                    "the more recent .xlsx file format."
+                )
+            elif file_format == ".xlsb":
+                msg = (
+                    "openpyxl does not support binary format .xlsb, "
+                    "please convert this file to .xlsx format if you want "
+                    "to open it with openpyxl"
+                )
             else:
-                msg = ('openpyxl does not support %s file format, '
-                       'please check you can open '
-                       'it with Excel first. '
-                       'Supported formats are: %s') % (file_format,
-                                                       ','.join(SUPPORTED_FORMATS))
+                msg = (
+                    "openpyxl does not support %s file format, "
+                    "please check you can open "
+                    "it with Excel first. "
+                    "Supported formats are: %s"
+                ) % (file_format, ",".join(SUPPORTED_FORMATS))
             raise InvalidFileException(msg)
 
-    archive = ZipFile(filename, 'r')
+    archive = ZipFile(filename, "r")
     return archive
 
 
@@ -125,13 +123,19 @@ def _find_workbook_part(package):
 
 
 class ExcelReader:
-
     """
     Read an Excel package and dispatch the contents to the relevant modules
     """
 
-    def __init__(self, fn, read_only=False, keep_vba=KEEP_VBA,
-                 data_only=False, keep_links=True, rich_text=False):
+    def __init__(
+        self,
+        fn,
+        read_only=False,
+        keep_vba=KEEP_VBA,
+        data_only=False,
+        keep_links=True,
+        rich_text=False,
+    ):
         self.archive = _validate_archive(fn)
         self.valid_files = self.archive.namelist()
         self.read_only = read_only
@@ -142,12 +146,10 @@ class ExcelReader:
         self.shared_strings = []
         self.volatile_deps = None
 
-
     def read_manifest(self):
         src = self.archive.read(ARC_CONTENT_TYPES)
         root = fromstring(src)
         self.package = Manifest.from_tree(root)
-
 
     def read_strings(self):
         ct = self.package.find(SHARED_STRINGS)
@@ -156,13 +158,16 @@ class ExcelReader:
             reader = read_rich_text
         if ct is not None:
             strings_path = ct.PartName[1:]
-            with self.archive.open(strings_path,) as src:
+            with self.archive.open(
+                strings_path,
+            ) as src:
                 self.shared_strings = reader(src)
-
 
     def read_workbook(self):
         wb_part = _find_workbook_part(self.package)
-        self.parser = WorkbookParser(self.archive, wb_part.PartName[1:], keep_links=self.keep_links)
+        self.parser = WorkbookParser(
+            self.archive, wb_part.PartName[1:], keep_links=self.keep_links
+        )
         self.parser.parse()
         wb = self.parser.wb
         wb._sheets = []
@@ -179,23 +184,19 @@ class ExcelReader:
 
         self.wb = wb
 
-
     def read_properties(self):
         if ARC_CORE in self.valid_files:
             src = fromstring(self.archive.read(ARC_CORE))
             self.wb.properties = DocumentProperties.from_tree(src)
-
 
     def read_custom(self):
         if ARC_CUSTOM in self.valid_files:
             src = fromstring(self.archive.read(ARC_CUSTOM))
             self.wb.custom_doc_props = CustomPropertyList.from_tree(src)
 
-
     def read_theme(self):
         if ARC_THEME in self.valid_files:
             self.wb.loaded_theme = self.archive.read(ARC_THEME)
-
 
     def read_chartsheet(self, sheet, rel):
         sheet_path = rel.target
@@ -218,7 +219,6 @@ class ExcelReader:
             for c in charts:
                 cs.add_chart(c)
 
-
     def read_worksheets(self):
 
         for sheet, rel in self.parser.find_sheets():
@@ -230,7 +230,9 @@ class ExcelReader:
                 continue
 
             if self.read_only:
-                ws = ReadOnlyWorksheet(self.wb, sheet.name, rel.target, self.shared_strings)
+                ws = ReadOnlyWorksheet(
+                    self.wb, sheet.name, rel.target, self.shared_strings
+                )
                 ws.sheet_state = sheet.state
                 self.wb._sheets.append(ws)
                 continue
@@ -242,7 +244,9 @@ class ExcelReader:
             processor.find_children((rel.target))
             ws._rels = processor.rels
 
-            ws_parser = WorksheetReader(ws, fh, self.shared_strings, self.data_only, self.rich_text)
+            ws_parser = WorksheetReader(
+                ws, fh, self.shared_strings, self.data_only, self.rich_text
+            )
             ws_parser.bind_all()
             ws.sheet_state = sheet.state
 
@@ -259,13 +263,11 @@ class ExcelReader:
                 table = Table.from_tree(xml)
                 ws.add_table(table)
 
-
     def read_volatile_deps(self):
         if ARC_VOLATILE_DEPENDENCIES in self.valid_files:
             src = self.archive.read(ARC_VOLATILE_DEPENDENCIES)
             root = fromstring(src)
             self.wb._volatile_deps = VolTypesList.from_tree(root)
-
 
     def read_connections(self):
         if ARC_CONNECTIONS in self.valid_files:
@@ -282,7 +284,6 @@ class ExcelReader:
                 connections[cache.cacheSource.connectionId]._cache = cache
 
             self.wb._connections = connections
-
 
     def read(self):
         action = "read manifest"
@@ -315,11 +316,10 @@ class ExcelReader:
                 f"Unable to read workbook: could not {action} from {self.archive.filename}.\n"
                 "This is most probably because the workbook source files contain some invalid XML.\n"
                 "Please see the exception for more details."
-                ) from e
+            ) from e
 
 
 class WorksheetProcessor:
-
     """
     Collect and assign child objects
     """
@@ -327,7 +327,6 @@ class WorksheetProcessor:
     def __init__(self, ws, archive):
         self.ws = ws
         self.archive = archive
-
 
     def find_children(self, path):
         """
@@ -339,12 +338,18 @@ class WorksheetProcessor:
         if rels_path in self.archive.namelist():
             rels = get_dependents(self.archive, rels_path)
 
-        for attr in ["comments", "pivotTable", "drawing", "ctrlProp", "control", "image"]:
+        for attr in [
+            "comments",
+            "pivotTable",
+            "drawing",
+            "ctrlProp",
+            "control",
+            "image",
+        ]:
             setattr(rels, attr, [])
 
         rels.get_types()
         self.rels = rels
-
 
     def get_legacy(self):
         """
@@ -369,7 +374,6 @@ class WorksheetProcessor:
 
         drawing.children = rels
 
-
     def _get_image_for(self, path):
         """
         Extract image from the archive and return it as a BytesIO object
@@ -378,7 +382,6 @@ class WorksheetProcessor:
         if path.endswith(".emf"):
             img.format = "EMF"
         return img
-
 
     def get_comments(self):
         """Assign comments"""
@@ -394,9 +397,10 @@ class WorksheetProcessor:
                 except AttributeError:
                     c = self.ws[ref]
                     if isinstance(c, MergedCell):
-                        warnings.warn(comment_warning.format(self.ws.title, c.coordinate))
+                        warnings.warn(
+                            comment_warning.format(self.ws.title, c.coordinate)
+                        )
                         continue
-
 
     def get_drawings(self):
         for rel in self.rels.drawing:
@@ -408,7 +412,6 @@ class WorksheetProcessor:
 
             self.ws._shapes = shapes
 
-
     def get_pivots(self, pivot_caches):
         for rel in self.rels.pivotTable:
             pivot_path = rel.Target
@@ -417,7 +420,6 @@ class WorksheetProcessor:
             pivot = TableDefinition.from_tree(tree)
             pivot.cache = pivot_caches[pivot.cacheId]
             self.ws.add_pivot(pivot)
-
 
     def get_controls(self):
         """
@@ -472,8 +474,14 @@ class WorksheetProcessor:
                 prop.image = rel
 
 
-def load_workbook(filename, read_only=False, keep_vba=KEEP_VBA,
-                  data_only=False, keep_links=False, rich_text=False):
+def load_workbook(
+    filename,
+    read_only=False,
+    keep_vba=KEEP_VBA,
+    data_only=False,
+    keep_links=False,
+    rich_text=False,
+):
     """Open the given filename and return the workbook
 
     :param filename: the path to open or a file-like object
@@ -502,7 +510,8 @@ def load_workbook(filename, read_only=False, keep_vba=KEEP_VBA,
         and the returned workbook will be read-only.
 
     """
-    reader = ExcelReader(filename, read_only, keep_vba,
-                         data_only, keep_links, rich_text)
+    reader = ExcelReader(
+        filename, read_only, keep_vba, data_only, keep_links, rich_text
+    )
     reader.read()
     return reader.wb

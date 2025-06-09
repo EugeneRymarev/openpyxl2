@@ -1,32 +1,29 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Bool,
-    Integer,
-    String,
-    Alias,
-)
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
 from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.chart.text import RichText
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Bool
+from openpyxl.descriptors import Integer
+from openpyxl.descriptors import String
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.serialisable import Serialisable
 
-from .properties import (
-    NonVisualDrawingProps,
-    NonVisualDrawingShapeProps,
-)
 from .geometry import ShapeStyle
+from .properties import NonVisualDrawingProps
+from .properties import NonVisualDrawingShapeProps
+
 
 class Connection(Serialisable):
 
     id = Integer()
     idx = Integer()
 
-    def __init__(self,
-                 id=None,
-                 idx=None,
-                ):
+    def __init__(
+        self,
+        id=None,
+        idx=None,
+    ):
         self.id = id
         self.idx = idx
 
@@ -35,9 +32,10 @@ class ConnectorLocking(Serialisable):
 
     extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
 
-    def __init__(self,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        extLst=None,
+    ):
         self.extLst = extLst
 
 
@@ -48,12 +46,13 @@ class NonVisualConnectorProperties(Serialisable):
     endCxn = Typed(expected_type=Connection, allow_none=True)
     extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
 
-    def __init__(self,
-                 cxnSpLocks=None,
-                 stCxn=None,
-                 endCxn=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        cxnSpLocks=None,
+        stCxn=None,
+        endCxn=None,
+        extLst=None,
+    ):
         self.cxnSpLocks = cxnSpLocks
         self.stCxn = stCxn
         self.endCxn = endCxn
@@ -62,15 +61,23 @@ class NonVisualConnectorProperties(Serialisable):
 
 class ConnectorNonVisual(Serialisable):
 
-    cNvPr = Typed(expected_type=NonVisualDrawingProps, )
-    cNvCxnSpPr = Typed(expected_type=NonVisualConnectorProperties, )
+    cNvPr = Typed(
+        expected_type=NonVisualDrawingProps,
+    )
+    cNvCxnSpPr = Typed(
+        expected_type=NonVisualConnectorProperties,
+    )
 
-    __elements__ = ("cNvPr", "cNvCxnSpPr",)
+    __elements__ = (
+        "cNvPr",
+        "cNvCxnSpPr",
+    )
 
-    def __init__(self,
-                 cNvPr=None,
-                 cNvCxnSpPr=None,
-                ):
+    def __init__(
+        self,
+        cNvPr=None,
+        cNvCxnSpPr=None,
+    ):
         self.cNvPr = cNvPr
         self.cNvCxnSpPr = cNvCxnSpPr
 
@@ -85,13 +92,14 @@ class ConnectorShape(Serialisable):
     macro = String(allow_none=True)
     fPublished = Bool(allow_none=True)
 
-    def __init__(self,
-                 nvCxnSpPr=None,
-                 spPr=None,
-                 style=None,
-                 macro=None,
-                 fPublished=None,
-                 ):
+    def __init__(
+        self,
+        nvCxnSpPr=None,
+        spPr=None,
+        style=None,
+        macro=None,
+        fPublished=None,
+    ):
         self.nvCxnSpPr = nvCxnSpPr
         self.spPr = spPr
         self.style = style
@@ -130,16 +138,17 @@ class Shape(Serialisable):
 
     __elements__ = ("nvSpPr", "spPr", "style", "txBody")
 
-    def __init__(self,
-                 macro=None,
-                 textlink=None,
-                 fPublished=None,
-                 fLocksText=None,
-                 nvSpPr=None,
-                 spPr=None,
-                 style=None,
-                 txBody=None,
-                ):
+    def __init__(
+        self,
+        macro=None,
+        textlink=None,
+        fPublished=None,
+        fLocksText=None,
+        nvSpPr=None,
+        spPr=None,
+        style=None,
+        txBody=None,
+    ):
         self.macro = macro
         self.textlink = textlink
         self.fPublished = fPublished

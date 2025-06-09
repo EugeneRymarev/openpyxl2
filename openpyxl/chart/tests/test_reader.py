@@ -1,16 +1,17 @@
 # Copyright (c) 2010-2025 openpyxl
-
 from openpyxl.xml.functions import fromstring
 
-from .. bar_chart import BarChart
-from .. line_chart import LineChart
-from .. axis import NumericAxis, DateAxis
-from .. chartspace import ChartSpace, ChartContainer
+from ..axis import DateAxis
+from ..axis import NumericAxis
+from ..bar_chart import BarChart
+from ..chartspace import ChartContainer
+from ..chartspace import ChartSpace
+from ..line_chart import LineChart
 
 
 def test_read(datadir):
     datadir.chdir()
-    from .. reader import read_chart
+    from ..reader import read_chart
 
     with open("chart1.xml") as src:
         xml = src.read()
@@ -42,6 +43,7 @@ def test_read_chart_with_no_series():
     cs.chart.plotArea.barChart = BarChart()
 
     from ..reader import read_chart
+
     chart = read_chart(cs)
 
     assert isinstance(chart, BarChart)
@@ -64,4 +66,3 @@ def test_read_chart_with_shapes(datadir):
     assert chart.graphical_properties is not None
     assert chart.graphical_properties.noFill
     assert chart.graphical_properties.line.noFill
-

@@ -1,12 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def FunctionGroup():
     from ..function_group import FunctionGroup
+
     return FunctionGroup
 
 
@@ -21,7 +23,6 @@ class TestFunctionGroup:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, FunctionGroup):
         src = """
         <functionGroup name="Database" />
@@ -34,6 +35,7 @@ class TestFunctionGroup:
 @pytest.fixture
 def FunctionGroupList():
     from ..function_group import FunctionGroupList
+
     return FunctionGroupList
 
 
@@ -47,7 +49,6 @@ class TestFunctionGroupList:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, FunctionGroupList):
         src = """

@@ -1,34 +1,35 @@
 # Copyright (c) 2010-2025 openpyxl
-
-import pytest
 import os
 
-from openpyxl.tests.helper import compare_xml
-
-from openpyxl.worksheet.datavalidation import DataValidation
-from openpyxl.workbook import Workbook
-from openpyxl.styles import PatternFill, Font, Color
-from openpyxl.formatting.rule import CellIsRule
+import pytest
 from openpyxl.comments import Comment
-from openpyxl.packaging.relationship import Relationship
 from openpyxl.drawing.legacy import LegacyDrawing
+from openpyxl.formatting.rule import CellIsRule
+from openpyxl.packaging.relationship import Relationship
+from openpyxl.styles import Color
+from openpyxl.styles import Font
+from openpyxl.styles import PatternFill
+from openpyxl.tests.helper import compare_xml
+from openpyxl.workbook import Workbook
+from openpyxl.worksheet.datavalidation import DataValidation
 
+from ..controls import Control
+from ..controls import ControlProperty
+from ..controls import FormControl
 from ..dimensions import RowDimension
-from ..protection import SheetProtection
 from ..filters import SortState
-from ..scenario import Scenario, InputCells
+from ..ole import AnchorMarker
+from ..ole import ObjectAnchor
+from ..protection import SheetProtection
+from ..scenario import InputCells
+from ..scenario import Scenario
 from ..table import Table
-from ..controls import (
-    Control,
-    FormControl,
-    ControlProperty,
-)
-from ..ole import ObjectAnchor, AnchorMarker
 
 
 @pytest.fixture
 def writer():
     from .._writer import WorksheetWriter
+
     wb = Workbook()
     ws = wb.active
     return WorksheetWriter(ws)
@@ -36,12 +37,10 @@ def writer():
 
 class TestWorksheetWriter:
 
-
     def test_setup(self, writer):
         ws = writer.ws
         assert ws._hyperlinks == []
         assert ws._comments == []
-
 
     def test_properties(self, writer):
 
@@ -58,7 +57,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_dimensions(self, writer):
 
         writer.write_dimensions()
@@ -71,7 +69,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_format(self, writer):
 
         writer.write_format()
@@ -83,7 +80,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_views(self, writer):
 
@@ -101,10 +97,9 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_cols(self, writer):
 
-        writer.ws.column_dimensions['A'].width = 5
+        writer.ws.column_dimensions["A"].width = 5
         writer.write_cols()
         xml = writer.read()
         expected = """
@@ -116,7 +111,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_write_top(self, writer):
 
@@ -140,7 +134,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_protection(self, writer):
 
         writer.ws.protection = SheetProtection(sheet=True)
@@ -154,10 +147,15 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_scenarios(self, writer):
         c = InputCells(r="B2", val="50000")
-        s = Scenario(name="Worst case", inputCells=[c], locked=True, user="User", comment="comment")
+        s = Scenario(
+            name="Worst case",
+            inputCells=[c],
+            locked=True,
+            user="User",
+            comment="comment",
+        )
         writer.ws.scenarios.append(s)
         writer.write_scenarios()
         xml = writer.read()
@@ -174,10 +172,9 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_filter(self, writer):
 
-        writer.ws.auto_filter.ref ="A1:A10"
+        writer.ws.auto_filter.ref = "A1:A10"
         writer.write_filter()
         xml = writer.read()
         expected = """
@@ -187,7 +184,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_sort(self, writer):
 
@@ -199,7 +195,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_merged_cells(self, writer):
 
@@ -216,24 +211,26 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_formatting(self, writer):
 
         redFill = PatternFill(
-            start_color=Color('FFEE1111'),
-            end_color=Color('FFEE1111'),
-            patternType='solid'
+            start_color=Color("FFEE1111"),
+            end_color=Color("FFEE1111"),
+            patternType="solid",
         )
         whiteFont = Font(color=Color("FFFFFFFF"))
 
         ws = writer.ws
-        ws.conditional_formatting.add('A1:A3',
-                                      CellIsRule(operator='equal',
-                                                 formula=['"Fail"'],
-                                                 stopIfTrue=False,
-                                                 font=whiteFont,
-                                                 fill=redFill)
-                                      )
+        ws.conditional_formatting.add(
+            "A1:A3",
+            CellIsRule(
+                operator="equal",
+                formula=['"Fail"'],
+                stopIfTrue=False,
+                font=whiteFont,
+                fill=redFill,
+            ),
+        )
         writer.write_formatting()
         xml = writer.read()
         expected = """
@@ -248,11 +245,12 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_validations(self, writer):
 
         ws = writer.ws
-        dv = DataValidation(sqref="A1", showErrorMessage=True, showInputMessage=True, allow_blank=False)
+        dv = DataValidation(
+            sqref="A1", showErrorMessage=True, showInputMessage=True, allow_blank=False
+        )
         ws.data_validations.append(dv)
         writer.write_validations()
 
@@ -267,15 +265,14 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_hyperlinks(self, writer):
 
         ws = writer.ws
 
-        cell = ws['A1']
+        cell = ws["A1"]
         cell.value = "test"
         cell.hyperlink = "http://test.com"
-        writer.ws._hyperlinks.append(cell.hyperlink) # done when writing cells
+        writer.ws._hyperlinks.append(cell.hyperlink)  # done when writing cells
         writer.write_hyperlinks()
 
         assert len(writer._rels) == 1
@@ -290,7 +287,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_print(self, writer):
 
         writer.ws.print_options.headings = True
@@ -304,7 +300,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_margins(self, writer):
 
         writer.write_margins()
@@ -316,7 +311,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_page_setup(self, writer):
 
@@ -330,7 +324,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_header(self, writer):
 
@@ -351,7 +344,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_breaks(self, writer):
 
         writer.ws.row_breaks.append()
@@ -371,7 +363,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_drawings(self, writer):
 
         writer.ws._images = [1]
@@ -385,7 +376,6 @@ class TestWorksheetWriter:
         xml = writer.read()
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_shapes(self, writer):
 
@@ -401,7 +391,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_comments(self, writer):
 
         writer.ws._comments = True
@@ -415,7 +404,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_legacy(self, writer):
 
         writer.ws.legacy_drawing = LegacyDrawing(vml="some vml")
@@ -428,7 +416,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_vba(self, writer):
 
@@ -462,10 +449,9 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_tables(self, writer):
 
-        writer.ws.append(list(u"ABCDEF\xfc"))
+        writer.ws.append(list("ABCDEF\xfc"))
         writer.ws.add_table(Table(displayName="Table1", ref="A1:G6"))
         writer.write_tables()
 
@@ -478,7 +464,6 @@ class TestWorksheetWriter:
           </tableParts>
         </worksheet>
         """
-
 
     def test_controls(self, writer):
         ctrl = Control(shapeId=4)
@@ -498,13 +483,12 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_control_with_blob(self, writer):
         _from = AnchorMarker()
         to = AnchorMarker()
         anchor = ObjectAnchor(_from=_from, to=to)
         prop = ControlProperty(anchor=anchor)
-        prop.image = Relationship(type="image",Target="")
+        prop.image = Relationship(type="image", Target="")
         prop.image.blob = b"\x01\x00\x00\x00l\x00\x00\x00\x01\x00"
         ctrl = Control(shapeId=4, controlPr=prop)
 
@@ -543,7 +527,6 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_write_tail(self, writer):
 
         writer.write_tail()
@@ -556,31 +539,27 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_row_dimensons(self, writer):
 
-        writer.ws['A10'] = "test"
+        writer.ws["A10"] = "test"
         writer.ws.row_dimensions[10] = None
         writer.ws.row_dimensions[2] = None
 
-        assert writer.rows() == [
-            (2, []),
-            (10, [writer.ws['A10']])
-        ]
+        assert writer.rows() == [(2, []), (10, [writer.ws["A10"]])]
 
     def test_rows_sort(self, writer):
 
         ws = writer.ws
-        for c in ['F1', 'B1', 'A1', 'D1', 'E1', 'C1']:
+        for c in ["F1", "B1", "A1", "D1", "E1", "C1"]:
             ws[c] = 1
 
         assert writer.rows() == [
-            (1, [ws['A1'], ws['B1'], ws['C1'], ws['D1'], ws['E1'], ws['F1']]),
+            (1, [ws["A1"], ws["B1"], ws["C1"], ws["D1"], ws["E1"], ws["F1"]]),
         ]
 
     def test_write_rows(self, writer):
 
-        writer.ws['F1'] = 10
+        writer.ws["F1"] = 10
         writer.ws.row_dimensions[1] = RowDimension(writer.ws, height=20)
         writer.ws.row_dimensions[2] = RowDimension(writer.ws, height=30)
         writer.write_rows()
@@ -601,21 +580,19 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_write_rows_comment(self, writer):
 
-        cell = writer.ws['F1']
+        cell = writer.ws["F1"]
         cell._comment = Comment("comment", "author")
 
         writer.write_rows()
         assert len(writer.ws._comments) == 1
 
-
     def test_write_row(self, writer):
 
-        writer.ws['A10'] = 15
+        writer.ws["A10"] = 15
         xf = writer.xf.send(True)
-        row = [writer.ws['A10']]
+        row = [writer.ws["A10"]]
         writer.write_row(xf, row, 10)
 
         xml = writer.read()
@@ -631,11 +608,10 @@ class TestWorksheetWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_write_sheet(self, writer):
 
-        writer.ws['A10'] = 15
-        writer.ws['A10'].hyperlink = "http://www.example.com"
+        writer.ws["A10"] = 15
+        writer.ws["A10"].hyperlink = "http://www.example.com"
         writer.write_top()
         writer.write_rows()
         writer.write_tail()
@@ -669,7 +645,6 @@ class TestWorksheetWriter:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_cleanup(self, writer):
         assert os.path.exists(writer.out) is True

@@ -1,22 +1,17 @@
 """
 Collection of utility primitives for charts.
 """
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Bool,
-    Typed,
-    Alias,
-    String,
-    Integer,
-    Sequence,
-)
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Bool
+from openpyxl.descriptors import Integer
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import String
+from openpyxl.descriptors import Typed
 from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.nested import (
-    NestedString,
-    NestedText,
-    NestedInteger,
-)
+from openpyxl.descriptors.nested import NestedInteger
+from openpyxl.descriptors.nested import NestedString
+from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.serialisable import Serialisable
 
 
 class NumFmt(Serialisable):
@@ -24,10 +19,7 @@ class NumFmt(Serialisable):
     formatCode = String()
     sourceLinked = Bool()
 
-    def __init__(self,
-                 formatCode=None,
-                 sourceLinked=False
-                ):
+    def __init__(self, formatCode=None, sourceLinked=False):
         self.formatCode = formatCode
         self.sourceLinked = sourceLinked
 
@@ -53,11 +45,12 @@ class NumVal(Serialisable):
     formatCode = NestedText(allow_none=True, expected_type=str)
     v = NumberValueDescriptor()
 
-    def __init__(self,
-                 idx=None,
-                 formatCode=None,
-                 v=None,
-                ):
+    def __init__(
+        self,
+        idx=None,
+        formatCode=None,
+        v=None,
+    ):
         self.idx = idx
         self.formatCode = formatCode
         self.v = v
@@ -70,14 +63,15 @@ class NumData(Serialisable):
     pt = Sequence(expected_type=NumVal)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('formatCode', 'ptCount', 'pt')
+    __elements__ = ("formatCode", "ptCount", "pt")
 
-    def __init__(self,
-                 formatCode=None,
-                 ptCount=None,
-                 pt=(),
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        formatCode=None,
+        ptCount=None,
+        pt=(),
+        extLst=None,
+    ):
         self.formatCode = formatCode
         self.ptCount = ptCount
         self.pt = pt
@@ -86,17 +80,18 @@ class NumData(Serialisable):
 class NumRef(Serialisable):
 
     f = NestedText(expected_type=str)
-    ref = Alias('f')
+    ref = Alias("f")
     numCache = Typed(expected_type=NumData, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('f', 'numCache')
+    __elements__ = ("f", "numCache")
 
-    def __init__(self,
-                 f=None,
-                 numCache=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        f=None,
+        numCache=None,
+        extLst=None,
+    ):
         self.f = f
         self.numCache = numCache
 
@@ -108,10 +103,11 @@ class StrVal(Serialisable):
     idx = Integer()
     v = NestedText(expected_type=str)
 
-    def __init__(self,
-                 idx=0,
-                 v=None,
-                ):
+    def __init__(
+        self,
+        idx=0,
+        v=None,
+    ):
         self.idx = idx
         self.v = v
 
@@ -124,13 +120,14 @@ class StrData(Serialisable):
     pt = Sequence(expected_type=StrVal)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('ptCount', 'pt')
+    __elements__ = ("ptCount", "pt")
 
-    def __init__(self,
-                 ptCount=None,
-                 pt=(),
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        ptCount=None,
+        pt=(),
+        extLst=None,
+    ):
         self.ptCount = ptCount
         self.pt = pt
 
@@ -143,13 +140,14 @@ class StrRef(Serialisable):
     strCache = Typed(expected_type=StrData, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('f', 'strCache')
+    __elements__ = ("f", "strCache")
 
-    def __init__(self,
-                 f=None,
-                 strCache=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        f=None,
+        strCache=None,
+        extLst=None,
+    ):
         self.f = f
         self.strCache = strCache
 
@@ -159,11 +157,11 @@ class NumDataSource(Serialisable):
     numRef = Typed(expected_type=NumRef, allow_none=True)
     numLit = Typed(expected_type=NumData, allow_none=True)
 
-
-    def __init__(self,
-                 numRef=None,
-                 numLit=None,
-                 ):
+    def __init__(
+        self,
+        numRef=None,
+        numLit=None,
+    ):
         self.numRef = numRef
         self.numLit = numLit
 
@@ -174,11 +172,12 @@ class Level(Serialisable):
 
     pt = Sequence(expected_type=StrVal)
 
-    __elements__ = ('pt',)
+    __elements__ = ("pt",)
 
-    def __init__(self,
-                 pt=(),
-                ):
+    def __init__(
+        self,
+        pt=(),
+    ):
         self.pt = pt
 
 
@@ -190,13 +189,17 @@ class MultiLevelStrData(Serialisable):
     lvl = Sequence(expected_type=Level)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('ptCount', 'lvl',)
+    __elements__ = (
+        "ptCount",
+        "lvl",
+    )
 
-    def __init__(self,
-                 ptCount=None,
-                 lvl=(),
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        ptCount=None,
+        lvl=(),
+        extLst=None,
+    ):
         self.ptCount = ptCount
         self.lvl = lvl
 
@@ -209,13 +212,14 @@ class MultiLevelStrRef(Serialisable):
     multiLvlStrCache = Typed(expected_type=MultiLevelStrData, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    __elements__ = ('multiLvlStrCache', 'f')
+    __elements__ = ("multiLvlStrCache", "f")
 
-    def __init__(self,
-                 f=None,
-                 multiLvlStrCache=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        f=None,
+        multiLvlStrCache=None,
+        extLst=None,
+    ):
         self.f = f
         self.multiLvlStrCache = multiLvlStrCache
 
@@ -230,13 +234,14 @@ class AxDataSource(Serialisable):
     strLit = Typed(expected_type=StrData, allow_none=True)
     multiLvlStrRef = Typed(expected_type=MultiLevelStrRef, allow_none=True)
 
-    def __init__(self,
-                 numRef=None,
-                 numLit=None,
-                 strRef=None,
-                 strLit=None,
-                 multiLvlStrRef=None,
-                 ):
+    def __init__(
+        self,
+        numRef=None,
+        numLit=None,
+        strRef=None,
+        strLit=None,
+        multiLvlStrRef=None,
+    ):
         if not any([numLit, numRef, strRef, strLit, multiLvlStrRef]):
             raise TypeError("A data source must be provided")
         self.numRef = numRef

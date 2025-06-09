@@ -1,18 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-import pytest
-
 from io import BytesIO
 from zipfile import ZipFile
 
-from openpyxl.xml.functions import fromstring, tostring
+import pytest
 from openpyxl.tests.helper import compare_xml
-
-from openpyxl.worksheet.ole import ObjectAnchor, AnchorMarker
+from openpyxl.worksheet.ole import AnchorMarker
+from openpyxl.worksheet.ole import ObjectAnchor
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
 def ControlProperty():
     from ..controls import ControlProperty
+
     return ControlProperty
 
 
@@ -47,7 +48,6 @@ class TestControlProperty:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ControlProperty):
         src = """
         <controlPr
@@ -80,6 +80,7 @@ class TestControlProperty:
 @pytest.fixture
 def Control():
     from ..controls import Control
+
     return Control
 
 
@@ -94,7 +95,6 @@ class TestControl:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Control):
         src = """
          <control xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" shapeId="47120" r:id="rId8" name="RefProjectButton" />
@@ -107,6 +107,7 @@ class TestControl:
 @pytest.fixture
 def ControlList():
     from ..controls import ControlList
+
     return ControlList
 
 
@@ -120,7 +121,6 @@ class TestControlList:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ControlList):
         src = """
@@ -161,6 +161,7 @@ class TestControlList:
 @pytest.fixture
 def FormControl():
     from ..controls import FormControl
+
     return FormControl
 
 
@@ -175,7 +176,6 @@ class TestFormControl:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, FormControl):
         src = """
         <formControlPr xmlns="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" objectType="Button" lockText="1"/>
@@ -184,12 +184,10 @@ class TestFormControl:
         ctrl = FormControl.from_tree(node)
         assert ctrl == FormControl(objectType="Button", lockText=True)
 
-
     def test_path(self, FormControl):
         ctrl = FormControl("button")
         ctrl.counter = 4
         assert ctrl.path == "/xl/ctrlProps/ctrlProp4.xml"
-
 
     def test_write(self, FormControl):
         archive = ZipFile(BytesIO(), "w")
@@ -203,11 +201,11 @@ class TestFormControl:
 @pytest.fixture
 def ActiveXControl():
     from ..controls import ActiveXControl
+
     return ActiveXControl
 
 
 class TestActiveXControl:
-
 
     def test_ctor(self, ActiveXControl):
         ctrl = ActiveXControl(id="rId1", persistence="persistStreamInit")
@@ -221,7 +219,6 @@ class TestActiveXControl:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ActiveXControl):
         src = """
         <ocx classid="{8BD21D50-EC42-11CE-9E0D-00AA006002F3}" r:id="rId1" xmlns="http://schemas.microsoft.com/office/2006/activeX"
@@ -232,12 +229,10 @@ class TestActiveXControl:
         ctrl = ActiveXControl.from_tree(node)
         assert ctrl == ActiveXControl(id="rId1", persistence="persistStreamInit")
 
-
     def test_path(self, ActiveXControl):
         ctrl = ActiveXControl("rId4", persistence="persistStreamInit")
         ctrl.counter = 4
         assert ctrl.path == "/xl/activeX/activeX4.xml"
-
 
     def test_write(self, ActiveXControl):
         archive = ZipFile(BytesIO(), "w")
@@ -246,6 +241,8 @@ class TestActiveXControl:
         ctrl.bin = b"\001"
         manifest = []
         ctrl._write(archive, manifest)
-        assert archive.namelist() == ["xl/activeX/activeX1.bin",
-                                      "xl/activeX/_rels/activeX1.xml.rels",
-                                      "xl/activeX/activeX1.xml"]
+        assert archive.namelist() == [
+            "xl/activeX/activeX1.bin",
+            "xl/activeX/_rels/activeX1.xml.rels",
+            "xl/activeX/activeX1.xml",
+        ]

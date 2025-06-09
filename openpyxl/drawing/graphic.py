@@ -1,25 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.xml.constants import CHART_NS, DRAWING_NS
-
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import (
-    Typed,
-    Bool,
-    String,
-    Alias,
-    Sequence,
-)
+from openpyxl.descriptors import Alias
+from openpyxl.descriptors import Bool
+from openpyxl.descriptors import Sequence
+from openpyxl.descriptors import String
+from openpyxl.descriptors import Typed
 from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
-
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.xml.constants import CHART_NS
+from openpyxl.xml.constants import DRAWING_NS
 
 from .effect import *
 from .picture import PictureFrame
-from .properties import (
-    NonVisualDrawingProps,
-    NonVisualGroupShape,
-    GroupShapeProperties,
-)
+from .properties import GroupShapeProperties
+from .properties import NonVisualDrawingProps
+from .properties import NonVisualGroupShape
 from .relation import ChartRelation
 from .xdr import XDRTransform2D
 
@@ -34,15 +28,16 @@ class GraphicFrameLocking(Serialisable):
     noResize = Bool(allow_none=True)
     extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
 
-    def __init__(self,
-                 noGrp=None,
-                 noDrilldown=None,
-                 noSelect=None,
-                 noChangeAspect=None,
-                 noMove=None,
-                 noResize=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        noGrp=None,
+        noDrilldown=None,
+        noSelect=None,
+        noChangeAspect=None,
+        noMove=None,
+        noResize=None,
+        extLst=None,
+    ):
         self.noGrp = noGrp
         self.noDrilldown = noDrilldown
         self.noSelect = noSelect
@@ -59,10 +54,11 @@ class NonVisualGraphicFrameProperties(Serialisable):
     graphicFrameLocks = Typed(expected_type=GraphicFrameLocking, allow_none=True)
     extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
 
-    def __init__(self,
-                 graphicFrameLocks=None,
-                 extLst=None,
-                ):
+    def __init__(
+        self,
+        graphicFrameLocks=None,
+        extLst=None,
+    ):
         self.graphicFrameLocks = graphicFrameLocks
         self.extLst = extLst
 
@@ -75,12 +71,13 @@ class NonVisualGraphicFrame(Serialisable):
     non_visual_props = Alias("cNvPr")
     cNvGraphicFramePr = Typed(expected_type=NonVisualGraphicFrameProperties)
 
-    __elements__ = ('cNvPr', 'cNvGraphicFramePr')
+    __elements__ = ("cNvPr", "cNvGraphicFramePr")
 
-    def __init__(self,
-                 cNvPr=None,
-                 cNvGraphicFramePr=None,
-                ):
+    def __init__(
+        self,
+        cNvPr=None,
+        cNvGraphicFramePr=None,
+    ):
         if cNvPr is None:
             cNvPr = NonVisualDrawingProps(id=0, name="Chart 0")
         self.cNvPr = cNvPr
@@ -97,11 +94,11 @@ class GraphicData(Serialisable):
     uri = String()
     chart = Typed(expected_type=ChartRelation, allow_none=True)
 
-
-    def __init__(self,
-                 uri=CHART_NS,
-                 chart=None,
-                ):
+    def __init__(
+        self,
+        uri=CHART_NS,
+        chart=None,
+    ):
         self.uri = uri
         self.chart = chart
 
@@ -113,9 +110,10 @@ class GraphicObject(Serialisable):
 
     graphicData = Typed(expected_type=GraphicData)
 
-    def __init__(self,
-                 graphicData=None,
-                ):
+    def __init__(
+        self,
+        graphicData=None,
+    ):
         if graphicData is None:
             graphicData = GraphicData()
         self.graphicData = graphicData
@@ -132,15 +130,16 @@ class GraphicFrame(Serialisable):
     macro = String(allow_none=True)
     fPublished = Bool(allow_none=True)
 
-    __elements__ = ('nvGraphicFramePr', 'xfrm', 'graphic', 'fPublished')
+    __elements__ = ("nvGraphicFramePr", "xfrm", "graphic", "fPublished")
 
-    def __init__(self,
-                 nvGraphicFramePr=None,
-                 xfrm=None,
-                 graphic=None,
-                 macro=None,
-                 fPublished=None,
-                 ):
+    def __init__(
+        self,
+        nvGraphicFramePr=None,
+        xfrm=None,
+        graphic=None,
+        macro=None,
+        fPublished=None,
+    ):
         if nvGraphicFramePr is None:
             nvGraphicFramePr = NonVisualGraphicFrame()
         self.nvGraphicFramePr = nvGraphicFramePr
@@ -168,12 +167,13 @@ class GroupShape(Serialisable):
 
     __elements__ = ("nvGrpSpPr", "grpSpPr", "pic", "sp")
 
-    def __init__(self,
-                 nvGrpSpPr=None,
-                 grpSpPr=None,
-                 pic=(),
-                 sp=(),
-                ):
+    def __init__(
+        self,
+        nvGrpSpPr=None,
+        grpSpPr=None,
+        pic=(),
+        sp=(),
+    ):
         self.nvGrpSpPr = nvGrpSpPr
         self.grpSpPr = grpSpPr
         self.pic = pic

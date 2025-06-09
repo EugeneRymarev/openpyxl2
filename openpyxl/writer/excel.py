@@ -1,47 +1,42 @@
 # Copyright (c) 2010-2025 openpyxl
-
-
 # Python stdlib imports
 import datetime
 import re
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZIP_DEFLATED
+from zipfile import ZipFile
 
-# package imports
-from openpyxl.utils.exceptions import InvalidFileException
-from openpyxl.xml.constants import (
-    ARC_ROOT_RELS,
-    ARC_WORKBOOK_RELS,
-    ARC_APP,
-    ARC_CORE,
-    ARC_CUSTOM,
-    ARC_VOLATILE_DEPENDENCIES,
-    ARC_CONNECTIONS,
-    CPROPS_TYPE,
-    ARC_THEME,
-    ARC_STYLE,
-    ARC_WORKBOOK,
-    IMAGE_NS,
-)
-from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
-from openpyxl.drawing.legacy import LegacyDrawing
-from openpyxl.drawing.image import ImageGroup
-from openpyxl.xml.functions import tostring
-from openpyxl.packaging.manifest import Manifest
-from openpyxl.packaging.relationship import (
-    get_rels_path,
-    RelationshipList,
-    Relationship,
-)
 from openpyxl.comments.comment_sheet import CommentSheet
+from openpyxl.drawing.image import ImageGroup
+from openpyxl.drawing.legacy import LegacyDrawing
+from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
+from openpyxl.packaging.manifest import Manifest
+from openpyxl.packaging.relationship import get_rels_path
+from openpyxl.packaging.relationship import Relationship
+from openpyxl.packaging.relationship import RelationshipList
 from openpyxl.styles.stylesheet import write_stylesheet
-from openpyxl.worksheet._writer import WorksheetWriter
+from openpyxl.utils.exceptions import InvalidFileException
 from openpyxl.workbook._writer import WorkbookWriter
+from openpyxl.worksheet._writer import WorksheetWriter
+from openpyxl.xml.constants import ARC_APP
+from openpyxl.xml.constants import ARC_CONNECTIONS
+from openpyxl.xml.constants import ARC_CORE
+from openpyxl.xml.constants import ARC_CUSTOM
+from openpyxl.xml.constants import ARC_ROOT_RELS
+from openpyxl.xml.constants import ARC_STYLE
+from openpyxl.xml.constants import ARC_THEME
+from openpyxl.xml.constants import ARC_VOLATILE_DEPENDENCIES
+from openpyxl.xml.constants import ARC_WORKBOOK
+from openpyxl.xml.constants import ARC_WORKBOOK_RELS
+from openpyxl.xml.constants import CPROPS_TYPE
+from openpyxl.xml.constants import IMAGE_NS
+from openpyxl.xml.functions import tostring
+
 from .theme import theme_xml
+# package imports
 
 
 class ExcelWriter:
     """Write a workbook object to an Excel file."""
-
 
     def __init__(self, workbook, archive):
         self.archive = archive
@@ -58,9 +53,9 @@ class ExcelWriter:
         self.legacy = []
         self.form_controls = []
 
-
     def write_data(self):
         from openpyxl.packaging.extended import ExtendedProperties
+
         """Write the various xml files into the zip archive."""
         # cleanup all worksheets
         archive = self.archive
@@ -75,10 +70,13 @@ class ExcelWriter:
             archive.writestr(ARC_THEME, theme_xml)
 
         if len(self.workbook.custom_doc_props) >= 1:
-            archive.writestr(ARC_CUSTOM, tostring(self.workbook.custom_doc_props.to_tree()))
-            class CustomOverride():
-                path = "/" + ARC_CUSTOM #PartName
-                mime_type = CPROPS_TYPE #ContentType
+            archive.writestr(
+                ARC_CUSTOM, tostring(self.workbook.custom_doc_props.to_tree())
+            )
+
+            class CustomOverride:
+                path = "/" + ARC_CUSTOM  # PartName
+                mime_type = CPROPS_TYPE  # ContentType
 
             custom_override = CustomOverride()
             self.manifest.append(custom_override)
@@ -87,7 +85,7 @@ class ExcelWriter:
         self.write_connections()
         self.write_worksheets()
         self.write_chartsheets()
-        #self.write_images()
+        # self.write_images()
         self.write_charts()
 
         self.write_external_links()
@@ -105,11 +103,9 @@ class ExcelWriter:
 
         self.manifest._write(archive, self.workbook)
 
-
     @property
     def images(self):
         return self._images
-
 
     def add_image(self, img):
         """
@@ -127,7 +123,6 @@ class ExcelWriter:
         img._write(self.archive)
         return idx
 
-
     def _merge_vba(self):
         """
         If workbook contains macros then extract associated files from cache
@@ -135,24 +130,24 @@ class ExcelWriter:
         """
         if self.workbook._vba:
             self.archive.writestr("xl/vbaProject.bin", self.workbook._vba)
-        #ARC_VBA = re.compile("|".join(
-            #('xl/vba','customUI', ))
-                             #)
+        # ARC_VBA = re.compile("|".join(
+        # ('xl/vba','customUI', ))
+        # )
 
-        #if self.workbook.vba_archive:
-            #for name in set(self.workbook.vba_archive.namelist()) - self.vba_modified:
-                #if ARC_VBA.match(name):
-                    #self.archive.writestr(name, self.workbook.vba_archive.read(name))
-
+        # if self.workbook.vba_archive:
+        # for name in set(self.workbook.vba_archive.namelist()) - self.vba_modified:
+        # if ARC_VBA.match(name):
+        # self.archive.writestr(name, self.workbook.vba_archive.read(name))
 
     def write_charts(self):
         # delegate to object
         if len(self._charts) != len(set(self._charts)):
-            raise InvalidFileException("The same chart cannot be used in more than one worksheet")
+            raise InvalidFileException(
+                "The same chart cannot be used in more than one worksheet"
+            )
         for chart in self._charts:
             self.archive.writestr(chart.path[1:], tostring(chart._write()))
             self.manifest.append(chart)
-
 
     def write_drawing(self, drawing):
         """
@@ -163,19 +158,18 @@ class ExcelWriter:
         for chart in drawing.charts:
             self._charts.append(chart)
             chart._id = len(self._charts)
-        #idx = len(self._images)
+        # idx = len(self._images)
         for img in drawing.images:
             if isinstance(img, ImageGroup):
                 for im in img.images:
                     self.add_image(im)
             else:
                 self.add_image(img)
-            #idx = img._write(self.archive, idx)
+            # idx = img._write(self.archive, idx)
         rels_path = get_rels_path(drawing.path)[1:]
         self.archive.writestr(drawing.path[1:], tostring(drawing._write()))
         self.archive.writestr(rels_path, tostring(drawing._write_rels()))
         self.manifest.append(drawing)
-
 
     def write_chartsheets(self):
         for idx, sheet in enumerate(self.workbook.chartsheets, 1):
@@ -197,7 +191,6 @@ class ExcelWriter:
                 rels_path = get_rels_path(sheet.path[1:])
                 self.archive.writestr(rels_path, tostring(tree))
 
-
     def write_comment(self, ws):
 
         cs = CommentSheet.from_comments(ws._comments)
@@ -217,7 +210,6 @@ class ExcelWriter:
 
         comment_rel = Relationship(Id="comments", type=cs._rel_type, Target=cs.path)
         ws._rels.append(comment_rel)
-
 
     def write_legacy(self, ws):
         """
@@ -240,7 +232,6 @@ class ExcelWriter:
             xml = drawing.children.to_tree()
             path = get_rels_path(ws.legacy_drawing.path)
             self.archive.writestr(path[1:], tostring(xml))
-
 
     def write_worksheet(self, ws):
         ws._drawing = SpreadsheetDrawing()
@@ -287,21 +278,19 @@ class ExcelWriter:
 
         writer.cleanup()
 
-
     def write_controls(self, ws, controls):
         """Serialise form controls for a specific worksheet"""
 
         for ctrl in controls:
-            if hasattr(ctrl, "bin"): # ugh!
+            if hasattr(ctrl, "bin"):  # ugh!
                 store = self.activex
             else:
                 store = self.form_controls
             store.append(ctrl)
-            ctrl.counter = len(store) # ugh!
+            ctrl.counter = len(store)  # ugh!
             ctrl._write(self.archive, self.manifest)
 
             ws._rels.get(ctrl._rel_id).Target = ctrl.path
-
 
     def write_embedded(self, ws, control_images):
         """
@@ -311,7 +300,6 @@ class ExcelWriter:
             img = obj.blob
             self.add_image(img)
             obj.Target = img.path
-
 
     def write_worksheets(self):
 
@@ -338,7 +326,6 @@ class ExcelWriter:
                 rels_path = get_rels_path(ws.path)[1:]
                 self.archive.writestr(rels_path, tostring(tree))
 
-
     def write_external_links(self):
         # delegate to object
         """Write links to external workbooks"""
@@ -354,13 +341,11 @@ class ExcelWriter:
             self.archive.writestr(rels_path, tostring(rels.to_tree()))
             self.manifest.append(link)
 
-
     def write_volatile_deps(self):
         if self.workbook._volatile_deps:
             tree = self.workbook._volatile_deps.to_tree()
             self.archive.writestr(ARC_VOLATILE_DEPENDENCIES, tostring(tree))
             self.manifest.append(self.workbook._volatile_deps)
-
 
     def write_connections(self):
 
@@ -374,7 +359,6 @@ class ExcelWriter:
             tree = conns.to_tree()
             self.archive.writestr(ARC_CONNECTIONS, tostring(tree))
             self.manifest.append(conns)
-
 
     def save(self):
         """Write data into the archive."""
@@ -394,10 +378,12 @@ def save_workbook(workbook, filename):
     :rtype: bool
 
     """
-    #if wb._vba and not filename.endswith(".xlsm"):
-        #warn()
-    archive = ZipFile(filename, 'w', ZIP_DEFLATED, allowZip64=True)
-    workbook.properties.modified = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
+    # if wb._vba and not filename.endswith(".xlsm"):
+    # warn()
+    archive = ZipFile(filename, "w", ZIP_DEFLATED, allowZip64=True)
+    workbook.properties.modified = datetime.datetime.now(
+        tz=datetime.timezone.utc
+    ).replace(tzinfo=None)
     writer = ExcelWriter(workbook, archive)
     writer.save()
     return True

@@ -1,9 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
-
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
@@ -29,7 +28,6 @@ class TestChartsheetProtection:
         assert chartsheetProtection.algorithmName == "SHA-512"
         assert chartsheetProtection.saltValue == "Bo89+SCcqbFEcOS/6LcjBw=="
 
-
     def test_write(self, ChartsheetProtection):
         chartsheetProtection = ChartsheetProtection()
         chartsheetProtection.saltValue = "Bo89+SCcqbFEcOS/6LcjBw=="
@@ -49,7 +47,6 @@ class TestChartsheetProtection:
         xml = tostring(chartsheetProtection.to_tree())
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_password(self, ChartsheetProtection):
         prot = ChartsheetProtection()

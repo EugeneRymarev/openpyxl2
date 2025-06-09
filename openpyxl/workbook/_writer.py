@@ -1,28 +1,25 @@
 # Copyright (c) 2010-2025 openpyxl
-
 """Write the workbook global settings to the archive."""
-
+from openpyxl.packaging.relationship import Relationship
+from openpyxl.packaging.relationship import RelationshipList
+from openpyxl.packaging.workbook import ChildSheet
+from openpyxl.packaging.workbook import PivotCache
+from openpyxl.packaging.workbook import WorkbookPackage
 from openpyxl.utils import quote_sheetname
-from openpyxl.xml.constants import (
-    ARC_APP,
-    ARC_CORE,
-    ARC_CUSTOM,
-    ARC_WORKBOOK,
-    PKG_REL_NS,
-    CUSTOMUI_NS,
-    ARC_ROOT_RELS,
-)
-from openpyxl.xml.functions import tostring, fromstring
-
-from openpyxl.packaging.relationship import Relationship, RelationshipList
-from openpyxl.workbook.defined_name import (
-    DefinedName,
-    DefinedNameList,
-)
-from openpyxl.workbook.external_reference import ExternalReference
-from openpyxl.packaging.workbook import ChildSheet, WorkbookPackage, PivotCache
-from openpyxl.workbook.properties import WorkbookProperties
 from openpyxl.utils.datetime import CALENDAR_MAC_1904
+from openpyxl.workbook.defined_name import DefinedName
+from openpyxl.workbook.defined_name import DefinedNameList
+from openpyxl.workbook.external_reference import ExternalReference
+from openpyxl.workbook.properties import WorkbookProperties
+from openpyxl.xml.constants import ARC_APP
+from openpyxl.xml.constants import ARC_CORE
+from openpyxl.xml.constants import ARC_CUSTOM
+from openpyxl.xml.constants import ARC_ROOT_RELS
+from openpyxl.xml.constants import ARC_WORKBOOK
+from openpyxl.xml.constants import CUSTOMUI_NS
+from openpyxl.xml.constants import PKG_REL_NS
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
 
 def get_active_sheet(wb):
@@ -30,7 +27,9 @@ def get_active_sheet(wb):
     Return the index of the active sheet.
     If the sheet set to active is hidden return the next visible sheet or None
     """
-    visible_sheets = [idx for idx, sheet in enumerate(wb._sheets) if sheet.sheet_state == "visible"]
+    visible_sheets = [
+        idx for idx, sheet in enumerate(wb._sheets) if sheet.sheet_state == "visible"
+    ]
     if not visible_sheets:
         raise IndexError("At least one sheet must be visible")
 
@@ -56,29 +55,30 @@ class WorkbookWriter:
         self.package.calcPr = wb.calculation
         self.pivot_caches = set()
 
-
     def write_properties(self):
 
-        props = WorkbookProperties() # needs a mapping to the workbook for preservation
+        props = WorkbookProperties()  # needs a mapping to the workbook for preservation
         if self.wb.code_name is not None:
             props.codeName = self.wb.code_name
         if self.wb.excel_base_date == CALENDAR_MAC_1904:
             props.date1904 = True
         self.package.workbookPr = props
 
-
     def write_worksheets(self):
         for idx, sheet in enumerate(self.wb._sheets, 1):
-            sheet_node = ChildSheet(name=sheet.title, sheetId=idx, id="rId{0}".format(idx))
+            sheet_node = ChildSheet(
+                name=sheet.title, sheetId=idx, id="rId{0}".format(idx)
+            )
             rel = Relationship(type=sheet._rel_type, Target=sheet.path)
             self.rels.append(rel)
 
-            if not sheet.sheet_state == 'visible':
+            if not sheet.sheet_state == "visible":
                 if len(self.wb._sheets) == 1:
-                    raise ValueError("The only worksheet of a workbook cannot be hidden")
+                    raise ValueError(
+                        "The only worksheet of a workbook cannot be hidden"
+                    )
                 sheet_node.state = sheet.sheet_state
             self.package.sheets.append(sheet_node)
-
 
     def write_refs(self):
         for link in self.wb._external_links:
@@ -88,7 +88,6 @@ class WorkbookWriter:
             self.rels.append(rel)
             ext = ExternalReference(id=rel.id)
             self.package.externalReferences.append(ext)
-
 
     def write_names(self):
         defined_names = list(self.wb.defined_names.values())
@@ -104,7 +103,9 @@ class WorkbookWriter:
                 defined_names.extend(names)
 
             if sheet.auto_filter:
-                name = DefinedName(name='_FilterDatabase', localSheetId=idx, hidden=True)
+                name = DefinedName(
+                    name="_FilterDatabase", localSheetId=idx, hidden=True
+                )
                 name.value = f"{quoted}!{sheet.auto_filter}"
                 defined_names.append(name)
 
@@ -120,7 +121,6 @@ class WorkbookWriter:
 
         self.package.definedNames = DefinedNameList(definedName=defined_names)
 
-
     def write_pivot_caches(self):
 
         for cache in self.pivot_caches:
@@ -130,13 +130,11 @@ class WorkbookWriter:
             self.rels.append(rel)
             c.id = rel.id
 
-
     def write_views(self):
         active = get_active_sheet(self.wb)
         if self.wb.views:
             self.wb.views[0].activeTab = active
         self.package.bookViews = self.wb.views
-
 
     def write(self):
         """Write the core workbook xml."""
@@ -150,19 +148,20 @@ class WorkbookWriter:
 
         return tostring(self.package.to_tree())
 
-
     def write_rels(self):
         """Write the workbook relationships xml."""
 
-        styles =  Relationship(type='styles', Target='styles.xml')
+        styles = Relationship(type="styles", Target="styles.xml")
         self.rels.append(styles)
 
-        theme =  Relationship(type='theme', Target='theme/theme1.xml')
+        theme = Relationship(type="theme", Target="theme/theme1.xml")
         self.rels.append(theme)
 
         if self.wb._vba:
-            vba =  Relationship(type='', Target='vbaProject.bin')
-            vba.Type ='http://schemas.microsoft.com/office/2006/relationships/vbaProject'
+            vba = Relationship(type="", Target="vbaProject.bin")
+            vba.Type = (
+                "http://schemas.microsoft.com/office/2006/relationships/vbaProject"
+            )
             self.rels.append(vba)
 
         if self.wb._volatile_deps:
@@ -177,7 +176,6 @@ class WorkbookWriter:
 
         return tostring(self.rels.to_tree())
 
-
     def write_root_rels(self):
         """Write the package relationships"""
 
@@ -185,7 +183,9 @@ class WorkbookWriter:
 
         rel = Relationship(type="officeDocument", Target=ARC_WORKBOOK)
         rels.append(rel)
-        rel = Relationship(Type=f"{PKG_REL_NS}/metadata/core-properties", Target=ARC_CORE)
+        rel = Relationship(
+            Type=f"{PKG_REL_NS}/metadata/core-properties", Target=ARC_CORE
+        )
         rels.append(rel)
 
         rel = Relationship(type="extended-properties", Target=ARC_APP)

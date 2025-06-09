@@ -19,13 +19,12 @@
 #
 # @license: http://www.opensource.org/licenses/mit-license.php
 # @author: see AUTHORS file
-
 """Make sure we're using the fastest backend available"""
-
 from openpyxl import LXML
 
 try:
     from xml.etree.cElementTree import Element as cElement
+
     C = True
 except ImportError:
     C = False
@@ -40,6 +39,7 @@ from xml.etree.ElementTree import Element as pyElement
 
 def test_backend():
     from openpyxl.xml.functions import Element
+
     if LXML is True:
         assert Element == lElement
     elif C is True:
@@ -52,7 +52,7 @@ def test_namespace_register():
     from openpyxl.xml.functions import Element, tostring
     from openpyxl.xml.constants import SHEET_MAIN_NS
 
-    e = Element('{%s}sheet' % SHEET_MAIN_NS)
+    e = Element("{%s}sheet" % SHEET_MAIN_NS)
     xml = tostring(e)
     if hasattr(xml, "decode"):
         xml = xml.decode("utf-8")

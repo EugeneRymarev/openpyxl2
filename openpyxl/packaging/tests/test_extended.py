@@ -1,13 +1,15 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
-from openpyxl.tests.helper import compare_xml
 from openpyxl import __version__
+from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 
 @pytest.fixture
 def ExtendedProperties():
     from ..extended import ExtendedProperties
+
     return ExtendedProperties
 
 
@@ -25,7 +27,6 @@ class TestExtendedProperties:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_xml(self, ExtendedProperties):
         src = """
@@ -64,5 +65,5 @@ class TestExtendedProperties:
             LinksUpToDate=True,
             SharedDoc=True,
             HyperlinksChanged=True,
-            AppVersion='14.0300'
+            AppVersion="14.0300",
         )

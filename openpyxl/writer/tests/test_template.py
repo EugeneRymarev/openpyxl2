@@ -1,14 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-
 from io import BytesIO
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 
 import pytest
-
 from openpyxl.packaging.manifest import Manifest
 from openpyxl.reader.excel import load_workbook
-from openpyxl.xml.constants import ARC_CONTENT_TYPES, XLTM, XLTX, XLSM, XLSX
+from openpyxl.xml.constants import ARC_CONTENT_TYPES
+from openpyxl.xml.constants import XLSM
+from openpyxl.xml.constants import XLSX
+from openpyxl.xml.constants import XLTM
+from openpyxl.xml.constants import XLTX
 from openpyxl.xml.functions import fromstring
 
 
@@ -20,12 +22,15 @@ def check_content_type(workbook_type, fname):
     assert workbook_type in package
 
 
-@pytest.mark.parametrize('tmpl, is_template', [
-    ('empty.xlsx', False),
-    ('empty.xlsm', False),
-    ('empty.xltx', True),
-    ('empty.xltm', True)
-])
+@pytest.mark.parametrize(
+    "tmpl, is_template",
+    [
+        ("empty.xlsx", False),
+        ("empty.xlsm", False),
+        ("empty.xltx", True),
+        ("empty.xltm", True),
+    ],
+)
 def test_workbook_is_template(datadir, tmpl, is_template):
     datadir.chdir()
 
@@ -33,24 +38,30 @@ def test_workbook_is_template(datadir, tmpl, is_template):
     assert wb.template is is_template
 
 
-@pytest.mark.parametrize('tmpl, wb_type', [
-    ('empty.xlsx', XLSX),
-    ('empty.xlsm', XLSM),
-    ('empty.xltx', XLTX),
-    ('empty.xltm', XLTM)
-])
+@pytest.mark.parametrize(
+    "tmpl, wb_type",
+    [
+        ("empty.xlsx", XLSX),
+        ("empty.xlsm", XLSM),
+        ("empty.xltx", XLTX),
+        ("empty.xltm", XLTM),
+    ],
+)
 def test_xl_content_type(datadir, tmpl, wb_type):
     datadir.chdir()
 
     check_content_type(wb_type, tmpl)
 
 
-@pytest.mark.parametrize('tmpl, keep_vba, wb_type', [
-    ('empty.xlsx', False, XLSX),
-    ('empty.xlsm', True, XLSM),
-    ('empty.xltx', False, XLSX),
-    ('empty.xltm', True, XLSM)
-])
+@pytest.mark.parametrize(
+    "tmpl, keep_vba, wb_type",
+    [
+        ("empty.xlsx", False, XLSX),
+        ("empty.xlsm", True, XLSM),
+        ("empty.xltx", False, XLSX),
+        ("empty.xltm", True, XLSM),
+    ],
+)
 def test_save_xl_as_no_template(datadir, tmpl, keep_vba, wb_type):
     datadir.chdir()
 
@@ -63,12 +74,15 @@ def test_save_xl_as_no_template(datadir, tmpl, keep_vba, wb_type):
     check_content_type(wb_type, tmp)
 
 
-@pytest.mark.parametrize('tmpl, keep_vba, wb_type', [
-    ('empty.xlsx', False, XLTX),
-    ('empty.xlsm', True, XLTM),
-    ('empty.xltx', False, XLTX),
-    ('empty.xltm', True, XLTM)
-])
+@pytest.mark.parametrize(
+    "tmpl, keep_vba, wb_type",
+    [
+        ("empty.xlsx", False, XLTX),
+        ("empty.xlsm", True, XLTM),
+        ("empty.xltx", False, XLTX),
+        ("empty.xltm", True, XLTM),
+    ],
+)
 def test_save_xl_as_template(datadir, tmpl, keep_vba, wb_type):
     datadir.chdir()
 

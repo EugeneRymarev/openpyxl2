@@ -1,16 +1,18 @@
 # Copyright (c) 2010-2025 openpyxl
-
 import pytest
-
-from openpyxl.xml.functions import fromstring, tostring
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
 
-from ..geometry import StyleMatrixReference, FontReference
 from ..colors import SchemeColor
+from ..geometry import FontReference
+from ..geometry import StyleMatrixReference
+
 
 @pytest.fixture
 def GradientFillProperties():
     from ..fill import GradientFillProperties
+
     return GradientFillProperties
 
 
@@ -25,7 +27,6 @@ class TestGradientFillProperties:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, GradientFillProperties):
         src = """
         <a:gradFill xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" />
@@ -38,6 +39,7 @@ class TestGradientFillProperties:
 @pytest.fixture
 def Transform2D():
     from ..geometry import Transform2D
+
     return Transform2D
 
 
@@ -52,7 +54,6 @@ class TestTransform2D:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Transform2D):
         src = """
         <root />
@@ -65,6 +66,7 @@ class TestTransform2D:
 @pytest.fixture
 def Camera():
     from ..geometry import Camera
+
     return Camera
 
 
@@ -79,7 +81,6 @@ class TestCamera:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Camera):
         src = """
         <camera prst="orthographicFront" />
@@ -92,6 +93,7 @@ class TestCamera:
 @pytest.fixture
 def LightRig():
     from ..geometry import LightRig
+
     return LightRig
 
 
@@ -106,7 +108,6 @@ class TestLightRig:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, LightRig):
         src = """
         <lightRig rig="threePt" dir="t"/>
@@ -119,6 +120,7 @@ class TestLightRig:
 @pytest.fixture
 def Bevel():
     from ..geometry import Bevel
+
     return Bevel
 
 
@@ -133,19 +135,19 @@ class TestBevel:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Bevel):
         src = """
         <bevel w="101600" h="101600"/>
         """
         node = fromstring(src)
         bevel = Bevel.from_tree(node)
-        assert bevel == Bevel( w=101600, h=101600)
+        assert bevel == Bevel(w=101600, h=101600)
 
 
 @pytest.fixture
 def SphereCoords():
     from ..geometry import SphereCoords
+
     return SphereCoords
 
 
@@ -160,7 +162,6 @@ class TestSphereCoords:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, SphereCoords):
         src = """
         <sphereCoords lat="90" lon="45" rev="60" />
@@ -173,6 +174,7 @@ class TestSphereCoords:
 @pytest.fixture
 def Vector3D():
     from ..geometry import Vector3D
+
     return Vector3D
 
 
@@ -187,7 +189,6 @@ class TestVector3D:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Vector3D):
         src = """
         <vector dx="100000" dy="300000" dz="50000" />
@@ -200,6 +201,7 @@ class TestVector3D:
 @pytest.fixture
 def Point3D():
     from ..geometry import Point3D
+
     return Point3D
 
 
@@ -214,7 +216,6 @@ class TestPoint3D:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, Point3D):
         src = """
         <anchor x="40000" y="60000" z="100000" />
@@ -227,23 +228,20 @@ class TestPoint3D:
 @pytest.fixture
 def ShapeStyle():
     from ..geometry import ShapeStyle
+
     return ShapeStyle
 
 
 class TestShapeStyle:
 
-
     def test_ctor(self, ShapeStyle):
-        ln = StyleMatrixReference(idx=2, schemeClr=SchemeColor(val="accent1", shade=50000))
+        ln = StyleMatrixReference(
+            idx=2, schemeClr=SchemeColor(val="accent1", shade=50000)
+        )
         fill = StyleMatrixReference(idx=1, schemeClr=SchemeColor(val="accent1"))
         effect = StyleMatrixReference(idx=0, schemeClr=SchemeColor(val="accent1"))
         font = FontReference(idx="minor", schemeClr=SchemeColor(val="lt1"))
-        style = ShapeStyle(
-            lnRef=ln,
-            fillRef=fill,
-            effectRef=effect,
-            fontRef=font
-        )
+        style = ShapeStyle(lnRef=ln, fillRef=fill, effectRef=effect, fontRef=font)
         xml = tostring(style.to_tree())
         expected = """
         <style xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
@@ -266,7 +264,6 @@ class TestShapeStyle:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_xml(self, ShapeStyle):
         src = """
         <style xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
@@ -288,13 +285,12 @@ class TestShapeStyle:
         """
         node = fromstring(src)
         style = ShapeStyle.from_tree(node)
-        ln = StyleMatrixReference(idx=2, schemeClr=SchemeColor(val="accent1", shade=50000))
+        ln = StyleMatrixReference(
+            idx=2, schemeClr=SchemeColor(val="accent1", shade=50000)
+        )
         fill = StyleMatrixReference(idx=1, schemeClr=SchemeColor(val="accent1"))
         effect = StyleMatrixReference(idx=0, schemeClr=SchemeColor(val="accent1"))
         font = FontReference(idx="minor", schemeClr=SchemeColor(val="lt1"))
         assert style == ShapeStyle(
-            lnRef=ln,
-            fillRef=fill,
-            effectRef=effect,
-            fontRef=font
+            lnRef=ln, fillRef=fill, effectRef=effect, fontRef=font
         )

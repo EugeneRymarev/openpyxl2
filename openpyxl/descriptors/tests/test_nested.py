@@ -1,11 +1,11 @@
 # Copyright (c) 2010-2025 openpyxl
-
-from openpyxl.xml.functions import tostring, fromstring
+import pytest
 from openpyxl.tests.helper import compare_xml
+from openpyxl.xml.functions import fromstring
+from openpyxl.xml.functions import tostring
+
 from ..serialisable import Serialisable
 
-
-import pytest
 
 @pytest.fixture
 def NestedValue():
@@ -37,7 +37,6 @@ class TestValue:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_tree(self, NestedValue):
 
         xml = """
@@ -47,7 +46,6 @@ class TestValue:
         simple = NestedValue(size=node)
         assert simple.size == 4
 
-
     def test_tag_mismatch(self, NestedValue):
 
         xml = """
@@ -56,7 +54,6 @@ class TestValue:
         node = fromstring(xml)
         with pytest.raises(ValueError):
             simple = NestedValue(size=node)
-
 
     def test_nested_to_tree(self, NestedValue):
         simple = NestedValue(4)
@@ -68,7 +65,6 @@ class TestValue:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_nested_from_tree(self, NestedValue):
         xml = """
@@ -112,7 +108,6 @@ class TestText:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-
     def test_from_tree(self, NestedText):
         xml = """
             <coord>4</coord>
@@ -121,7 +116,6 @@ class TestText:
 
         simple = NestedText(node)
         assert simple.coord == 4
-
 
     def test_nested_to_tree(self, NestedText):
         simple = NestedText(4)
@@ -133,7 +127,6 @@ class TestText:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_nested_from_tree(self, NestedText):
         xml = """
@@ -156,7 +149,6 @@ def test_bool_value():
         def __init__(self, bold):
             self.bold = bold
 
-
     xml = """
     <font>
        <bold val="true"/>
@@ -170,10 +162,9 @@ def test_bool_value():
 def test_noneset_value():
     from ..nested import NestedNoneSet
 
-
     class Simple(Serialisable):
 
-        underline = NestedNoneSet(values=('1', '2', '3'))
+        underline = NestedNoneSet(values=("1", "2", "3"))
 
         def __init__(self, underline):
             self.underline = underline
@@ -186,11 +177,11 @@ def test_noneset_value():
 
     node = fromstring(xml)
     simple = Simple.from_tree(node)
-    assert simple.underline == '1'
+    assert simple.underline == "1"
+
 
 def test_min_max_value():
     from ..nested import NestedMinMax
-
 
     class Simple(Serialisable):
 
@@ -198,7 +189,6 @@ def test_min_max_value():
 
         def __init__(self, size):
             self.size = size
-
 
     xml = """
     <font>
@@ -214,7 +204,6 @@ def test_min_max_value():
 def test_nested_integer():
     from ..nested import NestedInteger
 
-
     class Simple(Serialisable):
 
         tagname = "font"
@@ -224,14 +213,12 @@ def test_nested_integer():
         def __init__(self, size):
             self.size = size
 
-
-    simple = Simple('4')
+    simple = Simple("4")
     assert simple.size == 4
 
 
 def test_nested_float():
     from ..nested import NestedFloat
-
 
     class Simple(Serialisable):
 
@@ -242,14 +229,12 @@ def test_nested_float():
         def __init__(self, size):
             self.size = size
 
-
-    simple = Simple('4.5')
+    simple = Simple("4.5")
     assert simple.size == 4.5
 
 
 def test_nested_string():
     from ..nested import NestedString
-
 
     class Simple(Serialisable):
 
@@ -260,9 +245,8 @@ def test_nested_string():
         def __init__(self, name):
             self.name = name
 
-
-    simple = Simple('4')
-    assert simple.name == '4'
+    simple = Simple("4")
+    assert simple.name == "4"
 
 
 @pytest.fixture
@@ -283,38 +267,25 @@ def Empty():
 
 class TestEmptyTag:
 
-    @pytest.mark.parametrize("value, result",
-                             [
-                                 (False, False),
-                                 (True, True),
-                                 (None, False),
-                                 (1, True)
-                             ]
-                             )
+    @pytest.mark.parametrize(
+        "value, result", [(False, False), (True, True), (None, False), (1, True)]
+    )
     def test_ctor(self, Empty, value, result):
         obj = Empty(value)
         assert obj.height is result
 
-
-    @pytest.mark.parametrize("value, result",
-                             [
-                                 (False, "<break />"),
-                                 (True, "<break><height /></break>")
-                             ]
-                             )
+    @pytest.mark.parametrize(
+        "value, result", [(False, "<break />"), (True, "<break><height /></break>")]
+    )
     def test_to_tree(self, Empty, value, result):
         obj = Empty(height=value)
         xml = tostring(obj.to_tree())
         diff = compare_xml(xml, result)
         assert diff is None, diff
 
-
-    @pytest.mark.parametrize("value, src",
-                             [
-                                 (False, "<break />"),
-                                 (True, "<break><height /></break>")
-                             ]
-                             )
+    @pytest.mark.parametrize(
+        "value, src", [(False, "<break />"), (True, "<break><height /></break>")]
+    )
     def test_from_xml(self, Empty, value, src):
         node = fromstring(src)
         obj = Empty.from_tree(node)
@@ -350,7 +321,6 @@ class TestCustomAttribute:
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
-
 
     def test_from_tree(self, CustomAttribute):
 

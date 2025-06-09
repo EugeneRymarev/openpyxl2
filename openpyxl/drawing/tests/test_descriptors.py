@@ -6,7 +6,7 @@ def test_color_descriptor():
 
     class DummyStyle:
 
-        value = ColorChoiceDescriptor('value')
+        value = ColorChoiceDescriptor("value")
 
     style = DummyStyle()
     style.value = "efefef"
