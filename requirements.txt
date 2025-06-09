@@ -1,6 +1,7 @@
-pip
 lxml>5
-pytest
-pillow
-tox
+numpy
 pandas
+pillow
+pip
+pytest
+tox
