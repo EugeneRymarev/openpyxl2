@@ -1,19 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-from decimal import Decimal
+import decimal
 
-NUMERIC_TYPES = (int, float, Decimal)
+NUMERIC_TYPES = (int, float, decimal.Decimal)
 
 
 try:
     import numpy
 
     NUMPY = True
-except ImportError:
-    NUMPY = False
-
-
-if NUMPY:
-    NUMERIC_TYPES = NUMERIC_TYPES + (
+    NUMERIC_TYPES = list(NUMERIC_TYPES) + [
         numpy.short,
         numpy.ushort,
         numpy.intc,
@@ -42,4 +37,7 @@ if NUMPY:
         numpy.bool_,
         numpy.floating,
         numpy.integer,
-    )
+    ]
+    NUMERIC_TYPES = tuple(NUMERIC_TYPES)
+except ImportError:
+    NUMPY = False

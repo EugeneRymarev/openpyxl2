@@ -23,12 +23,13 @@ def test_safe_string(value, result):
 
 @pytest.mark.numpy_required
 def test_numeric_types():
-    from ..numbers import NUMERIC_TYPES, numpy, Decimal
+    import decimal
+    from ..numbers import NUMERIC_TYPES, numpy
 
     assert NUMERIC_TYPES == (
         int,
         float,
-        Decimal,
+        decimal.Decimal,
         numpy.short,
         numpy.ushort,
         numpy.intc,
