@@ -4,8 +4,7 @@ import pytest
 
 @pytest.fixture
 def Coordinate():
-
-    from ..coordinate import Coordinate
+    from openpyxl.cell.coordinate import Coordinate
 
     return Coordinate
 

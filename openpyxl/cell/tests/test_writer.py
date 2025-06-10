@@ -1,19 +1,21 @@
 # Copyright (c) 2010-2025 openpyxl
 import datetime
 import decimal
-from io import BytesIO
+import io
 
 import pytest
-from openpyxl import LXML
 from openpyxl.tests.helper import compare_xml
 from openpyxl.utils.datetime import CALENDAR_MAC_1904
 from openpyxl.utils.datetime import CALENDAR_WINDOWS_1900
+from openpyxl.worksheet.formula import ArrayFormula
+from openpyxl.worksheet.formula import DataTableFormula
+from openpyxl.xml import LXML
 from openpyxl.xml.functions import xmlfile
 
 
 @pytest.fixture
 def worksheet():
-    from openpyxl import Workbook
+    from openpyxl.workbook.workbook import Workbook
 
     wb = Workbook()
     return wb.active
@@ -21,14 +23,14 @@ def worksheet():
 
 @pytest.fixture
 def etree_write_cell():
-    from .._writer import etree_write_cell
+    from openpyxl.cell._writer import etree_write_cell
 
     return etree_write_cell
 
 
 @pytest.fixture
 def lxml_write_cell():
-    from .._writer import lxml_write_cell
+    from openpyxl.cell._writer import lxml_write_cell
 
     return lxml_write_cell
 
@@ -60,7 +62,7 @@ def test_write_cell(worksheet, write_cell_implementation, value, expected):
     cell = ws["A1"]
     cell.value = value
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell, cell.has_style)
 
@@ -122,7 +124,7 @@ def test_write_date(worksheet, write_cell_implementation, value, expected, iso_d
     cell.value = value
     cell.parent.parent.iso_dates = iso_dates
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell, cell.has_style)
 
@@ -148,7 +150,7 @@ def test_write_invalid_date(worksheet, write_cell_implementation, value, iso_dat
     cell.value = value
     cell.parent.parent.iso_dates = iso_dates
 
-    out = BytesIO()
+    out = io.BytesIO()
     with pytest.raises(TypeError):
         with xmlfile(out) as xf:
             write_cell(xf, ws, cell, cell.has_style)
@@ -177,7 +179,7 @@ def test_write_epoch(worksheet, write_cell_implementation, value, expected, epoc
     cell = ws["A1"]
     cell.value = value
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell, cell.has_style)
 
@@ -194,7 +196,7 @@ def test_write_hyperlink(worksheet, write_cell_implementation):
     cell.value = "test"
     cell.hyperlink = "http://www.test.com"
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell, cell.has_style)
 
@@ -210,7 +212,7 @@ def test_write_hyperlink(worksheet, write_cell_implementation):
     ],
 )
 def test_attributes(worksheet, value, result, attrs):
-    from .._writer import _set_attributes
+    from openpyxl.cell._writer import _set_attributes
 
     ws = worksheet
     cell = ws["A1"]
@@ -225,7 +227,7 @@ def test_whitespace(worksheet, write_cell_implementation):
     cell = ws["A1"]
     cell.value = "  whitespace   "
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell)
 
@@ -240,9 +242,6 @@ def test_whitespace(worksheet, write_cell_implementation):
     assert diff is None, diff
 
 
-from openpyxl.worksheet.formula import DataTableFormula, ArrayFormula
-
-
 def test_table_formula(worksheet, write_cell_implementation):
     write_cell = write_cell_implementation
     ws = worksheet
@@ -250,7 +249,7 @@ def test_table_formula(worksheet, write_cell_implementation):
     cell.value = DataTableFormula(ref="A1:B10")
     cell.data_type = "f"
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell)
 
@@ -271,7 +270,7 @@ def test_array_formula(worksheet, write_cell_implementation):
     cell = ws["E2"]
     cell.value = ArrayFormula(ref="E2:E11", text="=C2:C11*D2:D11")
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell)
 
@@ -286,11 +285,11 @@ def test_array_formula(worksheet, write_cell_implementation):
 
 
 def test_rich_text(worksheet, write_cell_implementation):
+    from openpyxl.cell.rich_text import CellRichText
+    from openpyxl.cell.rich_text import InlineFont
+    from openpyxl.cell.rich_text import TextBlock
     write_cell = write_cell_implementation
     ws = worksheet
-
-    from ..rich_text import CellRichText, TextBlock, InlineFont
-
     red = InlineFont(color="FF0000")
     rich_string = CellRichText(
         [TextBlock(red, "red"), " is used, you can expect ", TextBlock(red, "danger")]
@@ -298,7 +297,7 @@ def test_rich_text(worksheet, write_cell_implementation):
     cell = ws["A2"]
     cell.value = rich_string
 
-    out = BytesIO()
+    out = io.BytesIO()
     with xmlfile(out) as xf:
         write_cell(xf, ws, cell)
 

@@ -1,13 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
-from datetime import timedelta
+import datetime
 
-from openpyxl import LXML
 from openpyxl.cell.rich_text import CellRichText
-from openpyxl.compat import safe_string
+from openpyxl.compat.strings import safe_string
 from openpyxl.utils.datetime import to_excel
 from openpyxl.utils.datetime import to_ISO8601
 from openpyxl.worksheet.formula import ArrayFormula
 from openpyxl.worksheet.formula import DataTableFormula
+from openpyxl.xml import LXML
 from openpyxl.xml.functions import Element
 from openpyxl.xml.functions import SubElement
 from openpyxl.xml.functions import whitespace
@@ -37,7 +37,7 @@ def _set_attributes(cell, styled=None):
                 "The tzinfo in the datetime/time object must be set to None."
             )
 
-        if cell.parent.parent.iso_dates and not isinstance(value, timedelta):
+        if cell.parent.parent.iso_dates and not isinstance(value, datetime.timedelta):
             value = to_ISO8601(value)
         else:
             attrs["t"] = "n"

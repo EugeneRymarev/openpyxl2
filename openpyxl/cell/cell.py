@@ -6,33 +6,32 @@ and any other features of an Excel cell.  Utilities for referencing
 cells using Excel's 'A1' column/row nomenclature are also provided.
 
 """
-
-__docformat__ = "restructuredtext en"
-
-# Python stdlib imports
-from copy import copy
+import copy
 import datetime
 import re
 
-from openpyxl.compat import NUMERIC_TYPES
-
-from openpyxl.utils.exceptions import IllegalCharacterError
-
-from openpyxl.styles import numbers, is_date_format
-from openpyxl.styles.styleable import StyleableObject
-from openpyxl.worksheet.hyperlink import Hyperlink
-from openpyxl.worksheet.formula import DataTableFormula, ArrayFormula
+from openpyxl.cell.coordinate import Coordinate
 from openpyxl.cell.rich_text import CellRichText
-from .coordinate import Coordinate
+from openpyxl.compat.numbers import NUMERIC_TYPES
+from openpyxl.styles.numbers import FORMAT_DATE_DATETIME
+from openpyxl.styles.numbers import FORMAT_DATE_TIME6
+from openpyxl.styles.numbers import FORMAT_DATE_TIMEDELTA
+from openpyxl.styles.numbers import FORMAT_DATE_YYYYMMDD2
+from openpyxl.styles.numbers import is_date_format
+from openpyxl.styles.styleable import StyleableObject
+from openpyxl.utils.exceptions import IllegalCharacterError
+from openpyxl.worksheet.formula import ArrayFormula
+from openpyxl.worksheet.formula import DataTableFormula
+from openpyxl.worksheet.hyperlink import Hyperlink
 
 # constants
 
 TIME_TYPES = (datetime.datetime, datetime.date, datetime.time, datetime.timedelta)
 TIME_FORMATS = {
-    datetime.datetime: numbers.FORMAT_DATE_DATETIME,
-    datetime.date: numbers.FORMAT_DATE_YYYYMMDD2,
-    datetime.time: numbers.FORMAT_DATE_TIME6,
-    datetime.timedelta: numbers.FORMAT_DATE_TIMEDELTA,
+    datetime.datetime: FORMAT_DATE_DATETIME,
+    datetime.date: FORMAT_DATE_YYYYMMDD2,
+    datetime.time: FORMAT_DATE_TIME6,
+    datetime.timedelta: FORMAT_DATE_TIMEDELTA,
 }
 
 STRING_TYPES = (str, bytes, CellRichText)
@@ -272,7 +271,7 @@ class Cell(StyleableObject):
 
         if value is not None:
             if value.parent:
-                value = copy(value)
+                value = copy.copy(value)
             value.bind(self)
         elif value is None and self._comment:
             self._comment.unbind()

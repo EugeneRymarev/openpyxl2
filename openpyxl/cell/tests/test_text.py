@@ -8,7 +8,7 @@ from openpyxl.xml.functions import tostring
 
 @pytest.fixture
 def InlineFont():
-    from ..text import InlineFont
+    from openpyxl.cell.text import InlineFont
 
     return InlineFont
 
@@ -35,7 +35,7 @@ class TestInlineFont:
 
 @pytest.fixture
 def RichText():
-    from ..text import RichText
+    from openpyxl.cell.text import RichText
 
     return RichText
 
@@ -62,7 +62,7 @@ class TestRichText:
 
 @pytest.fixture
 def Text():
-    from ..text import Text
+    from openpyxl.cell.text import Text
 
     return Text
 
@@ -128,7 +128,7 @@ class TestText:
 
 @pytest.fixture
 def PhoneticText():
-    from ..text import PhoneticText
+    from openpyxl.cell.text import PhoneticText
 
     return PhoneticText
 
@@ -159,7 +159,7 @@ class TestPhoneticText:
 
 @pytest.fixture
 def PhoneticProperties():
-    from ..text import PhoneticProperties
+    from openpyxl.cell.text import PhoneticProperties
 
     return PhoneticProperties
 

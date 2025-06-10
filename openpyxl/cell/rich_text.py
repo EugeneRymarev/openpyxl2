@@ -2,14 +2,14 @@
 """
 RichText definition
 """
-from copy import copy
+import copy
 
 from openpyxl.cell.text import InlineFont
 from openpyxl.cell.text import Text
-from openpyxl.compat import NUMERIC_TYPES
+from openpyxl.compat.numbers import NUMERIC_TYPES
 from openpyxl.descriptors import Strict
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.xml.functions import Element
 from openpyxl.xml.functions import whitespace
 
@@ -136,11 +136,11 @@ class CellRichText(list):
     def __iadd__(self, arg):
         # copy used here to create new TextBlock() so we don't modify the right hand side in _opt()
         CellRichText._check_rich_text(arg)
-        super().__iadd__([copy(e) for e in list(arg)])
+        super().__iadd__([copy.copy(e) for e in list(arg)])
         return self._opt()
 
     def __add__(self, arg):
-        return CellRichText([copy(e) for e in list(self) + list(arg)])._opt()
+        return CellRichText([copy.copy(e) for e in list(self) + list(arg)])._opt()
 
     def __setitem__(self, indx, val):
         CellRichText._check_element(val)

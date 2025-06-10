@@ -1,9 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
+from openpyxl.cell.cell import Cell
+from openpyxl.cell.coordinate import Coordinate
 from openpyxl.styles.numbers import BUILTIN_FORMATS
 from openpyxl.styles.numbers import BUILTIN_FORMATS_MAX_SIZE
-
-from .cell import Cell
-from .coordinate import Coordinate
 
 
 class ReadOnlyCell:

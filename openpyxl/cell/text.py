@@ -2,18 +2,13 @@
 """
 Richtext definition
 """
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.nested import NestedBool
-from openpyxl.descriptors.nested import NestedInteger
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.nested import NestedString
 from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.styles.fonts import Font
 
