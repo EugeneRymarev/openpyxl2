@@ -189,7 +189,7 @@ def test_illegal_characters(dummy_cell):
         with pytest.raises(IllegalCharacterError):
             cell.value = chr(i)
         with pytest.raises(IllegalCharacterError):
-            cell.value = "A {0} B".format(chr(i))
+            cell.value = f"A {chr(i)} B"
     cell.value = chr(33)
     cell.value = chr(9)  # Tab
     cell.value = chr(10)  # Newline
