@@ -14,41 +14,34 @@ from openpyxl.styles.fonts import Font
 
 
 class PhoneticProperties(Serialisable):
-
     tagname = "phoneticPr"
-
     fontId = Integer()
     type = NoneSet(
-        values=(["halfwidthKatakana", "fullwidthKatakana", "Hiragana", "noConversion"])
+        values=(
+            [
+                "halfwidthKatakana",
+                "fullwidthKatakana",
+                "Hiragana",
+                "noConversion",
+            ]
+        )
     )
     alignment = NoneSet(values=(["noControl", "left", "center", "distributed"]))
 
-    def __init__(
-        self,
-        fontId=None,
-        type=None,
-        alignment=None,
-    ):
+    def __init__(self, fontId=None, type=None, alignment=None):
         self.fontId = fontId
         self.type = type
         self.alignment = alignment
 
 
 class PhoneticText(Serialisable):
-
     tagname = "rPh"
-
     sb = Integer()
     eb = Integer()
     t = NestedText(expected_type=str)
     text = Alias("t")
 
-    def __init__(
-        self,
-        sb=None,
-        eb=None,
-        t=None,
-    ):
+    def __init__(self, sb=None, eb=None, t=None):
         self.sb = sb
         self.eb = eb
         self.t = t
@@ -60,7 +53,6 @@ class InlineFont(Font):
     """
 
     tagname = "RPrElt"
-
     rFont = NestedString(allow_none=True)
     charset = Font.charset
     family = Font.family
@@ -76,7 +68,6 @@ class InlineFont(Font):
     u = Font.u
     vertAlign = Font.vertAlign
     scheme = Font.scheme
-
     __elements__ = (
         "rFont",
         "charset",
@@ -131,29 +122,20 @@ class InlineFont(Font):
 
 
 class RichText(Serialisable):
-
     tagname = "RElt"
-
     rPr = Typed(expected_type=InlineFont, allow_none=True)
     font = Alias("rPr")
     t = NestedText(expected_type=str, allow_none=True)
     text = Alias("t")
-
     __elements__ = ("rPr", "t")
 
-    def __init__(
-        self,
-        rPr=None,
-        t=None,
-    ):
+    def __init__(self, rPr=None, t=None):
         self.rPr = rPr
         self.t = t
 
 
 class Text(Serialisable):
-
     tagname = "text"
-
     t = NestedText(allow_none=True, expected_type=str)
     plain = Alias("t")
     r = Sequence(expected_type=RichText, allow_none=True)
@@ -162,16 +144,9 @@ class Text(Serialisable):
     phonetic = Alias("rPh")
     phoneticPr = Typed(expected_type=PhoneticProperties, allow_none=True)
     PhoneticProperties = Alias("phoneticPr")
-
     __elements__ = ("t", "r", "rPh", "phoneticPr")
 
-    def __init__(
-        self,
-        t=None,
-        r=(),
-        rPh=(),
-        phoneticPr=None,
-    ):
+    def __init__(self, t=None, r=(), rPh=(), phoneticPr=None):
         self.t = t
         self.r = r
         self.rPh = rPh

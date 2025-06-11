@@ -7,7 +7,6 @@ from openpyxl.utils.cell import get_column_letter
 
 
 class Coordinate:
-
     __slots__ = ("row", "column")
 
     def __init__(self, row, column):

@@ -6,7 +6,6 @@ from openpyxl.styles.numbers import BUILTIN_FORMATS_MAX_SIZE
 
 
 class ReadOnlyCell:
-
     __slots__ = ("parent", "_coord", "_value", "data_type", "_style_id")
 
     def __init__(self, sheet, row, column, value, data_type="n", style_id=0):
@@ -20,14 +19,14 @@ class ReadOnlyCell:
     def __eq__(self, other):
         for a in self.__slots__:
             if getattr(self, a) != getattr(other, a):
-                return
+                return False
         return True
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<ReadOnlyCell {0!r}.{1}>".format(self.parent.title, self.coordinate)
+        return f"<ReadOnlyCell {self.parent.title!r}.{self.coordinate}>"
 
     row = Cell.row
     column = Cell.column
@@ -82,9 +81,7 @@ class ReadOnlyCell:
 
 
 class EmptyCell:
-
     __slots__ = ()
-
     value = None
     is_date = False
     font = None

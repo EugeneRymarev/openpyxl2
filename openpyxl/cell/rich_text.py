@@ -156,7 +156,7 @@ class CellRichText(list):
         super().extend(arg)
 
     def __repr__(self):
-        return "CellRichText([{}])".format(", ".join((repr(s) for s in self)))
+        return f"CellRichText([{", ".join((repr(s) for s in self))}])"
 
     def __str__(self):
         return "".join([str(s) for s in self])
@@ -176,7 +176,6 @@ class CellRichText(list):
         for obj in self:
             if isinstance(obj, TextBlock):
                 container.append(obj.to_tree())
-
             else:
                 el = Element("r")
                 t = Element("t")
@@ -184,5 +183,4 @@ class CellRichText(list):
                 whitespace(t)
                 el.append(t)
                 container.append(el)
-
         return container

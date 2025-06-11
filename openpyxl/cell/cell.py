@@ -33,13 +33,10 @@ TIME_FORMATS = {
     datetime.time: FORMAT_DATE_TIME6,
     datetime.timedelta: FORMAT_DATE_TIMEDELTA,
 }
-
 STRING_TYPES = (str, bytes, CellRichText)
 KNOWN_TYPES = NUMERIC_TYPES + TIME_TYPES + STRING_TYPES + (bool, type(None))
-
 ILLEGAL_CHARACTERS_RE = re.compile(r"[\000-\010]|[\013-\014]|[\016-\037]")
 ERROR_CODES = ("#NULL!", "#DIV/0!", "#VALUE!", "#REF!", "#NAME?", "#NUM!", "#N/A")
-
 TYPE_STRING = "s"
 TYPE_FORMULA = "f"
 TYPE_NUMERIC = "n"
@@ -48,7 +45,6 @@ TYPE_NULL = "n"
 TYPE_INLINE = "inlineStr"
 TYPE_ERROR = "e"
 TYPE_FORMULA_CACHE_STRING = "str"
-
 VALID_TYPES = (
     TYPE_STRING,
     TYPE_FORMULA,
@@ -59,8 +55,6 @@ VALID_TYPES = (
     TYPE_ERROR,
     TYPE_FORMULA_CACHE_STRING,
 )
-
-
 _TYPES = {int: "n", float: "n", str: "s", bool: "b"}
 
 
@@ -74,7 +68,7 @@ def get_type(t, value):
     elif isinstance(value, (DataTableFormula, ArrayFormula)):
         dt = "f"
     else:
-        return
+        return None
     _TYPES[t] = dt
     return dt
 
@@ -88,7 +82,7 @@ def get_time_format(t):
         if value:
             TIME_FORMATS[t] = value
             return value
-    raise ValueError("Could not get time format for {0!r}".format(value))
+    raise ValueError(f"Could not get time format for {value!r}")
 
 
 class Cell(StyleableObject):
@@ -98,14 +92,7 @@ class Cell(StyleableObject):
 
     """
 
-    __slots__ = (
-        "_coord",
-        "_value",
-        "data_type",
-        "parent",
-        "_hyperlink",
-        "_comment",
-    )
+    __slots__ = ("_coord", "_value", "data_type", "parent", "_hyperlink", "_comment")
 
     def __init__(self, worksheet, row=None, column=None, value=None, style_array=None):
         super().__init__(worksheet, style_array)
@@ -145,12 +132,12 @@ class Cell(StyleableObject):
         return self.parent.parent.epoch
 
     def __repr__(self):
-        return "<Cell {0!r}.{1}>".format(self.parent.title, self.coordinate)
+        return f"<Cell {self.parent.title!r}.{self.coordinate}>"
 
     def check_string(self, value):
         """Check string coding, length, and line break character"""
         if value is None:
-            return
+            return None
         # convert to str string
         if not isinstance(value, str):
             value = str(value, self.encoding)
@@ -189,22 +176,18 @@ class Cell(StyleableObject):
             dt = get_type(t, value)
 
         if dt is None and value is not None:
-            raise ValueError("Cannot convert {0!r} to Excel".format(value))
-
+            raise ValueError(f"Cannot convert {value!r} to Excel")
         if dt:
             self.data_type = dt
-
         if dt == "d":
             if not is_date_format(self.number_format):
                 self.number_format = get_time_format(t)
-
         elif dt == "s" and not isinstance(value, CellRichText):
             value = self.check_string(value)
             if len(value) > 1 and value.startswith("="):
                 self.data_type = "f"
             elif value in ERROR_CODES:
                 self.data_type = "e"
-
         self._value = value
 
     @property
@@ -235,9 +218,9 @@ class Cell(StyleableObject):
 
         :type: bool
         """
-        return self.data_type == "d" or (
-            self.data_type == "n" and is_date_format(self.number_format)
-        )
+        con1 = self.data_type == "d"
+        con2 = self.data_type == "n" and is_date_format(self.number_format)
+        return con1 or con2
 
     def offset(self, row=0, column=0):
         """Returns a cell location relative to this cell.
@@ -250,10 +233,9 @@ class Cell(StyleableObject):
 
         :rtype: :class:`openpyxl.cell.Cell`
         """
-
-        return self.parent.cell(
-            row=self._coord.row + row, column=self._coord.column + column
-        )
+        row = self._coord.row + row
+        column = self._coord.column + column
+        return self.parent.cell(row=row, column=column)
 
     @property
     def comment(self):
@@ -298,7 +280,7 @@ class MergedCell(StyleableObject):
         self._coord = Coordinate(row, column)
 
     def __repr__(self):
-        return "<MergedCell {0!r}.{1}>".format(self.parent.title, self.coordinate)
+        return f"<MergedCell {self.parent.title!r}.{self.coordinate}>"
 
     coordinate = Cell.coordinate
     row = Cell.row
