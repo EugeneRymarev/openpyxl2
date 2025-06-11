@@ -1,4 +1,3 @@
-# coding=utf8
 # Copyright (c) 2010-2025 openpyxl
 import pytest
 from openpyxl.tests.helper import compare_xml
@@ -7,75 +6,78 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def InlineFont():
+def inline_font():
     from openpyxl.cell.text import InlineFont
 
     return InlineFont
 
 
-class TestInlineFont:
-
-    def test_ctor(self, InlineFont):
-        font = InlineFont()
-        xml = tostring(font.to_tree())
-        expected = """
-        <RPrElt />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, InlineFont):
-        src = """
-        <RPrElt />
-        """
-        node = fromstring(src)
-        font = InlineFont.from_tree(node)
-        assert font == InlineFont()
-
-
 @pytest.fixture
-def RichText():
+def rich_text():
     from openpyxl.cell.text import RichText
 
     return RichText
 
 
-class TestRichText:
-
-    def test_ctor(self, RichText):
-        text = RichText()
-        xml = tostring(text.to_tree())
-        expected = """
-        <RElt />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, RichText):
-        src = """
-        <RElt />
-        """
-        node = fromstring(src)
-        text = RichText.from_tree(node)
-        assert text == RichText()
-
-
 @pytest.fixture
-def Text():
+def text_():
     from openpyxl.cell.text import Text
 
     return Text
 
 
-class TestText:
+@pytest.fixture
+def phonetic_text():
+    from openpyxl.cell.text import PhoneticText
 
-    def test_ctor(self, Text):
-        text = Text()
+    return PhoneticText
+
+
+@pytest.fixture
+def phonetic_properties():
+    from openpyxl.cell.text import PhoneticProperties
+
+    return PhoneticProperties
+
+
+class TestInlineFont:
+    def test_ctor(self, inline_font):
+        font = inline_font()
+        xml = tostring(font.to_tree())
+        expected = "<RPrElt/>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, inline_font):
+        src = "<RPrElt/>"
+        node = fromstring(src)
+        font = inline_font.from_tree(node)
+        assert font == inline_font()
+
+
+class TestRichText:
+    def test_ctor(self, rich_text):
+        text = rich_text()
+        xml = tostring(text.to_tree())
+        expected = "<RElt/>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, rich_text):
+        src = "<RElt/>"
+        node = fromstring(src)
+        text = rich_text.from_tree(node)
+        assert text == rich_text()
+
+
+class TestText:
+    def test_ctor(self, text_):
+        text = text_()
         text.plain = "comment"
         xml = tostring(text.to_tree())
         expected = """
         <text>
-          <t>comment</t>
+            <t>comment</t>
         </text>
         """
         diff = compare_xml(xml, expected)
@@ -84,59 +86,58 @@ class TestText:
     @pytest.mark.parametrize(
         "src, expected",
         [
-            ("""<is><t>ID</t></is>""", "ID"),
             (
                 """
-                                 <is>
-                                   <r>
-                                     <rPr />
-                                     <t xml:space="preserve">11 de September de 2014</t>
-                                   </r>
-                                 </is>
-                                 """,
+                <is>
+                    <t>ID</t>
+                </is>
+                """,
+                "ID",
+            ),
+            (
+                """
+                <is>
+                    <r>
+                        <rPr/>
+                        <t xml:space="preserve">11 de September de 2014</t>
+                    </r>
+                </is>
+                """,
                 "11 de September de 2014",
             ),
         ],
     )
-    def test_from_xml(self, Text, src, expected):
+    def test_from_xml(self, text_, src, expected):
         node = fromstring(src)
-        text = Text.from_tree(node)
+        text = text_.from_tree(node)
         assert text.content == expected
 
-    def test_empty_element(self, Text):
+    def test_empty_element(self, text_):
         src = """
         <si>
-          <r>
-             <t>Replaced Data</t>
-          </r>
-          <r>
-            <rPr>
-              <sz val="11"/>
-              <color rgb="FF008080"/>
-              <rFont val="Calibri"/>
-              <family val="2"/>
-              <scheme val="minor"/>
-            </rPr>
-            <t/>
-          </r>
+            <r>
+                <t>Replaced Data</t>
+            </r>
+            <r>
+                <rPr>
+                    <sz val="11"/>
+                    <color rgb="FF008080"/>
+                    <rFont val="Calibri"/>
+                    <family val="2"/>
+                    <scheme val="minor"/>
+                </rPr>
+                <t/>
+            </r>
         </si>
         """
         node = fromstring(src)
-        text = Text.from_tree(node)
+        text = text_.from_tree(node)
         assert text.content == "Replaced Data"
 
 
-@pytest.fixture
-def PhoneticText():
-    from openpyxl.cell.text import PhoneticText
-
-    return PhoneticText
-
-
 class TestPhoneticText:
-
-    def test_ctor(self, PhoneticText):
-        text = PhoneticText(sb=9, eb=10, t="\u3088")
+    def test_ctor(self, phonetic_text):
+        text = phonetic_text(sb=9, eb=10, t="\u3088")
         xml = tostring(text.to_tree())
         expected = b"""
         <rPh sb="9" eb="10">
@@ -146,39 +147,27 @@ class TestPhoneticText:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, PhoneticText):
+    def test_from_xml(self, phonetic_text):
         src = b"""
         <rPh sb="9" eb="10">
             <t>&#12424;</t>
         </rPh>
         """
         node = fromstring(src)
-        text = PhoneticText.from_tree(node)
-        assert text == PhoneticText(sb=9, eb=10, t="\u3088")
-
-
-@pytest.fixture
-def PhoneticProperties():
-    from openpyxl.cell.text import PhoneticProperties
-
-    return PhoneticProperties
+        text = phonetic_text.from_tree(node)
+        assert text == phonetic_text(sb=9, eb=10, t="\u3088")
 
 
 class TestPhoneticProperties:
-
-    def test_ctor(self, PhoneticProperties):
-        props = PhoneticProperties(fontId=0, type="Hiragana")
+    def test_ctor(self, phonetic_properties):
+        props = phonetic_properties(fontId=0, type="Hiragana")
         xml = tostring(props.to_tree())
-        expected = """
-        <phoneticPr fontId="0" type="Hiragana"></phoneticPr>
-        """
+        expected = '<phoneticPr fontId="0" type="Hiragana"></phoneticPr>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, PhoneticProperties):
-        src = """
-       <phoneticPr fontId="0" type="noConversion"/>
-        """
+    def test_from_xml(self, phonetic_properties):
+        src = '<phoneticPr fontId="0" type="noConversion"/>'
         node = fromstring(src)
-        props = PhoneticProperties.from_tree(node)
-        assert props == PhoneticProperties(fontId=0, type="noConversion")
+        props = phonetic_properties.from_tree(node)
+        assert props == phonetic_properties(fontId=0, type="noConversion")

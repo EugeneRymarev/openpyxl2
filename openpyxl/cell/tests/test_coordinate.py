@@ -10,7 +10,6 @@ def Coordinate():
 
 
 class TestCoordinate:
-
     def test_ctor(self, Coordinate):
         coord = Coordinate(1, 3)
         assert coord.row == 1 and coord.column == 3

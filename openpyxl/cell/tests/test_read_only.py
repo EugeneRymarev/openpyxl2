@@ -1,7 +1,7 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
 from openpyxl.cell.read_only import ReadOnlyCell
-from openpyxl.styles.styleable import StyleArray
+from openpyxl.styles.cell_style import StyleArray
 from openpyxl.utils.indexed_list import IndexedList
 
 
@@ -26,6 +26,15 @@ def dummy_sheet():
     return DummySheet()
 
 
+@pytest.fixture(scope="class")
+def dummy_cell(dummy_sheet):
+    dummy_sheet.parent._number_formats.add("d-mmm-yy")
+    style = StyleArray([0, 0, 0, 164, 0, 0, 0, 0, 0])
+    dummy_sheet.parent._cell_styles.add(style)
+    cell = ReadOnlyCell(dummy_sheet, None, None, "23596", "n", 1)
+    return cell
+
+
 def test_ctor(dummy_sheet):
     cell = ReadOnlyCell(dummy_sheet, None, None, "10", "n")
     assert cell.value == "10"
@@ -43,18 +52,7 @@ def test_coordinate(dummy_sheet):
     assert cell.coordinate == "A1"
 
 
-@pytest.fixture(scope="class")
-def DummyCell(dummy_sheet):
-
-    dummy_sheet.parent._number_formats.add("d-mmm-yy")
-    style = StyleArray([0, 0, 0, 164, 0, 0, 0, 0, 0])
-    dummy_sheet.parent._cell_styles.add(style)
-    cell = ReadOnlyCell(dummy_sheet, None, None, "23596", "n", 1)
-    return cell
-
-
 class TestStyle:
-
     def test_style_array(self, dummy_sheet):
         cell = ReadOnlyCell(dummy_sheet, None, None, None)
         assert cell.style_array == StyleArray()
@@ -63,8 +61,8 @@ class TestStyle:
         cell = ReadOnlyCell(dummy_sheet, None, None, None)
         assert cell.font == None
 
-    def test_has_style(self, DummyCell):
-        assert DummyCell.has_style
+    def test_has_style(self, dummy_cell):
+        assert dummy_cell.has_style
 
 
 def test_read_only(dummy_sheet):

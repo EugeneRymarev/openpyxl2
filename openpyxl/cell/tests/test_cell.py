@@ -11,7 +11,7 @@ from openpyxl.comments.comments import Comment
 
 
 @pytest.fixture
-def DummyWorksheet():
+def dummy_worksheet():
     from openpyxl.cell.cell import Cell
     from openpyxl.utils.datetime import CALENDAR_WINDOWS_1900
     from openpyxl.utils.indexed_list import IndexedList
@@ -29,25 +29,34 @@ def DummyWorksheet():
     class Ws:
         def cell(self, column, row):
             return Cell(self, row=row, column=column)
+
         encoding = "utf-8"
         parent = Wb()
         title = "Dummy Worksheet"
         _comment_count = 0
+
     return Ws()
 
 
 @pytest.fixture
-def Cell():
+def cell_():
     from openpyxl.cell.cell import Cell
 
     return Cell
 
 
 @pytest.fixture
-def dummy_cell(DummyWorksheet, Cell):
-    ws = DummyWorksheet
-    cell = Cell(ws, column=1, row=1)
+def dummy_cell(dummy_worksheet, cell_):
+    ws = dummy_worksheet
+    cell = cell_(ws, column=1, row=1)
     return cell
+
+
+@pytest.fixture
+def merged_cell(dummy_worksheet):
+    from openpyxl.cell.cell import MergedCell
+
+    return MergedCell(dummy_worksheet, 1, 4)
 
 
 def test_ctor(dummy_cell):
@@ -57,7 +66,6 @@ def test_ctor(dummy_cell):
     assert cell.row == 1
     assert cell.coordinate == "A1"
     assert cell.value is None
-
     assert cell.comment is None
 
 
@@ -109,10 +117,7 @@ def test_error_codes(dummy_cell, error_string):
     [
         (datetime.datetime(2010, 7, 13, 6, 37, 41), "yyyy-mm-dd h:mm:ss"),
         (datetime.date(2010, 7, 13), "yyyy-mm-dd"),
-        (
-            datetime.time(1, 3),
-            "h:mm:ss",
-        ),
+        (datetime.time(1, 3), "h:mm:ss"),
     ],
 )
 def test_insert_date(dummy_cell, value, number_format):
@@ -161,10 +166,7 @@ def test_not_overwrite_time_format(dummy_cell):
 @pytest.mark.parametrize(
     "value, is_date",
     [
-        (
-            None,
-            True,
-        ),
+        (None, True),
         ("testme", False),
         (True, False),
     ],
@@ -181,17 +183,13 @@ def test_illegal_characters(dummy_cell):
     from openpyxl.utils.exceptions import IllegalCharacterError
 
     cell = dummy_cell
-
     # The bytes 0x00 through 0x1F inclusive must be manually escaped in values.
-
     illegal_chrs = itertools.chain(range(9), range(11, 13), range(14, 32))
     for i in illegal_chrs:
         with pytest.raises(IllegalCharacterError):
             cell.value = chr(i)
-
         with pytest.raises(IllegalCharacterError):
             cell.value = "A {0} B".format(chr(i))
-
     cell.value = chr(33)
     cell.value = chr(9)  # Tab
     cell.value = chr(10)  # Newline
@@ -215,9 +213,7 @@ def test_repr(dummy_cell):
 
 
 def test_repr_object(dummy_cell):
-
     class Dummy:
-
         def __str__(self):
             return "something"
 
@@ -239,7 +235,6 @@ def test_only_one_cell_per_comment(dummy_cell):
     ws = dummy_cell.parent
     comm = Comment("text", "author")
     dummy_cell.comment = comm
-
     c2 = ws.cell(column=1, row=2)
     c2.comment = comm
     assert c2.comment.parent is c2
@@ -258,7 +253,6 @@ def test_cell_offset(dummy_cell):
 
 
 class TestEncoding:
-
     pound = chr(163)
     test_string = f"Compound Value {pound}".encode("latin1")
 
@@ -283,83 +277,75 @@ class TestEncoding:
         cell.value = self.test_string
 
 
-def test_font(DummyWorksheet, Cell):
+def test_font(dummy_worksheet, cell_):
     from openpyxl.styles.fonts import Font
 
     font = Font(bold=True)
-    ws = DummyWorksheet
+    ws = dummy_worksheet
     ws.parent._fonts.add(font)
-
-    cell = Cell(ws, row=1, column=1)
+    cell = cell_(ws, row=1, column=1)
     assert cell.font == font
 
 
-def test_fill(DummyWorksheet, Cell):
+def test_fill(dummy_worksheet, cell_):
     from openpyxl.styles.fills import PatternFill
 
     fill = PatternFill(patternType="solid", fgColor="FF0000")
-    ws = DummyWorksheet
+    ws = dummy_worksheet
     ws.parent._fills.add(fill)
-
-    cell = Cell(ws, column="A", row=1)
+    cell = cell_(ws, column="A", row=1)
     assert cell.fill == fill
 
 
-def test_border(DummyWorksheet, Cell):
+def test_border(dummy_worksheet, cell_):
     from openpyxl.styles.borders import Border
 
     border = Border()
-    ws = DummyWorksheet
+    ws = dummy_worksheet
     ws.parent._borders.add(border)
-
-    cell = Cell(ws, column="A", row=1)
+    cell = cell_(ws, column="A", row=1)
     assert cell.border == border
 
 
-def test_number_format(DummyWorksheet, Cell):
-    ws = DummyWorksheet
+def test_number_format(dummy_worksheet, cell_):
+    ws = dummy_worksheet
     ws.parent._number_formats.add("dd--hh--mm")
-
-    cell = Cell(ws, column="A", row=1)
+    cell = cell_(ws, column="A", row=1)
     cell.number_format = "dd--hh--mm"
     assert cell.number_format == "dd--hh--mm"
 
 
-def test_alignment(DummyWorksheet, Cell):
+def test_alignment(dummy_worksheet, cell_):
     from openpyxl.styles.alignment import Alignment
 
     align = Alignment(wrapText=True)
-    ws = DummyWorksheet
+    ws = dummy_worksheet
     ws.parent._alignments.add(align)
-
-    cell = Cell(ws, column="A", row=1)
+    cell = cell_(ws, column="A", row=1)
     assert cell.alignment == align
 
 
-def test_protection(DummyWorksheet, Cell):
+def test_protection(dummy_worksheet, cell_):
     from openpyxl.styles.protection import Protection
 
     prot = Protection(locked=False)
-    ws = DummyWorksheet
+    ws = dummy_worksheet
     ws.parent._protections.add(prot)
-
-    cell = Cell(ws, column="A", row=1)
+    cell = cell_(ws, column="A", row=1)
     assert cell.protection == prot
 
 
-def test_pivot_button(DummyWorksheet, Cell):
-    ws = DummyWorksheet
-
-    cell = Cell(ws, column="A", row=1)
+def test_pivot_button(dummy_worksheet, cell_):
+    ws = dummy_worksheet
+    cell = cell_(ws, column="A", row=1)
     cell.style_id
     cell._style.pivotButton = 1
     assert cell.pivotButton is True
 
 
-def test_quote_prefix(DummyWorksheet, Cell):
-    ws = DummyWorksheet
-
-    cell = Cell(ws, column="A", row=1)
+def test_quote_prefix(dummy_worksheet, cell_):
+    ws = dummy_worksheet
+    cell = cell_(ws, column="A", row=1)
     cell.style_id
     cell._style.quotePrefix = 1
     assert cell.quotePrefix is True
@@ -373,15 +359,7 @@ def test_remove_hyperlink(dummy_cell):
     assert cell.hyperlink is None
 
 
-@pytest.fixture
-def merged_cell(DummyWorksheet):
-    from openpyxl.cell.cell import MergedCell
-
-    return MergedCell(DummyWorksheet, 1, 4)
-
-
 class TestMergedCell:
-
     def test_value(self, merged_cell):
         cell = merged_cell
         assert cell._value is None
@@ -409,7 +387,6 @@ class TestMergedCell:
 
 @pytest.mark.numpy_required
 def test_write_numpy_to_cell(dummy_cell):
-
     data = numpy.array([1.0])
     cell = dummy_cell
     cell.value = data[0]
