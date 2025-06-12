@@ -156,7 +156,7 @@ class CellRichText(list):
         super().extend(arg)
 
     def __repr__(self):
-        return f"CellRichText([{", ".join((repr(s) for s in self))}])"
+        return f'CellRichText([{", ".join((repr(s) for s in self))}])'
 
     def __str__(self):
         return "".join([str(s) for s in self])
