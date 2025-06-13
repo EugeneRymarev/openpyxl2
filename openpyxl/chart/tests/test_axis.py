@@ -6,101 +6,138 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def Scaling():
-    from ..axis import Scaling
+def scaling():
+    from openpyxl.chart.axis import Scaling
 
     return Scaling
 
 
+@pytest.fixture
+def _base_axis():
+    from openpyxl.chart.axis import _BaseAxis
+
+    return _BaseAxis
+
+
+@pytest.fixture
+def text_axis():
+    from openpyxl.chart.axis import TextAxis
+
+    return TextAxis
+
+
+@pytest.fixture
+def numeric_axis():
+    from openpyxl.chart.axis import NumericAxis
+
+    return NumericAxis
+
+
+@pytest.fixture
+def date_axis():
+    from openpyxl.chart.axis import DateAxis
+
+    return DateAxis
+
+
+@pytest.fixture
+def series_axis():
+    from openpyxl.chart.axis import SeriesAxis
+
+    return SeriesAxis
+
+
+@pytest.fixture
+def display_units_label():
+    from openpyxl.chart.axis import DisplayUnitsLabel
+
+    return DisplayUnitsLabel
+
+
+@pytest.fixture
+def display_units_label_list():
+    from openpyxl.chart.axis import DisplayUnitsLabelList
+
+    return DisplayUnitsLabelList
+
+
+@pytest.fixture
+def chart_lines():
+    from openpyxl.chart.axis import ChartLines
+
+    return ChartLines
+
+
 class TestScale:
-
-    def test_ctor(self, Scaling):
-
-        scale = Scaling()
+    def test_ctor(self, scaling):
+        scale = scaling()
         xml = tostring(scale.to_tree())
         expected = """
         <scaling>
-           <orientation val="minMax"></orientation>
+            <orientation val="minMax"></orientation>
         </scaling>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, Scaling):
-
+    def test_from_xml(self, scaling):
         xml = """
         <scaling>
-         <logBase val="10"/>
-         <orientation val="minMax"/>
+            <logBase val="10"/>
+            <orientation val="minMax"/>
         </scaling>
         """
         node = fromstring(xml)
-        scale = Scaling.from_tree(node)
-        assert scale == Scaling(logBase=10)
-
-
-@pytest.fixture
-def _BaseAxis():
-    from ..axis import _BaseAxis
-
-    return _BaseAxis
+        scale = scaling.from_tree(node)
+        assert scale == scaling(logBase=10)
 
 
 class TestAxis:
-
-    def test_ctor(self, _BaseAxis, Scaling):
-        axis = _BaseAxis(axId=10, crossAx=100)
+    def test_ctor(self, _base_axis, scaling):
+        axis = _base_axis(axId=10, crossAx=100)
         xml = tostring(axis.to_tree(tagname="baseAxis"))
         expected = """
         <baseAxis>
             <axId val="10"></axId>
             <scaling>
-              <orientation val="minMax"></orientation>
+                <orientation val="minMax"></orientation>
             </scaling>
-            <axPos val="l" />
-            <majorTickMark val="none" />
-            <minorTickMark val="none" />
-            <crossAx val="100" />
+            <axPos val="l"/>
+            <majorTickMark val="none"/>
+            <minorTickMark val="none"/>
+            <crossAx val="100"/>
         </baseAxis>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
 
-@pytest.fixture
-def TextAxis():
-    from ..axis import TextAxis
-
-    return TextAxis
-
-
 class TestTextAxis:
-
-    def test_ctor(self, TextAxis):
-        axis = TextAxis(axId=10, crossAx=100)
+    def test_ctor(self, text_axis):
+        axis = text_axis(axId=10, crossAx=100)
         xml = tostring(axis.to_tree())
         expected = """
         <catAx>
             <axId val="10"></axId>
             <scaling>
-              <orientation val="minMax"></orientation>
+                <orientation val="minMax"></orientation>
             </scaling>
-            <axPos val="l" />
-            <majorTickMark val="none" />
-            <minorTickMark val="none" />
-            <crossAx val="100" />
-            <lblOffset val="100" />
+            <axPos val="l"/>
+            <majorTickMark val="none"/>
+            <minorTickMark val="none"/>
+            <crossAx val="100"/>
+            <lblOffset val="100"/>
         </catAx>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, TextAxis):
+    def test_from_xml(self, text_axis):
         src = """
         <catAx>
             <axId val="2065276984"/>
             <scaling>
-              <orientation val="minMax"/>
+                <orientation val="minMax"/>
             </scaling>
             <delete val="0"/>
             <axPos val="b"/>
@@ -117,7 +154,7 @@ class TestTextAxis:
         </catAx>
         """
         node = fromstring(src)
-        axis = TextAxis.from_tree(node)
+        axis = text_axis.from_tree(node)
         assert axis.scaling.orientation == "minMax"
         assert axis.auto is True
         assert axis.majorTickMark == "out"
@@ -125,40 +162,32 @@ class TestTextAxis:
         assert axis.crossesAt == 30
 
 
-@pytest.fixture
-def NumericAxis():
-    from ..axis import NumericAxis
-
-    return NumericAxis
-
-
 class TestValAx:
-
-    def test_ctor(self, NumericAxis):
-        axis = NumericAxis(axId=100, crossAx=10)
+    def test_ctor(self, numeric_axis):
+        axis = numeric_axis(axId=100, crossAx=10)
         xml = tostring(axis.to_tree())
         expected = """
         <valAx>
-          <axId val="100"></axId>
-          <scaling>
-            <orientation val="minMax"></orientation>
-          </scaling>
-          <axPos val="l" />
-          <majorGridlines />
-          <majorTickMark val="none" />
-          <minorTickMark val="none" />
-          <crossAx val="10" />
+            <axId val="100"></axId>
+            <scaling>
+                <orientation val="minMax"></orientation>
+            </scaling>
+            <axPos val="l"/>
+            <majorGridlines/>
+            <majorTickMark val="none"/>
+            <minorTickMark val="none"/>
+            <crossAx val="10"/>
         </valAx>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, NumericAxis):
+    def test_from_xml(self, numeric_axis):
         src = """
         <valAx>
             <axId val="2056619928"/>
             <scaling>
-                <logBase val="10" />
+                <logBase val="10"/>
                 <orientation val="minMax"/>
             </scaling>
             <delete val="0"/>
@@ -174,65 +203,57 @@ class TestValAx:
         </valAx>
         """
         node = fromstring(src)
-        axis = NumericAxis.from_tree(node)
+        axis = numeric_axis.from_tree(node)
         assert axis.delete is False
         assert axis.crossAx == 2065276984
         assert axis.crossBetween == "between"
         assert axis.scaling.logBase == 10
 
 
-@pytest.fixture
-def DateAxis():
-    from ..axis import DateAxis
-
-    return DateAxis
-
-
 class TestDateAx:
-
-    def test_ctor(self, DateAxis):
-        axis = DateAxis(axId=500, crossAx=10)
+    def test_ctor(self, date_axis):
+        axis = date_axis(axId=500, crossAx=10)
         xml = tostring(axis.to_tree())
         expected = """
         <dateAx>
-           <axId val="500"></axId>
-           <scaling>
-             <orientation val="minMax"></orientation>
-           </scaling>
-           <axPos val="l" />
-            <majorTickMark val="none" />
-            <minorTickMark val="none" />
-            <crossAx val="10" />
+            <axId val="500"></axId>
+            <scaling>
+                <orientation val="minMax"></orientation>
+            </scaling>
+            <axPos val="l"/>
+            <majorTickMark val="none"/>
+            <minorTickMark val="none"/>
+            <crossAx val="10"/>
         </dateAx>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DateAxis):
+    def test_from_xml(self, date_axis):
         from openpyxl.chart.data_source import NumFmt
 
         src = """
         <dateAx>
-          <axId val="20"/>
-          <scaling>
-            <orientation val="minMax"/>
-          </scaling>
-          <delete val="0"/>
-          <axPos val="b"/>
-          <numFmt formatCode="d-mmm" sourceLinked="1"/>
-          <majorTickMark val="out"/>
-          <minorTickMark val="none"/>
-          <tickLblPos val="nextTo"/>
-          <crossAx val="10"/>
-          <crosses val="autoZero"/>
-          <auto val="1"/>
-          <lblOffset val="100"/>
-          <baseTimeUnit val="months"/>
+            <axId val="20"/>
+            <scaling>
+                <orientation val="minMax"/>
+            </scaling>
+            <delete val="0"/>
+            <axPos val="b"/>
+            <numFmt formatCode="d-mmm" sourceLinked="1"/>
+            <majorTickMark val="out"/>
+            <minorTickMark val="none"/>
+            <tickLblPos val="nextTo"/>
+            <crossAx val="10"/>
+            <crosses val="autoZero"/>
+            <auto val="1"/>
+            <lblOffset val="100"/>
+            <baseTimeUnit val="months"/>
         </dateAx>
         """
         node = fromstring(src)
-        axis = DateAxis.from_tree(node)
-        assert axis == DateAxis(
+        axis = date_axis.from_tree(node)
+        expected = date_axis(
             axId=20,
             crossAx=10,
             axPos="b",
@@ -245,127 +266,84 @@ class TestDateAx:
             lblOffset=100,
             baseTimeUnit="months",
         )
-
-
-@pytest.fixture
-def SeriesAxis():
-    from ..axis import SeriesAxis
-
-    return SeriesAxis
+        assert axis == expected
 
 
 class TestSeriesAxis:
-
-    def test_ctor(self, SeriesAxis):
-        axis = SeriesAxis(axId=1000, crossAx=10)
+    def test_ctor(self, series_axis):
+        axis = series_axis(axId=1000, crossAx=10)
         xml = tostring(axis.to_tree())
         expected = """
         <serAx>
-          <axId val="1000"></axId>
-          <scaling>
-            <orientation val="minMax"></orientation>
-          </scaling>
-          <axPos val="l" />
-            <majorTickMark val="none" />
-            <minorTickMark val="none" />
-            <crossAx val="10" />
+            <axId val="1000"></axId>
+            <scaling>
+                <orientation val="minMax"></orientation>
+            </scaling>
+            <axPos val="l"/>
+            <majorTickMark val="none"/>
+            <minorTickMark val="none"/>
+            <crossAx val="10"/>
         </serAx>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, SeriesAxis):
+    def test_from_xml(self, series_axis):
         src = """
         <serAx>
-          <axId val="1000"></axId>
-          <scaling>
-            <orientation val="minMax"></orientation>
-          </scaling>
-          <axPos val="l" />
-          <crossAx val="10" />
+            <axId val="1000"></axId>
+            <scaling>
+                <orientation val="minMax"></orientation>
+            </scaling>
+            <axPos val="l"/>
+            <crossAx val="10"/>
         </serAx>
         """
         node = fromstring(src)
-        axis = SeriesAxis.from_tree(node)
-        assert axis == SeriesAxis()
-
-
-@pytest.fixture
-def DisplayUnitsLabel():
-    from ..axis import DisplayUnitsLabel
-
-    return DisplayUnitsLabel
+        axis = series_axis.from_tree(node)
+        assert axis == series_axis()
 
 
 class TestDispUnitsLabel:
-
-    def test_ctor(self, DisplayUnitsLabel):
-        axis = DisplayUnitsLabel()
+    def test_ctor(self, display_units_label):
+        axis = display_units_label()
         xml = tostring(axis.to_tree())
-        expected = """
-        <dispUnitsLbl />
-        """
+        expected = "<dispUnitsLbl/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DisplayUnitsLabel):
-        src = """
-        <dispUnitsLbl />
-        """
+    def test_from_xml(self, display_units_label):
+        src = "<dispUnitsLbl/>"
         node = fromstring(src)
-        axis = DisplayUnitsLabel.from_tree(node)
-        assert axis == DisplayUnitsLabel()
-
-
-@pytest.fixture
-def DisplayUnitsLabelList():
-    from ..axis import DisplayUnitsLabelList
-
-    return DisplayUnitsLabelList
+        axis = display_units_label.from_tree(node)
+        assert axis == display_units_label()
 
 
 class TestDisplayUnitList:
-
-    def test_ctor(self, DisplayUnitsLabelList):
-        axis = DisplayUnitsLabelList()
+    def test_ctor(self, display_units_label_list):
+        axis = display_units_label_list()
         xml = tostring(axis.to_tree())
-        expected = """
-        <dispUnits />
-        """
+        expected = "<dispUnits/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DisplayUnitsLabelList):
-        src = """
-        <dispUnits />
-        """
+    def test_from_xml(self, display_units_label_list):
+        src = "<dispUnits/>"
         node = fromstring(src)
-        axis = DisplayUnitsLabelList.from_tree(node)
-        assert axis == DisplayUnitsLabelList()
-
-
-@pytest.fixture
-def ChartLines():
-    from ..axis import ChartLines
-
-    return ChartLines
+        axis = display_units_label_list.from_tree(node)
+        assert axis == display_units_label_list()
 
 
 class TestChartLines:
-
-    def test_ctor(self, ChartLines):
-        axis = ChartLines()
+    def test_ctor(self, chart_lines):
+        axis = chart_lines()
         xml = tostring(axis.to_tree())
-        expected = """
-        <chartLines />
-        """
+        expected = "<chartLines/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, ChartLines):
-        src = """
-        <chartLines />
-        """
+    def test_from_xml(self, chart_lines):
+        src = "<chartLines/>"
         node = fromstring(src)
-        axis = ChartLines.from_tree(node)
-        assert axis == ChartLines()
+        axis = chart_lines.from_tree(node)
+        assert axis == chart_lines()

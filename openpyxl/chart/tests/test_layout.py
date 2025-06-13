@@ -6,16 +6,15 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def ManualLayout():
-    from ..layout import ManualLayout
+def manual_layout():
+    from openpyxl.chart.layout import ManualLayout
 
     return ManualLayout
 
 
 class TestManualLayout:
-
-    def test_ctor(self, ManualLayout):
-        layout = ManualLayout(
+    def test_ctor(self, manual_layout):
+        layout = manual_layout(
             layoutTarget="inner",
             xMode="edge",
             yMode="factor",
@@ -29,37 +28,37 @@ class TestManualLayout:
         xml = tostring(layout.to_tree())
         expected = """
         <manualLayout>
-          <layoutTarget val="inner"></layoutTarget>
-          <xMode val="edge"></xMode>
-          <yMode val="factor"></yMode>
-          <wMode val="factor"></wMode>
-          <hMode val="edge"></hMode>
-          <x val="0.1"></x>
-          <y val="0.5"></y>
-          <w val="0.5"></w>
-          <h val="0.1"></h>
+            <layoutTarget val="inner"></layoutTarget>
+            <xMode val="edge"></xMode>
+            <yMode val="factor"></yMode>
+            <wMode val="factor"></wMode>
+            <hMode val="edge"></hMode>
+            <x val="0.1"></x>
+            <y val="0.5"></y>
+            <w val="0.5"></w>
+            <h val="0.1"></h>
         </manualLayout>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, ManualLayout):
+    def test_from_xml(self, manual_layout):
         src = """
         <manualLayout>
-          <layoutTarget val="inner"></layoutTarget>
-          <xMode val="edge"></xMode>
-          <yMode val="factor"></yMode>
-          <wMode val="factor"></wMode>
-          <hMode val="edge"></hMode>
-          <x val="0.1"></x>
-          <y val="0.5"></y>
-          <w val="0.5"></w>
-          <h val="0.1"></h>
+            <layoutTarget val="inner"></layoutTarget>
+            <xMode val="edge"></xMode>
+            <yMode val="factor"></yMode>
+            <wMode val="factor"></wMode>
+            <hMode val="edge"></hMode>
+            <x val="0.1"></x>
+            <y val="0.5"></y>
+            <w val="0.5"></w>
+            <h val="0.1"></h>
         </manualLayout>
         """
         node = fromstring(src)
-        layout = ManualLayout.from_tree(node)
-        assert layout == ManualLayout(
+        layout = manual_layout.from_tree(node)
+        expected = manual_layout(
             layoutTarget="inner",
             xMode="edge",
             yMode="factor",
@@ -70,14 +69,14 @@ class TestManualLayout:
             w=0.5,
             h=0.1,
         )
+        assert layout == expected
 
 
 class TestLayout:
-
     def test_ctor(self):
-        from ..layout import Layout
+        from openpyxl.chart.layout import Layout
 
         layout = Layout()
         xml = tostring(layout.to_tree())
-        diff = compare_xml(xml, "<layout />")
+        diff = compare_xml(xml, "<layout/>")
         assert diff is None, diff

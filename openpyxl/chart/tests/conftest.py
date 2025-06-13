@@ -1,13 +1,13 @@
-# Fixtures (pre-configured objects) for tests
+# Copyright (c) 2010-2025 openpyxl
+import os
+
 import pytest
+from py.path import LocalPath
 
 
 @pytest.fixture
 def datadir():
     """DATADIR as a LocalPath"""
-    import os
-    from py.path import local as LocalPath
-
     here = os.path.split(__file__)[0]
-    DATADIR = os.path.join(here, "data")
-    return LocalPath(DATADIR)
+    data_dir = os.path.join(here, "data")
+    return LocalPath(data_dir)

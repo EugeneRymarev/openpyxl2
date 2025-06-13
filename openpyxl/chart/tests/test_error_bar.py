@@ -6,16 +6,16 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def ErrorBars():
-    from ..error_bar import ErrorBars
+def error_bars():
+    from openpyxl.chart.error_bar import ErrorBars
 
     return ErrorBars
 
 
 class TestErrorBar:
 
-    def test_ctor(self, ErrorBars):
-        bar = ErrorBars()
+    def test_ctor(self, error_bars):
+        bar = error_bars()
         xml = tostring(bar.to_tree())
         expected = """
         <errBars>
@@ -26,7 +26,7 @@ class TestErrorBar:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, ErrorBars):
+    def test_from_xml(self, error_bars):
         src = """
         <errBars>
             <errDir val="x"/>
@@ -37,5 +37,5 @@ class TestErrorBar:
         </errBars>
         """
         node = fromstring(src)
-        bar = ErrorBars.from_tree(node)
-        assert bar == ErrorBars(noEndCap=True, errDir="x", val=10)
+        bar = error_bars.from_tree(node)
+        assert bar == error_bars(noEndCap=True, errDir="x", val=10)

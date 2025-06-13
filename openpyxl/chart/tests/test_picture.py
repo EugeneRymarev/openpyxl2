@@ -6,27 +6,22 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def PictureOptions():
-    from ..picture import PictureOptions
+def picture_options():
+    from openpyxl.chart.picture import PictureOptions
 
     return PictureOptions
 
 
 class TestPictureOptions:
-
-    def test_ctor(self, PictureOptions):
-        picture = PictureOptions()
+    def test_ctor(self, picture_options):
+        picture = picture_options()
         xml = tostring(picture.to_tree())
-        expected = """
-         <pictureOptions />
-        """
+        expected = "<pictureOptions/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, PictureOptions):
-        src = """
-         <pictureOptions />
-        """
+    def test_from_xml(self, picture_options):
+        src = "<pictureOptions/>"
         node = fromstring(src)
-        picture = PictureOptions.from_tree(node)
-        assert picture == PictureOptions()
+        picture = picture_options.from_tree(node)
+        assert picture == picture_options()

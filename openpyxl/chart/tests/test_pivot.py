@@ -6,66 +6,64 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def PivotSource():
-    from ..pivot import PivotSource
+def pivot_source():
+    from openpyxl.chart.pivot import PivotSource
 
     return PivotSource
 
 
-class TestPivotSource:
-
-    def test_ctor(self, PivotSource):
-        fut = PivotSource(name="[template.xlsx]PIVOT!PivotTable6", fmtId=0)
-        xml = tostring(fut.to_tree())
-        expected = """
-        <pivotSource>
-           <name>
-            [template.xlsx]PIVOT!PivotTable6
-           </name>
-           <fmtId val="0"/>
-        </pivotSource>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, PivotSource):
-        src = """
-        <pivotSource>
-           <name>[template.xlsx]PIVOT!PivotTable6</name>
-           <fmtId val="0"/>
-        </pivotSource>
-        """
-        node = fromstring(src)
-        fut = PivotSource.from_tree(node)
-        assert fut == PivotSource(name="[template.xlsx]PIVOT!PivotTable6", fmtId=0)
-
-
 @pytest.fixture
-def PivotFormat():
-    from ..pivot import PivotFormat
+def pivot_format():
+    from openpyxl.chart.pivot import PivotFormat
 
     return PivotFormat
 
 
-class TestPivotFormat:
+class TestPivotSource:
+    def test_ctor(self, pivot_source):
+        fut = pivot_source(name="[template.xlsx]PIVOT!PivotTable6", fmtId=0)
+        xml = tostring(fut.to_tree())
+        expected = """
+        <pivotSource>
+            <name>
+                [template.xlsx]PIVOT!PivotTable6
+            </name>
+            <fmtId val="0"/>
+        </pivotSource>
+        """
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
 
-    def test_ctor(self, PivotFormat):
-        fmt = PivotFormat()
+    def test_from_xml(self, pivot_source):
+        src = """
+        <pivotSource>
+            <name>[template.xlsx]PIVOT!PivotTable6</name>
+            <fmtId val="0"/>
+        </pivotSource>
+        """
+        node = fromstring(src)
+        fut = pivot_source.from_tree(node)
+        assert fut == pivot_source(name="[template.xlsx]PIVOT!PivotTable6", fmtId=0)
+
+
+class TestPivotFormat:
+    def test_ctor(self, pivot_format):
+        fmt = pivot_format()
         xml = tostring(fmt.to_tree())
         expected = """
         <pivotFmt>
-           <idx val="0" />
+            <idx val="0"/>
         </pivotFmt>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, PivotFormat):
+    def test_from_xml(self, pivot_format):
         src = """
         <pivotFmt>
-           <idx val="0" />
+            <idx val="0"/>
         </pivotFmt>
         """
         node = fromstring(src)
-        fmt = PivotFormat.from_tree(node)
-        assert fmt == PivotFormat()
+        fmt = pivot_format.from_tree(node)
+        assert fmt == pivot_format()

@@ -6,32 +6,38 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def Marker():
-    from ..marker import Marker
+def marker_():
+    from openpyxl.chart.marker import Marker
 
     return Marker
 
 
-class TestMarker:
+@pytest.fixture
+def data_point():
+    from openpyxl.chart.marker import DataPoint
 
-    def test_ctor(self, Marker):
-        marker = Marker(symbol=None, size=5)
+    return DataPoint
+
+
+class TestMarker:
+    def test_ctor(self, marker_):
+        marker = marker_(symbol=None, size=5)
         xml = tostring(marker.to_tree())
         expected = """
         <marker>
             <symbol val="none"/>
             <size val="5"/>
             <spPr xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-              <a:ln>
-                <a:prstDash val="solid" />
-              </a:ln>
+                <a:ln>
+                    <a:prstDash val="solid"/>
+                </a:ln>
             </spPr>
         </marker>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, Marker):
+    def test_from_xml(self, marker_):
         src = """
         <marker>
             <symbol val="square"/>
@@ -39,47 +45,39 @@ class TestMarker:
         </marker>
         """
         node = fromstring(src)
-        marker = Marker.from_tree(node)
-        assert marker == Marker(symbol="square", size=5)
-
-
-@pytest.fixture
-def DataPoint():
-    from ..marker import DataPoint
-
-    return DataPoint
+        marker = marker_.from_tree(node)
+        assert marker == marker_(symbol="square", size=5)
 
 
 class TestDataPoint:
-
-    def test_ctor(self, DataPoint):
-        dp = DataPoint(idx=9)
+    def test_ctor(self, data_point):
+        dp = data_point(idx=9)
         xml = tostring(dp.to_tree())
         expected = """
         <dPt>
-          <idx val="9"/>
-          <spPr>
-              <a:ln xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-                <a:prstDash val="solid"/>
-              </a:ln>
+            <idx val="9"/>
+            <spPr>
+                <a:ln xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:prstDash val="solid"/>
+                </a:ln>
             </spPr>
         </dPt>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DataPoint):
+    def test_from_xml(self, data_point):
         src = """
         <dPt>
-          <idx val="9"/>
-          <marker>
-            <symbol val="triangle"/>
-            <size val="5"/>
-          </marker>
-          <bubble3D val="0"/>
+            <idx val="9"/>
+            <marker>
+                <symbol val="triangle"/>
+                <size val="5"/>
+            </marker>
+            <bubble3D val="0"/>
         </dPt>
         """
         node = fromstring(src)
-        dp = DataPoint.from_tree(node)
+        dp = data_point.from_tree(node)
         assert dp.idx == 9
         assert dp.bubble3D is False

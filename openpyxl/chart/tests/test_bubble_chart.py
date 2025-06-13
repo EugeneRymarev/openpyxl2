@@ -6,33 +6,32 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def BubbleChart():
-    from ..bubble_chart import BubbleChart
+def bubble_chart():
+    from openpyxl.chart.bubble_chart import BubbleChart
 
     return BubbleChart
 
 
 class TestBubbleChart:
-
-    def test_ctor(self, BubbleChart):
-        bubble_chart = BubbleChart()
-        xml = tostring(bubble_chart.to_tree())
+    def test_ctor(self, bubble_chart):
+        bc = bubble_chart()
+        xml = tostring(bc.to_tree())
         expected = """
         <bubbleChart>
-          <axId val="10" />
-          <axId val="20" />
+            <axId val="10"/>
+            <axId val="20"/>
         </bubbleChart>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, BubbleChart):
+    def test_from_xml(self, bubble_chart):
         src = """
         <bubbleChart>
-          <axId val="10" />
-          <axId val="20" />
+            <axId val="10"/>
+            <axId val="20"/>
         </bubbleChart>
         """
         node = fromstring(src)
-        bubble_chart = BubbleChart.from_tree(node)
-        assert bubble_chart.axId == [10, 20]
+        bc = bubble_chart.from_tree(node)
+        assert bc.axId == [10, 20]

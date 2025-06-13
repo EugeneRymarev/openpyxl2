@@ -6,39 +6,44 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def DataLabelList():
+def data_label_list():
     from ..label import DataLabelList
 
     return DataLabelList
 
 
-class TestDataLabeList:
+@pytest.fixture
+def data_label():
+    from ..label import DataLabel
 
-    def test_ctor(self, DataLabelList):
-        labels = DataLabelList(numFmt="0.0%")
+    return DataLabel
+
+
+class TestDataLabelList:
+    def test_ctor(self, data_label_list):
+        labels = data_label_list(numFmt="0.0%")
         xml = tostring(labels.to_tree())
         expected = """
         <dLbls>
-          <numFmt formatCode="0.0%" />
+            <numFmt formatCode="0.0%"/>
         </dLbls>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DataLabelList):
+    def test_from_xml(self, data_label_list):
         src = """
         <dLbls>
-          <showLegendKey val="0"/>
-          <showVal val="0"/>
-          <showCatName val="0"/>
-          <showSerName val="0"/>
-          <showPercent val="0"/>
-          <showBubbleSize val="0"/>
+            <showLegendKey val="0"/>
+            <showVal val="0"/>
+            <showCatName val="0"/>
+            <showSerName val="0"/>
+            <showPercent val="0"/>
+            <showBubbleSize val="0"/>
         </dLbls>
         """
         node = fromstring(src)
-        dl = DataLabelList.from_tree(node)
-
+        dl = data_label_list.from_tree(node)
         assert dl.showLegendKey is False
         assert dl.showVal is False
         assert dl.showCatName is False
@@ -47,32 +52,24 @@ class TestDataLabeList:
         assert dl.showBubbleSize is False
 
 
-@pytest.fixture
-def DataLabel():
-    from ..label import DataLabel
-
-    return DataLabel
-
-
 class TestDataLabel:
-
-    def test_ctor(self, DataLabel):
-        label = DataLabel()
+    def test_ctor(self, data_label):
+        label = data_label()
         xml = tostring(label.to_tree())
         expected = """
         <dLbl>
-           <idx val="0"></idx>
+            <idx val="0"></idx>
         </dLbl>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DataLabel):
+    def test_from_xml(self, data_label):
         src = """
         <dLbl>
-           <idx val="6"></idx>
+            <idx val="6"></idx>
         </dLbl>
         """
         node = fromstring(src)
-        label = DataLabel.from_tree(node)
-        assert label == DataLabel(idx=6)
+        label = data_label.from_tree(node)
+        assert label == data_label(idx=6)

@@ -1,184 +1,172 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.chart.bar_chart import BarChart
+from openpyxl.chart.line_chart import LineChart
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
-from ..bar_chart import BarChart
-from ..line_chart import LineChart
-
 
 @pytest.fixture
-def PlotArea():
-    from ..plotarea import PlotArea
+def plot_area():
+    from openpyxl.chart.plotarea import PlotArea
 
     return PlotArea
 
 
-class TestPlotArea:
+@pytest.fixture
+def data_table():
+    from openpyxl.chart.plotarea import DataTable
 
-    def test_ctor(self, PlotArea):
-        plot = PlotArea()
+    return DataTable
+
+
+class TestPlotArea:
+    def test_ctor(self, plot_area):
+        plot = plot_area()
         xml = tostring(plot.to_tree())
-        expected = """
-        <plotArea />
-        """
+        expected = "<plotArea/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, PlotArea):
-        src = """
-        <plotArea />
-        """
+    def test_from_xml(self, plot_area):
+        src = "<plotArea/>"
         node = fromstring(src)
-        plot = PlotArea.from_tree(node)
-        assert plot == PlotArea()
+        plot = plot_area.from_tree(node)
+        assert plot == plot_area()
 
-    def test_multi_chart(self, PlotArea):
-        plot = PlotArea()
+    def test_multi_chart(self, plot_area):
+        plot = plot_area()
         plot.lineChart = LineChart()
         plot.barChart = BarChart()
         plot.lineChart = LineChart()
         expected = """
         <plotArea>
-        <lineChart>
-          <grouping val="standard"></grouping>
-          <axId val="10"></axId>
-          <axId val="100"></axId>
-        </lineChart>
-        <barChart>
-          <barDir val="col"></barDir>
-          <grouping val="clustered"></grouping>
-          <gapWidth val="150"></gapWidth>
-          <axId val="10"></axId>
-          <axId val="100"></axId>
-        </barChart>
-        <lineChart>
-          <grouping val="standard"></grouping>
-          <axId val="10"></axId>
-          <axId val="100"></axId>
-        </lineChart>
-          <catAx>
-           <axId val="10"></axId>
-           <scaling>
-             <orientation val="minMax"></orientation>
-           </scaling>
-           <axPos val="l"></axPos>
-           <majorTickMark val="none"></majorTickMark>
-           <minorTickMark val="none"></minorTickMark>
-           <crossAx val="100"></crossAx>
-           <lblOffset val="100"></lblOffset>
-         </catAx>
-         <valAx>
-           <axId val="100"></axId>
-           <scaling>
-             <orientation val="minMax"></orientation>
-           </scaling>
-           <axPos val="l"></axPos>
-           <majorGridlines></majorGridlines>
-           <majorTickMark val="none"></majorTickMark>
-           <minorTickMark val="none"></minorTickMark>
-           <crossAx val="10"></crossAx>
-          </valAx>
+            <lineChart>
+                <grouping val="standard"></grouping>
+                <axId val="10"></axId>
+                <axId val="100"></axId>
+            </lineChart>
+            <barChart>
+                <barDir val="col"></barDir>
+                <grouping val="clustered"></grouping>
+                <gapWidth val="150"></gapWidth>
+                <axId val="10"></axId>
+                <axId val="100"></axId>
+            </barChart>
+            <lineChart>
+                <grouping val="standard"></grouping>
+                <axId val="10"></axId>
+                <axId val="100"></axId>
+            </lineChart>
+            <catAx>
+                <axId val="10"></axId>
+                <scaling>
+                    <orientation val="minMax"></orientation>
+                </scaling>
+                <axPos val="l"></axPos>
+                <majorTickMark val="none"></majorTickMark>
+                <minorTickMark val="none"></minorTickMark>
+                <crossAx val="100"></crossAx>
+                <lblOffset val="100"></lblOffset>
+            </catAx>
+            <valAx>
+                <axId val="100"></axId>
+                <scaling>
+                    <orientation val="minMax"></orientation>
+                </scaling>
+                <axPos val="l"></axPos>
+                <majorGridlines></majorGridlines>
+                <majorTickMark val="none"></majorTickMark>
+                <minorTickMark val="none"></minorTickMark>
+                <crossAx val="10"></crossAx>
+            </valAx>
         </plotArea>
         """
         xml = tostring(plot.to_tree())
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_read_multi_chart(self, PlotArea, datadir):
+    def test_read_multi_chart(self, plot_area, datadir):
         datadir.chdir()
         with open("plotarea.xml", "rb") as src:
             tree = fromstring(src.read())
-        plot = PlotArea.from_tree(tree)
+        plot = plot_area.from_tree(tree)
         assert len(plot._charts) == 2
 
-    def test_read_multi_axes(self, PlotArea, datadir):
+    def test_read_multi_axes(self, plot_area, datadir):
         datadir.chdir()
         with open("plotarea.xml", "rb") as src:
             tree = fromstring(src.read())
-        plot = PlotArea.from_tree(tree)
+        plot = plot_area.from_tree(tree)
         assert [ax.tagname for ax in plot._axes] == ["catAx", "valAx", "valAx", "catAx"]
         assert plot._charts[0].x_axis == plot._axes[0]
         assert plot._charts[0].y_axis == plot._axes[1]
         assert plot._charts[1].x_axis == plot._axes[3]
         assert plot._charts[1].y_axis == plot._axes[2]
 
-    def test_read_scatter_chart(self, PlotArea, datadir):
+    def test_read_scatter_chart(self, plot_area, datadir):
         datadir.chdir()
         with open("scatterchart_plot_area.xml", "rb") as src:
             tree = fromstring(src.read())
-        plot = PlotArea.from_tree(tree)
+        plot = plot_area.from_tree(tree)
         chart = plot._charts[0]
         assert chart.axId == [211326240, 211330000]
         assert chart.x_axis.axId == 211326240
         assert chart.y_axis.axId == 211330000
 
-    def test_read_bubble_chart(self, PlotArea, datadir):
+    def test_read_bubble_chart(self, plot_area, datadir):
         datadir.chdir()
         with open("bubblechart_plot_area.xml", "rb") as src:
             tree = fromstring(src.read())
-        plot = PlotArea.from_tree(tree)
+        plot = plot_area.from_tree(tree)
         chart = plot._charts[0]
         assert chart.axId == [196911488, 196913408]
         assert chart.x_axis.axId == 196911488
         assert chart.y_axis.axId == 196913408
 
-    def test_read_surface_chart_3d(self, PlotArea, datadir):
+    def test_read_surface_chart_3d(self, plot_area, datadir):
         datadir.chdir()
         with open("3D_plotarea.xml", "rb") as src:
             tree = fromstring(src.read())
-        plot = PlotArea.from_tree(tree)
+        plot = plot_area.from_tree(tree)
         chart = plot._charts[0]
         assert chart.axId == [10, 100, 1000]
         assert chart.tagname == "surface3DChart"
 
-    def test_read_bar_chart_3d(self, PlotArea, datadir):
+    def test_read_bar_chart_3d(self, plot_area, datadir):
         datadir.chdir()
         with open("3D_bar_chart.xml", "rb") as src:
             tree = fromstring(src.read())
-        plot = PlotArea.from_tree(tree)
+        plot = plot_area.from_tree(tree)
         chart = plot._charts[0]
         assert chart.axId == [203780744, 203656728, 0]
         assert chart.tagname == "bar3DChart"
         assert chart.z_axis.crossAx == 203780744
 
-    def test_read_bar_chart_3d_no_series_axis(self, PlotArea, datadir):
+    def test_read_bar_chart_3d_no_series_axis(self, plot_area, datadir):
         datadir.chdir()
         with open("3D_bar_chart.xml", "rb") as src:
             tree = fromstring(src.read())
         s = tree.find("serAx")
         tree.remove(s)
-
-        plot = PlotArea.from_tree(tree)
+        plot = plot_area.from_tree(tree)
         chart = plot._charts[0]
         assert chart.axId == [203780744, 203656728, 0]
         assert chart.tagname == "bar3DChart"
         assert chart.z_axis is None
 
 
-@pytest.fixture
-def DataTable():
-    from ..plotarea import DataTable
-
-    return DataTable
-
-
 class TestDataTable:
-
-    def test_ctor(self, DataTable):
-        table = DataTable()
+    def test_ctor(self, data_table):
+        table = data_table()
         xml = tostring(table.to_tree())
-        expected = """
-        <dTable />
-        """
+        expected = "<dTable/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DataTable):
-        src = """
-        <dTable />
-        """
+    def test_from_xml(self, data_table):
+        src = "<dTable/>"
         node = fromstring(src)
-        table = DataTable.from_tree(node)
-        assert table == DataTable()
+        table = data_table.from_tree(node)
+        assert table == data_table()

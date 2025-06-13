@@ -6,58 +6,53 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def TrendlineLabel():
-    from ..trendline import TrendlineLabel
+def trendline_label():
+    from openpyxl.chart.trendline import TrendlineLabel
 
     return TrendlineLabel
 
 
-class TestTrendlineLabel:
-
-    def test_ctor(self, TrendlineLabel):
-        trendline = TrendlineLabel()
-        xml = tostring(trendline.to_tree())
-        expected = """
-        <trendlineLbl></trendlineLbl>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, TrendlineLabel):
-        src = """
-        <trendlineLbl></trendlineLbl>
-        """
-        node = fromstring(src)
-        trendline = TrendlineLabel.from_tree(node)
-        assert trendline == TrendlineLabel()
-
-
 @pytest.fixture
-def Trendline():
-    from ..trendline import Trendline
+def trendline():
+    from openpyxl.chart.trendline import Trendline
 
     return Trendline
 
 
+class TestTrendlineLabel:
+    def test_ctor(self, trendline_label):
+        tl = trendline_label()
+        xml = tostring(tl.to_tree())
+        expected = "<trendlineLbl></trendlineLbl>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, trendline_label):
+        src = "<trendlineLbl></trendlineLbl>"
+        node = fromstring(src)
+        trendline = trendline_label.from_tree(node)
+        assert trendline == trendline_label()
+
+
 class TestTrendline:
 
-    def test_ctor(self, Trendline):
-        trendline = Trendline(name="Bob")
-        xml = tostring(trendline.to_tree())
+    def test_ctor(self, trendline):
+        tl = trendline(name="Bob")
+        xml = tostring(tl.to_tree())
         expected = """
         <trendline name="Bob">
-          <trendlineType val="linear" />
+            <trendlineType val="linear"/>
         </trendline>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, Trendline):
+    def test_from_xml(self, trendline):
         src = """
         <trendline name="Bob">
-          <trendlineType val="log" />
+            <trendlineType val="log"/>
         </trendline>
         """
         node = fromstring(src)
-        trendline = Trendline.from_tree(node)
-        assert trendline == Trendline(trendlineType="log", name="Bob")
+        tl = trendline.from_tree(node)
+        assert tl == trendline(trendlineType="log", name="Bob")
