@@ -3,9 +3,18 @@
 Enclosing chart object. The various chart types are actually child objects.
 Will probably need to call this indirectly
 """
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.chart._3d import _3DBase
+from openpyxl.chart.legend import Legend
+from openpyxl.chart.pivot import PivotFormat
+from openpyxl.chart.pivot import PivotSource
+from openpyxl.chart.plotarea import PlotArea
+from openpyxl.chart.print_settings import PrintSettings
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
+from openpyxl.chart.title import Title
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.nested import NestedBool
@@ -17,21 +26,9 @@ from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.drawing.colors import ColorMapping
 from openpyxl.xml.constants import CHART_NS
 
-from ._3d import _3DBase
-from .legend import Legend
-from .pivot import PivotFormat
-from .pivot import PivotSource
-from .plotarea import PlotArea
-from .print_settings import PrintSettings
-from .shapes import GraphicalProperties
-from .text import RichText
-from .title import Title
-
 
 class ChartContainer(Serialisable):
-
     tagname = "chart"
-
     title = Typed(expected_type=Title, allow_none=True)
     autoTitleDeleted = NestedBool(allow_none=True)
     pivotFmts = NestedSequence(expected_type=PivotFormat)
@@ -39,15 +36,12 @@ class ChartContainer(Serialisable):
     floor = _3DBase.floor
     sideWall = _3DBase.sideWall
     backWall = _3DBase.backWall
-    plotArea = Typed(
-        expected_type=PlotArea,
-    )
+    plotArea = Typed(expected_type=PlotArea)
     legend = Typed(expected_type=Legend, allow_none=True)
     plotVisOnly = NestedBool()
     dispBlanksAs = NestedNoneSet(values=(["span", "gap", "zero"]))
     showDLblsOverMax = NestedBool(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "title",
         "autoTitleDeleted",
@@ -96,15 +90,12 @@ class ChartContainer(Serialisable):
 
 
 class Protection(Serialisable):
-
     tagname = "protection"
-
     chartObject = NestedBool(allow_none=True)
     data = NestedBool(allow_none=True)
     formatting = NestedBool(allow_none=True)
     selection = NestedBool(allow_none=True)
     userInterface = NestedBool(allow_none=True)
-
     __elements__ = ("chartObject", "data", "formatting", "selection", "userInterface")
 
     def __init__(
@@ -123,9 +114,7 @@ class Protection(Serialisable):
 
 
 class ExternalData(Serialisable):
-
     tagname = "externalData"
-
     autoUpdate = NestedBool(allow_none=True)
     id = String()  # Needs namespace
 
@@ -135,9 +124,7 @@ class ExternalData(Serialisable):
 
 
 class ChartSpace(Serialisable):
-
     tagname = "chartSpace"
-
     date1904 = NestedBool(allow_none=True)
     lang = NestedString(allow_none=True)
     roundedCorners = NestedBool(allow_none=True)
@@ -154,7 +141,6 @@ class ChartSpace(Serialisable):
     printSettings = Typed(expected_type=PrintSettings, allow_none=True)
     userShapes = Relation()
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "date1904",
         "lang",

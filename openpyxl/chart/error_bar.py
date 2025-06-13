@@ -1,8 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import Typed
+from openpyxl.chart.data_source import NumDataSource
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedFloat
@@ -10,20 +10,23 @@ from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.nested import NestedSet
 from openpyxl.descriptors.serialisable import Serialisable
 
-from .data_source import NumDataSource
-from .shapes import GraphicalProperties
-
 
 class ErrorBars(Serialisable):
-
     tagname = "errBars"
-
     errDir = NestedNoneSet(values=(["x", "y"]))
     direction = Alias("errDir")
     errBarType = NestedSet(values=(["both", "minus", "plus"]))
     style = Alias("errBarType")
     errValType = NestedSet(
-        values=(["cust", "fixedVal", "percentage", "stdDev", "stdErr"])
+        values=(
+            [
+                "cust",
+                "fixedVal",
+                "percentage",
+                "stdDev",
+                "stdErr",
+            ]
+        )
     )
     size = Alias("errValType")
     noEndCap = NestedBool(nested=True, allow_none=True)
@@ -33,7 +36,6 @@ class ErrorBars(Serialisable):
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "errDir",
         "errBarType",

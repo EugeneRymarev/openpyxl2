@@ -1,38 +1,37 @@
 # Copyright (c) 2010-2025 openpyxl
-from collections import OrderedDict
-from operator import attrgetter
+import collections
+import operator
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import Typed
+from openpyxl.chart._3d import _3DBase
+from openpyxl.chart.data_source import AxDataSource
+from openpyxl.chart.data_source import NumRef
+from openpyxl.chart.layout import Layout
+from openpyxl.chart.legend import Legend
+from openpyxl.chart.reference import Reference
+from openpyxl.chart.series import attribute_mapping
+from openpyxl.chart.series_factory import SeriesFactory
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.title import TitleDescriptor
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.sequence import ValueSequence
 from openpyxl.descriptors.serialisable import Serialisable
 
-from ._3d import _3DBase
-from .data_source import AxDataSource
-from .data_source import NumRef
-from .layout import Layout
-from .legend import Legend
-from .reference import Reference
-from .series import attribute_mapping
-from .series_factory import SeriesFactory
-from .shapes import GraphicalProperties
-from .title import TitleDescriptor
-
 
 class AxId(Serialisable):
-
     val = Integer()
 
     def __init__(self, val):
         self.val = val
 
 
-def PlotArea():
-    from .chartspace import PlotArea
+def plot_area():
+    # TODO: !!!CYCLICAL IMPORT!!!
+    from openpyxl.chart.chartspace import PlotArea
 
     return PlotArea()
 
@@ -48,8 +47,6 @@ class ChartBase(Serialisable):
     axId = ValueSequence(expected_type=int)
     visible_cells_only = Bool(allow_none=True)
     display_blanks = Set(values=["span", "gap", "zero"])
-    graphical_properties = Typed(expected_type=GraphicalProperties, allow_none=True)
-
     _series_type = ""
     ser = ()
     series = Alias("ser")
@@ -61,12 +58,10 @@ class ChartBase(Serialisable):
     _path = "/xl/charts/chart{0}.xml"
     style = MinMax(allow_none=True, min=1, max=48)
     mime_type = "application/vnd.openxmlformats-officedocument.drawingml.chart+xml"
-    graphical_properties = Typed(
-        expected_type=GraphicalProperties, allow_none=True
-    )  # mapped to chartspace
+    # mapped to chartspace
+    graphical_properties = Typed(expected_type=GraphicalProperties, allow_none=True)
     hidden = Bool(allow_none=True)  # mapped to GraphicFrame in parent drawing
     hide_title = Bool(allow_none=True)  # mapped to Chart Container
-
     __elements__ = ()
 
     def __init__(self, axId=(), **kw):
@@ -77,7 +72,7 @@ class ChartBase(Serialisable):
         self.legend = Legend()
         self.graphical_properties = None
         self.style = None
-        self.plot_area = PlotArea()
+        self.plot_area = plot_area()
         self.axId = axId
         self.display_blanks = "gap"
         self.pivotSource = None
@@ -117,25 +112,27 @@ class ChartBase(Serialisable):
 
         """
         # sort data series in order and rebase
-        ds = sorted(self.series, key=attrgetter("order"))
+        ds = sorted(self.series, key=operator.attrgetter("order"))
         for idx, s in enumerate(ds):
             s.order = idx
         self.series = ds
 
     def _write(self):
-        from .chartspace import ChartSpace, ChartContainer
+        # TODO: !!!CYCLICAL IMPORT!!!
+        from openpyxl.chart.chartspace import ChartContainer
+        from openpyxl.chart.chartspace import ChartSpace
 
         self.plot_area.layout = self.layout
-
         idx_base = self.idx_base
         for chart in self._charts:
             if chart not in self.plot_area._charts:
                 chart.idx_base = idx_base
                 idx_base += len(chart.series)
         self.plot_area._charts = self._charts
-
         container = ChartContainer(
-            plotArea=self.plot_area, legend=self.legend, title=self.title
+            plotArea=self.plot_area,
+            legend=self.legend,
+            title=self.title,
         )
         if isinstance(chart, _3DBase):
             container.view3D = chart.view3D
@@ -158,7 +155,8 @@ class ChartBase(Serialisable):
         x = getattr(self, "x_axis", None)
         y = getattr(self, "y_axis", None)
         z = getattr(self, "z_axis", None)
-        return OrderedDict([(axis.axId, axis) for axis in (x, y, z) if axis])
+        result = [(axis.axId, axis) for axis in (x, y, z) if axis]
+        return collections.OrderedDict(result)
 
     def set_categories(self, labels):
         """
@@ -176,13 +174,10 @@ class ChartBase(Serialisable):
         """
         if not isinstance(data, Reference):
             data = Reference(range_string=data)
-
         if from_rows:
             values = data.rows
-
         else:
             values = data.cols
-
         for ref in values:
             series = SeriesFactory(ref, title_from_data=titles_from_data)
             self.series.append(series)

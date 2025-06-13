@@ -1,13 +1,12 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.chart.data_source import StrRef
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.drawing.text import ListStyle
 from openpyxl.drawing.text import Paragraph
 from openpyxl.drawing.text import RichTextProperties
-
-from .data_source import StrRef
 
 
 class RichText(Serialisable):
@@ -18,21 +17,14 @@ class RichText(Serialisable):
     """
 
     tagname = "rich"
-
     bodyPr = Typed(expected_type=RichTextProperties)
     properties = Alias("bodyPr")
     lstStyle = Typed(expected_type=ListStyle, allow_none=True)
     p = Sequence(expected_type=Paragraph)
     paragraphs = Alias("p")
-
     __elements__ = ("bodyPr", "lstStyle", "p")
 
-    def __init__(
-        self,
-        bodyPr=None,
-        lstStyle=None,
-        p=None,
-    ):
+    def __init__(self, bodyPr=None, lstStyle=None, p=None):
         if bodyPr is None:
             bodyPr = RichTextProperties()
         self.bodyPr = bodyPr
@@ -49,10 +41,8 @@ class Text(Serialisable):
     """
 
     tagname = "tx"
-
     strRef = Typed(expected_type=StrRef, allow_none=True)
     rich = Typed(expected_type=RichText, allow_none=True)
-
     __elements__ = ("strRef", "rich")
 
     def __init__(self, strRef=None, rich=None):

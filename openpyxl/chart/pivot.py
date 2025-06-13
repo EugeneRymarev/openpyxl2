@@ -1,41 +1,30 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Typed
+from openpyxl.chart.label import DataLabel
+from openpyxl.chart.marker import Marker
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedText
 from openpyxl.descriptors.serialisable import Serialisable
 
-from .label import DataLabel
-from .marker import Marker
-from .shapes import GraphicalProperties
-from .text import RichText
-
 
 class PivotSource(Serialisable):
-
     tagname = "pivotSource"
-
     name = NestedText(expected_type=str)
     fmtId = NestedInteger(expected_type=int)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("name", "fmtId")
 
-    def __init__(
-        self,
-        name=None,
-        fmtId=None,
-        extLst=None,
-    ):
+    def __init__(self, name=None, fmtId=None, extLst=None):
         self.name = name
         self.fmtId = fmtId
 
 
 class PivotFormat(Serialisable):
-
     tagname = "pivotFmt"
-
     idx = NestedInteger(nested=True)
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
@@ -45,7 +34,6 @@ class PivotFormat(Serialisable):
     dLbl = Typed(expected_type=DataLabel, allow_none=True)
     DataLabel = Alias("dLbl")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("idx", "spPr", "txPr", "marker", "dLbl")
 
     def __init__(

@@ -1,39 +1,26 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import _explicit_none
+from openpyxl.chart.descriptors import NumberFormatDescriptor
+from openpyxl.chart.layout import Layout
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
+from openpyxl.chart.text import Text
+from openpyxl.chart.title import TitleDescriptor
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.excel import Percentage
+from openpyxl.descriptors.excel import _explicit_none
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedFloat
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedMinMax
 from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.nested import NestedSet
-from openpyxl.descriptors.nested import NestedValue
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.xml.constants import CHART_NS
 
-from .descriptors import NumberFormatDescriptor
-from .layout import Layout
-from .shapes import GraphicalProperties
-from .text import RichText
-from .text import Text
-from .title import Title
-from .title import TitleDescriptor
-
 
 class ChartLines(Serialisable):
-
     tagname = "chartLines"
-
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
 
@@ -42,21 +29,13 @@ class ChartLines(Serialisable):
 
 
 class Scaling(Serialisable):
-
     tagname = "scaling"
-
     logBase = NestedFloat(allow_none=True)
     orientation = NestedSet(values=(["maxMin", "minMax"]))
     max = NestedFloat(allow_none=True)
     min = NestedFloat(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
-    __elements__ = (
-        "logBase",
-        "orientation",
-        "max",
-        "min",
-    )
+    __elements__ = ("logBase", "orientation", "max", "min")
 
     def __init__(
         self,
@@ -73,7 +52,6 @@ class Scaling(Serialisable):
 
 
 class _BaseAxis(Serialisable):
-
     axId = NestedInteger(expected_type=int)
     scaling = Typed(expected_type=Scaling)
     delete = NestedBool(allow_none=True)
@@ -84,10 +62,12 @@ class _BaseAxis(Serialisable):
     numFmt = NumberFormatDescriptor()
     number_format = Alias("numFmt")
     majorTickMark = NestedNoneSet(
-        values=(["cross", "in", "out"]), to_tree=_explicit_none
+        values=(["cross", "in", "out"]),
+        to_tree=_explicit_none,
     )
     minorTickMark = NestedNoneSet(
-        values=(["cross", "in", "out"]), to_tree=_explicit_none
+        values=(["cross", "in", "out"]),
+        to_tree=_explicit_none,
     )
     tickLblPos = NestedNoneSet(values=(["high", "low", "nextTo"]))
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
@@ -97,9 +77,7 @@ class _BaseAxis(Serialisable):
     crossAx = NestedInteger(expected_type=int)  # references other axis
     crosses = NestedNoneSet(values=(["autoZero", "max", "min"]))
     crossesAt = NestedFloat(allow_none=True)
-
     # crosses & crossesAt are mutually exclusive
-
     __elements__ = (
         "axId",
         "scaling",
@@ -159,9 +137,7 @@ class _BaseAxis(Serialisable):
 
 
 class DisplayUnitsLabel(Serialisable):
-
     tagname = "dispUnitsLbl"
-
     layout = Typed(expected_type=Layout, allow_none=True)
     tx = Typed(expected_type=Text, allow_none=True)
     text = Alias("tx")
@@ -169,16 +145,9 @@ class DisplayUnitsLabel(Serialisable):
     graphicalProperties = Alias("spPr")
     txPr = Typed(expected_type=RichText, allow_none=True)
     textPropertes = Alias("txPr")
-
     __elements__ = ("layout", "tx", "spPr", "txPr")
 
-    def __init__(
-        self,
-        layout=None,
-        tx=None,
-        spPr=None,
-        txPr=None,
-    ):
+    def __init__(self, layout=None, tx=None, spPr=None, txPr=None):
         self.layout = layout
         self.tx = tx
         self.spPr = spPr
@@ -186,9 +155,7 @@ class DisplayUnitsLabel(Serialisable):
 
 
 class DisplayUnitsLabelList(Serialisable):
-
     tagname = "dispUnits"
-
     custUnit = NestedFloat(allow_none=True)
     builtInUnit = NestedNoneSet(
         values=(
@@ -207,29 +174,16 @@ class DisplayUnitsLabelList(Serialisable):
     )
     dispUnitsLbl = Typed(expected_type=DisplayUnitsLabel, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
+    __elements__ = ("custUnit", "builtInUnit", "dispUnitsLbl")
 
-    __elements__ = (
-        "custUnit",
-        "builtInUnit",
-        "dispUnitsLbl",
-    )
-
-    def __init__(
-        self,
-        custUnit=None,
-        builtInUnit=None,
-        dispUnitsLbl=None,
-        extLst=None,
-    ):
+    def __init__(self, custUnit=None, builtInUnit=None, dispUnitsLbl=None, extLst=None):
         self.custUnit = custUnit
         self.builtInUnit = builtInUnit
         self.dispUnitsLbl = dispUnitsLbl
 
 
 class NumericAxis(_BaseAxis):
-
     tagname = "valAx"
-
     axId = _BaseAxis.axId
     scaling = _BaseAxis.scaling
     delete = _BaseAxis.delete
@@ -246,13 +200,11 @@ class NumericAxis(_BaseAxis):
     crossAx = _BaseAxis.crossAx
     crosses = _BaseAxis.crosses
     crossesAt = _BaseAxis.crossesAt
-
     crossBetween = NestedNoneSet(values=(["between", "midCat"]))
     majorUnit = NestedFloat(allow_none=True)
     minorUnit = NestedFloat(allow_none=True)
     dispUnits = Typed(expected_type=DisplayUnitsLabelList, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = _BaseAxis.__elements__ + (
         "crossBetween",
         "majorUnit",
@@ -291,9 +243,7 @@ class NumericAxis(_BaseAxis):
 
 
 class TextAxis(_BaseAxis):
-
     tagname = "catAx"
-
     axId = _BaseAxis.axId
     scaling = _BaseAxis.scaling
     delete = _BaseAxis.delete
@@ -310,7 +260,6 @@ class TextAxis(_BaseAxis):
     crossAx = _BaseAxis.crossAx
     crosses = _BaseAxis.crosses
     crossesAt = _BaseAxis.crossesAt
-
     auto = NestedBool(allow_none=True)
     lblAlgn = NestedNoneSet(values=(["ctr", "l", "r"]))
     lblOffset = NestedMinMax(min=0, max=1000)
@@ -318,7 +267,6 @@ class TextAxis(_BaseAxis):
     tickMarkSkip = NestedInteger(allow_none=True)
     noMultiLvlLbl = NestedBool(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = _BaseAxis.__elements__ + (
         "auto",
         "lblAlgn",
@@ -351,9 +299,7 @@ class TextAxis(_BaseAxis):
 
 
 class DateAxis(TextAxis):
-
     tagname = "dateAx"
-
     axId = _BaseAxis.axId
     scaling = _BaseAxis.scaling
     delete = _BaseAxis.delete
@@ -370,7 +316,6 @@ class DateAxis(TextAxis):
     crossAx = _BaseAxis.crossAx
     crosses = _BaseAxis.crosses
     crossesAt = _BaseAxis.crossesAt
-
     auto = NestedBool(allow_none=True)
     lblOffset = NestedInteger(allow_none=True)
     baseTimeUnit = NestedNoneSet(values=(["days", "months", "years"]))
@@ -379,7 +324,6 @@ class DateAxis(TextAxis):
     minorUnit = NestedFloat(allow_none=True)
     minorTimeUnit = NestedNoneSet(values=(["days", "months", "years"]))
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = _BaseAxis.__elements__ + (
         "auto",
         "lblOffset",
@@ -415,9 +359,7 @@ class DateAxis(TextAxis):
 
 
 class SeriesAxis(_BaseAxis):
-
     tagname = "serAx"
-
     axId = _BaseAxis.axId
     scaling = _BaseAxis.scaling
     delete = _BaseAxis.delete
@@ -434,11 +376,9 @@ class SeriesAxis(_BaseAxis):
     crossAx = _BaseAxis.crossAx
     crosses = _BaseAxis.crosses
     crossesAt = _BaseAxis.crossesAt
-
     tickLblSkip = NestedInteger(allow_none=True)
     tickMarkSkip = NestedInteger(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = _BaseAxis.__elements__ + ("tickLblSkip", "tickMarkSkip")
 
     def __init__(self, tickLblSkip=None, tickMarkSkip=None, extLst=None, **kw):

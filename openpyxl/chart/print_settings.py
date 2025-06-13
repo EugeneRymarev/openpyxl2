@@ -1,7 +1,7 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.worksheet.header_footer import HeaderFooter
 from openpyxl.worksheet.page import PrintPageSetup
@@ -13,7 +13,6 @@ class PageMargins(Serialisable):
     """
 
     tagname = "pageMargins"
-
     l = Float()
     left = Alias("l")
     r = Float()
@@ -35,21 +34,13 @@ class PageMargins(Serialisable):
 
 
 class PrintSettings(Serialisable):
-
     tagname = "printSettings"
-
     headerFooter = Typed(expected_type=HeaderFooter, allow_none=True)
     pageMargins = Typed(expected_type=PageMargins, allow_none=True)
     pageSetup = Typed(expected_type=PrintPageSetup, allow_none=True)
-
     __elements__ = ("headerFooter", "pageMargins", "pageMargins")
 
-    def __init__(
-        self,
-        headerFooter=None,
-        pageMargins=None,
-        pageSetup=None,
-    ):
+    def __init__(self, headerFooter=None, pageMargins=None, pageSetup=None):
         self.headerFooter = headerFooter
         self.pageMargins = pageMargins
         self.pageSetup = pageSetup

@@ -1,45 +1,33 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.chart.layout import Layout
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedSet
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .layout import Layout
-from .shapes import GraphicalProperties
-from .text import RichText
 
 
 class LegendEntry(Serialisable):
-
     tagname = "legendEntry"
-
     idx = NestedInteger()
     delete = NestedBool()
     txPr = Typed(expected_type=RichText, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("idx", "delete", "txPr")
 
-    def __init__(
-        self,
-        idx=0,
-        delete=False,
-        txPr=None,
-        extLst=None,
-    ):
+    def __init__(self, idx=0, delete=False, txPr=None, extLst=None):
         self.idx = idx
         self.delete = delete
         self.txPr = txPr
 
 
 class Legend(Serialisable):
-
     tagname = "legend"
-
     legendPos = NestedSet(values=(["b", "tr", "l", "r", "t"]))
     position = Alias("legendPos")
     legendEntry = Sequence(expected_type=LegendEntry)
@@ -50,15 +38,7 @@ class Legend(Serialisable):
     txPr = Typed(expected_type=RichText, allow_none=True)
     textProperties = Alias("txPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
-    __elements__ = (
-        "legendPos",
-        "legendEntry",
-        "layout",
-        "overlay",
-        "spPr",
-        "txPr",
-    )
+    __elements__ = ("legendPos", "legendEntry", "layout", "overlay", "spPr", "txPr")
 
     def __init__(
         self,

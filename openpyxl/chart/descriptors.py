@@ -1,24 +1,20 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.nested import NestedMinMax
-
-from .data_source import NumFmt
-
 """
 Utility descriptors for the chart module.
 For convenience but also clarity.
 """
+from openpyxl.chart.data_source import NumFmt
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.nested import NestedMinMax
 
 
 class NestedGapAmount(NestedMinMax):
-
     allow_none = True
     min = 0
     max = 500
 
 
 class NestedOverlap(NestedMinMax):
-
     allow_none = True
     min = -100
     max = 100

@@ -1,6 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Typed
+from openpyxl.chart.layout import Layout
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
+from openpyxl.chart.text import Text
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.serialisable import Serialisable
@@ -9,15 +13,9 @@ from openpyxl.drawing.text import Paragraph
 from openpyxl.drawing.text import ParagraphProperties
 from openpyxl.drawing.text import RegularTextRun
 
-from .layout import Layout
-from .shapes import GraphicalProperties
-from .text import RichText
-from .text import Text
-
 
 class Title(Serialisable):
     tagname = "title"
-
     tx = Typed(expected_type=Text, allow_none=True)
     text = Alias("tx")
     layout = Typed(expected_type=Layout, allow_none=True)
@@ -27,7 +25,6 @@ class Title(Serialisable):
     txPr = Typed(expected_type=RichText, allow_none=True)
     body = Alias("txPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("tx", "layout", "overlay", "spPr", "txPr")
 
     def __init__(
@@ -54,17 +51,16 @@ def title_maker(text):
     paraprops.defRPr = CharacterProperties()
     paras = [
         Paragraph(
-            r=[RegularTextRun(t=s, rPr=CharacterProperties(sz=1800))], pPr=paraprops
+            r=[RegularTextRun(t=s, rPr=CharacterProperties(sz=1800))],
+            pPr=paraprops,
         )
         for s in text.split("\n")
     ]
-
     title.tx.rich.paragraphs = paras
     return title
 
 
 class TitleDescriptor(Typed):
-
     expected_type = Title
     allow_none = True
 

@@ -1,7 +1,12 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.chart.data_source import NumFmt
+from openpyxl.chart.layout import Layout
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
+from openpyxl.chart.text import Text
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedFloat
@@ -9,17 +14,9 @@ from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedSet
 from openpyxl.descriptors.serialisable import Serialisable
 
-from .data_source import NumFmt
-from .layout import Layout
-from .shapes import GraphicalProperties
-from .text import RichText
-from .text import Text
-
 
 class TrendlineLabel(Serialisable):
-
     tagname = "trendlineLbl"
-
     layout = Typed(expected_type=Layout, allow_none=True)
     tx = Typed(expected_type=Text, allow_none=True)
     numFmt = Typed(expected_type=NumFmt, allow_none=True)
@@ -28,7 +25,6 @@ class TrendlineLabel(Serialisable):
     txPr = Typed(expected_type=RichText, allow_none=True)
     textProperties = Alias("txPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("layout", "tx", "numFmt", "spPr", "txPr")
 
     def __init__(
@@ -48,14 +44,21 @@ class TrendlineLabel(Serialisable):
 
 
 class Trendline(Serialisable):
-
     tagname = "trendline"
-
     name = String(allow_none=True)
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
     trendlineType = NestedSet(
-        values=(["exp", "linear", "log", "movingAvg", "poly", "power"])
+        values=(
+            [
+                "exp",
+                "linear",
+                "log",
+                "movingAvg",
+                "poly",
+                "power",
+            ]
+        )
     )
     order = NestedInteger(allow_none=True)
     period = NestedInteger(allow_none=True)
@@ -66,7 +69,6 @@ class Trendline(Serialisable):
     dispEq = NestedBool(allow_none=True)
     trendlineLbl = Typed(expected_type=TrendlineLabel, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "spPr",
         "trendlineType",

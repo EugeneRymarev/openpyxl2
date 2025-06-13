@@ -1,16 +1,20 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import EmptyTag
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.drawing.colors import ColorChoiceDescriptor
-from openpyxl.drawing.fill import *
+from openpyxl.drawing.fill import GradientFillProperties
+from openpyxl.drawing.fill import PatternFillProperties
 from openpyxl.drawing.geometry import CustomGeometry2D
 from openpyxl.drawing.geometry import PresetGeometry2D
 from openpyxl.drawing.geometry import Scene3D
 from openpyxl.drawing.geometry import Shape3D
 from openpyxl.drawing.geometry import Transform2D
 from openpyxl.drawing.line import LineProperties
+from openpyxl.xml.constants import DRAWING_NS
 
 
 class GraphicalProperties(Serialisable):
@@ -25,7 +29,6 @@ class GraphicalProperties(Serialisable):
     """
 
     tagname = "spPr"
-
     bwMode = NoneSet(
         values=(
             [
@@ -43,25 +46,21 @@ class GraphicalProperties(Serialisable):
             ]
         )
     )
-
     xfrm = Typed(expected_type=Transform2D, allow_none=True)
     transform = Alias("xfrm")
     custGeom = Typed(expected_type=CustomGeometry2D, allow_none=True)  # either or
     prstGeom = Typed(expected_type=PresetGeometry2D, allow_none=True)
-
     # fills one of
     noFill = EmptyTag(namespace=DRAWING_NS)
     solidFill = ColorChoiceDescriptor()
     gradFill = Typed(expected_type=GradientFillProperties, allow_none=True)
     pattFill = Typed(expected_type=PatternFillProperties, allow_none=True)
-
     ln = Typed(expected_type=LineProperties, allow_none=True)
     line = Alias("ln")
     scene3d = Typed(expected_type=Scene3D, allow_none=True)
     sp3d = Typed(expected_type=Shape3D, allow_none=True)
     shape3D = Alias("sp3d")
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     __elements__ = (
         "xfrm",
         "prstGeom",

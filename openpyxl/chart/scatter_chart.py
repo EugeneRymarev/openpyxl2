@@ -1,47 +1,48 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.chart._chart import ChartBase
+from openpyxl.chart.axis import NumericAxis
+from openpyxl.chart.axis import TextAxis
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.series import XYSeries
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedNoneSet
-from openpyxl.descriptors.serialisable import Serialisable
-
-from ._chart import ChartBase
-from .axis import NumericAxis
-from .axis import TextAxis
-from .label import DataLabelList
-from .series import XYSeries
+from openpyxl.descriptors.sequence import Sequence
 
 
 class ScatterChart(ChartBase):
-
     tagname = "scatterChart"
-
     scatterStyle = NestedNoneSet(
-        values=(["line", "lineMarker", "marker", "smooth", "smoothMarker"])
+        values=(
+            [
+                "line",
+                "lineMarker",
+                "marker",
+                "smooth",
+                "smoothMarker",
+            ]
+        )
     )
     varyColors = NestedBool(allow_none=True)
     ser = Sequence(expected_type=XYSeries, allow_none=True)
     dLbls = Typed(expected_type=DataLabelList, allow_none=True)
     dataLabels = Alias("dLbls")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     x_axis = Typed(expected_type=(NumericAxis, TextAxis))
     y_axis = Typed(expected_type=NumericAxis)
-
     _series_type = "scatter"
-
-    __elements__ = (
-        "scatterStyle",
-        "varyColors",
-        "ser",
-        "dLbls",
-        "axId",
-    )
+    __elements__ = ("scatterStyle", "varyColors", "ser", "dLbls", "axId")
 
     def __init__(
-        self, scatterStyle=None, varyColors=None, ser=(), dLbls=None, extLst=None, **kw
+        self,
+        scatterStyle=None,
+        varyColors=None,
+        ser=(),
+        dLbls=None,
+        extLst=None,
+        **kw,
     ):
         self.scatterStyle = scatterStyle
         self.varyColors = varyColors

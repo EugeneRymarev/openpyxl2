@@ -1,17 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
-# from itertools import chain
-# from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.descriptors import MinMax
 from openpyxl.descriptors import Strict
-from openpyxl.descriptors import String
-from openpyxl.utils import get_column_letter
-from openpyxl.utils import quote_sheetname
-from openpyxl.utils import range_to_tuple
-# from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import String
+from openpyxl.utils.cell import get_column_letter
+from openpyxl.utils.cell import quote_sheetname
+from openpyxl.utils.cell import range_to_tuple
 
 
 class DummyWorksheet:
-
     def __init__(self, title):
         self.title = title
 
@@ -40,7 +36,6 @@ class Reference(Strict):
             sheetname, boundaries = range_to_tuple(range_string)
             min_col, min_row, max_col, max_row = boundaries
             worksheet = DummyWorksheet(sheetname)
-
         self.worksheet = worksheet
         self.min_col = min_col
         self.min_row = min_row
@@ -55,16 +50,14 @@ class Reference(Strict):
         return str(self)
 
     def __str__(self):
-        fmt = "{0}!${1}${2}:${3}${4}"
-        if self.min_col == self.max_col and self.min_row == self.max_row:
-            fmt = "{0}!${1}${2}"
-        return fmt.format(
-            self.sheetname,
-            get_column_letter(self.min_col),
-            self.min_row,
-            get_column_letter(self.max_col),
-            self.max_row,
-        )
+        sheetname = self.sheetname
+        min_col = get_column_letter(self.min_col)
+        min_row = self.min_row
+        max_col = get_column_letter(self.max_col)
+        max_row = self.max_row
+        if min_col == max_col and min_row == max_row:
+            return f"{sheetname}!${min_col}${min_row}"
+        return f"{sheetname}!${min_col}${min_row}:${max_col}${max_row}"
 
     __str__ = __str__
 

@@ -1,46 +1,39 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import (
-    ExtensionList,
-)
-from openpyxl.descriptors.nested import (
-    NestedBool,
-)
+from openpyxl.chart._3d import _3DBase
+from openpyxl.chart.area_chart import AreaChart
+from openpyxl.chart.area_chart import AreaChart3D
+from openpyxl.chart.axis import DateAxis
+from openpyxl.chart.axis import NumericAxis
+from openpyxl.chart.axis import SeriesAxis
+from openpyxl.chart.axis import TextAxis
+from openpyxl.chart.bar_chart import BarChart
+from openpyxl.chart.bar_chart import BarChart3D
+from openpyxl.chart.bubble_chart import BubbleChart
+from openpyxl.chart.layout import Layout
+from openpyxl.chart.line_chart import LineChart
+from openpyxl.chart.line_chart import LineChart3D
+from openpyxl.chart.pie_chart import DoughnutChart
+from openpyxl.chart.pie_chart import PieChart
+from openpyxl.chart.pie_chart import PieChart3D
+from openpyxl.chart.pie_chart import ProjectedPieChart
+from openpyxl.chart.radar_chart import RadarChart
+from openpyxl.chart.scatter_chart import ScatterChart
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.stock_chart import StockChart
+from openpyxl.chart.surface_chart import SurfaceChart
+from openpyxl.chart.surface_chart import SurfaceChart3D
+from openpyxl.chart.text import RichText
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.sequence import MultiSequence
 from openpyxl.descriptors.sequence import MultiSequencePart
 from openpyxl.descriptors.serialisable import Serialisable
 
-from ._3d import _3DBase
-from .area_chart import AreaChart
-from .area_chart import AreaChart3D
-from .axis import DateAxis
-from .axis import NumericAxis
-from .axis import SeriesAxis
-from .axis import TextAxis
-from .bar_chart import BarChart
-from .bar_chart import BarChart3D
-from .bubble_chart import BubbleChart
-from .layout import Layout
-from .line_chart import LineChart
-from .line_chart import LineChart3D
-from .pie_chart import DoughnutChart
-from .pie_chart import PieChart
-from .pie_chart import PieChart3D
-from .pie_chart import ProjectedPieChart
-from .radar_chart import RadarChart
-from .scatter_chart import ScatterChart
-from .shapes import GraphicalProperties
-from .stock_chart import StockChart
-from .surface_chart import SurfaceChart
-from .surface_chart import SurfaceChart3D
-from .text import RichText
-
 
 class DataTable(Serialisable):
-
     tagname = "dTable"
-
     showHorzBorder = NestedBool(allow_none=True)
     showVertBorder = NestedBool(allow_none=True)
     showOutline = NestedBool(allow_none=True)
@@ -49,7 +42,6 @@ class DataTable(Serialisable):
     graphicalProperties = Alias("spPr")
     txPr = Typed(expected_type=RichText, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "showHorzBorder",
         "showVertBorder",
@@ -78,15 +70,12 @@ class DataTable(Serialisable):
 
 
 class PlotArea(Serialisable):
-
     tagname = "plotArea"
-
     layout = Typed(expected_type=Layout, allow_none=True)
     dTable = Typed(expected_type=DataTable, allow_none=True)
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     # at least one chart
     _charts = MultiSequence()
     areaChart = MultiSequencePart(expected_type=AreaChart, store="_charts")
@@ -105,14 +94,12 @@ class PlotArea(Serialisable):
     surfaceChart = MultiSequencePart(expected_type=SurfaceChart, store="_charts")
     surface3DChart = MultiSequencePart(expected_type=SurfaceChart3D, store="_charts")
     bubbleChart = MultiSequencePart(expected_type=BubbleChart, store="_charts")
-
     # axes
     _axes = MultiSequence()
     valAx = MultiSequencePart(expected_type=NumericAxis, store="_axes")
     catAx = MultiSequencePart(expected_type=TextAxis, store="_axes")
     dateAx = MultiSequencePart(expected_type=DateAxis, store="_axes")
     serAx = MultiSequencePart(expected_type=SeriesAxis, store="_axes")
-
     __elements__ = ("layout", "_charts", "_axes", "dTable", "spPr")
 
     def __init__(
@@ -137,7 +124,6 @@ class PlotArea(Serialisable):
                 if id not in axIds:
                     setattr(self, axis.tagname, axis)
                     axIds.add(id)
-
         return super().to_tree(tagname)
 
     @classmethod
@@ -150,7 +136,6 @@ class PlotArea(Serialisable):
                 chart.x_axis = x
                 chart.y_axis = y
                 continue
-
             for axId in chart.axId:
                 axis = axes.get(axId)
                 if axis is None and isinstance(chart, _3DBase):
@@ -163,5 +148,4 @@ class PlotArea(Serialisable):
                     chart.y_axis = axis
                 elif axis.tagname == "serAx":
                     chart.z_axis = axis
-
         return self

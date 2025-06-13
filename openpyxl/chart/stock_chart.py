@@ -1,23 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.chart._chart import ChartBase
+from openpyxl.chart.axis import ChartLines
+from openpyxl.chart.axis import NumericAxis
+from openpyxl.chart.axis import TextAxis
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.series import Series
+from openpyxl.chart.updown_bars import UpDownBars
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.serialisable import Serialisable
-
-from ._chart import ChartBase
-from .axis import ChartLines
-from .axis import NumericAxis
-from .axis import TextAxis
-from .label import DataLabelList
-from .series import Series
-from .updown_bars import UpDownBars
+from openpyxl.descriptors.sequence import Sequence
 
 
 class StockChart(ChartBase):
-
     tagname = "stockChart"
-
     ser = Sequence(expected_type=Series)  # min 3, max4
     dLbls = Typed(expected_type=DataLabelList, allow_none=True)
     dataLabels = Alias("dLbls")
@@ -25,12 +21,9 @@ class StockChart(ChartBase):
     hiLowLines = Typed(expected_type=ChartLines, allow_none=True)
     upDownBars = Typed(expected_type=UpDownBars, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     x_axis = Typed(expected_type=TextAxis)
     y_axis = Typed(expected_type=NumericAxis)
-
     _series_type = "line"
-
     __elements__ = ("ser", "dLbls", "dropLines", "hiLowLines", "upDownBars", "axId")
 
     def __init__(

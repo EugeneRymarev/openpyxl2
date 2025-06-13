@@ -1,28 +1,23 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.chart.data_source import AxDataSource
+from openpyxl.chart.data_source import NumDataSource
+from openpyxl.chart.data_source import StrRef
+from openpyxl.chart.error_bar import ErrorBars
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.marker import DataPoint
+from openpyxl.chart.marker import Marker
+from openpyxl.chart.marker import PictureOptions
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.trendline import Trendline
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .data_source import AxDataSource
-from .data_source import NumDataSource
-from .data_source import NumRef
-from .data_source import StrRef
-from .error_bar import ErrorBars
-from .label import DataLabelList
-from .marker import DataPoint
-from .marker import Marker
-from .marker import PictureOptions
-from .shapes import GraphicalProperties
-from .trendline import Trendline
 
 attribute_mapping = {
     "area": (
@@ -103,13 +98,10 @@ attribute_mapping = {
 
 
 class SeriesLabel(Serialisable):
-
     tagname = "tx"
-
     strRef = Typed(expected_type=StrRef, allow_none=True)
     v = NestedText(expected_type=str, allow_none=True)
     value = Alias("v")
-
     __elements__ = ("strRef", "v")
 
     def __init__(self, strRef=None, v=None):
@@ -124,14 +116,12 @@ class Series(Serialisable):
     """
 
     tagname = "ser"
-
     idx = NestedInteger()
     order = NestedInteger()
     tx = Typed(expected_type=SeriesLabel, allow_none=True)
     title = Alias("tx")
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
-
     # area chart
     pictureOptions = Typed(expected_type=PictureOptions, allow_none=True)
     dPt = Sequence(expected_type=DataPoint, allow_none=True)
@@ -144,27 +134,31 @@ class Series(Serialisable):
     identifiers = Alias("cat")
     val = Typed(expected_type=NumDataSource, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     # bar chart
     invertIfNegative = NestedBool(allow_none=True)
     shape = NestedNoneSet(
-        values=(["cone", "coneToMax", "box", "cylinder", "pyramid", "pyramidToMax"])
+        values=(
+            [
+                "cone",
+                "coneToMax",
+                "box",
+                "cylinder",
+                "pyramid",
+                "pyramidToMax",
+            ]
+        )
     )
-
     # bubble chart
     xVal = Typed(expected_type=AxDataSource, allow_none=True)
     yVal = Typed(expected_type=NumDataSource, allow_none=True)
     bubbleSize = Typed(expected_type=NumDataSource, allow_none=True)
     zVal = Alias("bubbleSize")
     bubble3D = NestedBool(allow_none=True)
-
     # line chart
     marker = Typed(expected_type=Marker, allow_none=True)
     smooth = NestedBool(allow_none=True)
-
     # pie chart
     explosion = NestedInteger(allow_none=True)
-
     __elements__ = ()
 
     def __init__(
@@ -232,18 +226,14 @@ class XYSeries(Series):
     order = Series.order
     tx = Series.tx
     spPr = Series.spPr
-
     dPt = Series.dPt
     dLbls = Series.dLbls
     trendline = Series.trendline
     errBars = Series.errBars
     xVal = Series.xVal
     yVal = Series.yVal
-
     invertIfNegative = Series.invertIfNegative
-
     bubbleSize = Series.bubbleSize
     bubble3D = Series.bubble3D
-
     marker = Series.marker
     smooth = Series.smooth

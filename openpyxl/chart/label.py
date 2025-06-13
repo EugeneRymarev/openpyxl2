@@ -1,27 +1,35 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.chart.text import RichText
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.nested import NestedString
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .shapes import GraphicalProperties
-from .text import RichText
 
 
 class _DataLabelBase(Serialisable):
-
     numFmt = NestedString(allow_none=True, attribute="formatCode")
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
     txPr = Typed(expected_type=RichText, allow_none=True)
     textProperties = Alias("txPr")
     dLblPos = NestedNoneSet(
-        values=["bestFit", "b", "ctr", "inBase", "inEnd", "l", "outEnd", "r", "t"]
+        values=[
+            "bestFit",
+            "b",
+            "ctr",
+            "inBase",
+            "inEnd",
+            "l",
+            "outEnd",
+            "r",
+            "t",
+        ]
     )
     position = Alias("dLblPos")
     showLegendKey = NestedBool(allow_none=True)
@@ -33,7 +41,6 @@ class _DataLabelBase(Serialisable):
     showLeaderLines = NestedBool(allow_none=True)
     separator = NestedString(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "numFmt",
         "spPr",
@@ -80,11 +87,8 @@ class _DataLabelBase(Serialisable):
 
 
 class DataLabel(_DataLabelBase):
-
     tagname = "dLbl"
-
     idx = NestedInteger()
-
     numFmt = _DataLabelBase.numFmt
     spPr = _DataLabelBase.spPr
     txPr = _DataLabelBase.txPr
@@ -98,7 +102,6 @@ class DataLabel(_DataLabelBase):
     showLeaderLines = _DataLabelBase.showLeaderLines
     separator = _DataLabelBase.separator
     extLst = _DataLabelBase.extLst
-
     __elements__ = ("idx",) + _DataLabelBase.__elements__
 
     def __init__(self, idx=0, **kw):
@@ -107,11 +110,8 @@ class DataLabel(_DataLabelBase):
 
 
 class DataLabelList(_DataLabelBase):
-
     tagname = "dLbls"
-
     dLbl = Sequence(expected_type=DataLabel, allow_none=True)
-
     delete = NestedBool(allow_none=True)
     numFmt = _DataLabelBase.numFmt
     spPr = _DataLabelBase.spPr
@@ -126,11 +126,7 @@ class DataLabelList(_DataLabelBase):
     showLeaderLines = _DataLabelBase.showLeaderLines
     separator = _DataLabelBase.separator
     extLst = _DataLabelBase.extLst
-
-    __elements__ = (
-        "delete",
-        "dLbl",
-    ) + _DataLabelBase.__elements__
+    __elements__ = ("delete", "dLbl") + _DataLabelBase.__elements__
 
     def __init__(self, dLbl=(), delete=None, **kw):
         self.dLbl = dLbl

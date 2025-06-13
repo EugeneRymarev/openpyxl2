@@ -1,25 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import _explicit_none
+from openpyxl.chart.picture import PictureOptions
+from openpyxl.chart.shapes import GraphicalProperties
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.excel import _explicit_none
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedMinMax
 from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.serialisable import Serialisable
 
-from .error_bar import *
-from .layout import Layout
-from .picture import PictureOptions
-from .shapes import *
-from .text import *
-
 
 class Marker(Serialisable):
-
     tagname = "marker"
-
     symbol = NestedNoneSet(
         values=(
             [
@@ -42,16 +36,9 @@ class Marker(Serialisable):
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("symbol", "size", "spPr")
 
-    def __init__(
-        self,
-        symbol=None,
-        size=None,
-        spPr=None,
-        extLst=None,
-    ):
+    def __init__(self, symbol=None, size=None, spPr=None, extLst=None):
         self.symbol = symbol
         self.size = size
         if spPr is None:
@@ -60,9 +47,7 @@ class Marker(Serialisable):
 
 
 class DataPoint(Serialisable):
-
     tagname = "dPt"
-
     idx = NestedInteger()
     invertIfNegative = NestedBool(allow_none=True)
     marker = Typed(expected_type=Marker, allow_none=True)
@@ -72,7 +57,6 @@ class DataPoint(Serialisable):
     graphicalProperties = Alias("spPr")
     pictureOptions = Typed(expected_type=PictureOptions, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "idx",
         "invertIfNegative",

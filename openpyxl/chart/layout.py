@@ -1,8 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedMinMax
 from openpyxl.descriptors.nested import NestedNoneSet
@@ -11,9 +9,7 @@ from openpyxl.descriptors.serialisable import Serialisable
 
 
 class ManualLayout(Serialisable):
-
     tagname = "manualLayout"
-
     layoutTarget = NestedNoneSet(values=(["inner", "outer"]))
     xMode = NestedNoneSet(values=(["edge", "factor"]))
     yMode = NestedNoneSet(values=(["edge", "factor"]))
@@ -26,7 +22,6 @@ class ManualLayout(Serialisable):
     h = NestedMinMax(min=0, max=1, allow_none=True)
     height = Alias("h")
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "layoutTarget",
         "xMode",
@@ -64,17 +59,10 @@ class ManualLayout(Serialisable):
 
 
 class Layout(Serialisable):
-
     tagname = "layout"
-
     manualLayout = Typed(expected_type=ManualLayout, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("manualLayout",)
 
-    def __init__(
-        self,
-        manualLayout=None,
-        extLst=None,
-    ):
+    def __init__(self, manualLayout=None, extLst=None):
         self.manualLayout = manualLayout
