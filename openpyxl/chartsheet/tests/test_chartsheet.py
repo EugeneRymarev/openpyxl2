@@ -1,71 +1,96 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.chartsheet.views import ChartsheetView
+from openpyxl.chartsheet.views import ChartsheetViewList
 from openpyxl.tests.helper import compare_xml
 from openpyxl.worksheet.drawing import Drawing
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
-from ..views import ChartsheetView
-from ..views import ChartsheetViewList
+
+@pytest.fixture
+def chartsheet():
+    from openpyxl.chartsheet.chartsheet import Chartsheet
+
+    return Chartsheet
 
 
 class DummyWorkbook:
-
     def __init__(self):
         self.sheetnames = []
         self._charts = []
 
 
-@pytest.fixture
-def Chartsheet():
-    from ..chartsheet import Chartsheet
-
-    return Chartsheet
-
-
 class TestChartsheet:
-
-    def test_ctor(self, Chartsheet):
-        cs = Chartsheet(parent=DummyWorkbook())
+    def test_ctor(self, chartsheet):
+        cs = chartsheet(parent=DummyWorkbook())
         assert cs.title == "Chart"
 
-    def test_read(self, Chartsheet):
+    def test_read(self, chartsheet):
         src = """
-        <chartsheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+        <chartsheet
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
             <sheetPr/>
             <sheetViews>
-                <sheetView tabSelected="1" zoomScale="80" workbookViewId="0" zoomToFit="1"/>
+                <sheetView
+                        tabSelected="1"
+                        zoomScale="80"
+                        workbookViewId="0"
+                        zoomToFit="1"/>
             </sheetViews>
-            <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+            <pageMargins
+                    left="0.7"
+                    right="0.7"
+                    top="0.75"
+                    bottom="0.75"
+                    header="0.3"
+                    footer="0.3"/>
             <drawing r:id="rId1"/>
         </chartsheet>
         """
         xml = fromstring(src)
-        chart = Chartsheet.from_tree(xml)
+        chart = chartsheet.from_tree(xml)
         assert chart.pageMargins.left == 0.7
         assert chart.sheetViews.sheetView[0].tabSelected == True
 
-    def test_write(self, Chartsheet):
-
+    def test_write(self, chartsheet):
         sheetview = ChartsheetView(
-            tabSelected=True, zoomScale=80, workbookViewId=0, zoomToFit=True
+            tabSelected=True,
+            zoomScale=80,
+            workbookViewId=0,
+            zoomToFit=True,
         )
         chartsheetViews = ChartsheetViewList(sheetView=[sheetview])
         pageMargins = PageMargins(
-            left=0.7, right=0.7, top=0.75, bottom=0.75, header=0.3, footer=0.3
+            left=0.7,
+            right=0.7,
+            top=0.75,
+            bottom=0.75,
+            header=0.3,
+            footer=0.3,
         )
         drawing = Drawing("rId1")
-        item = Chartsheet(
-            sheetViews=chartsheetViews, pageMargins=pageMargins, drawing=drawing
+        item = chartsheet(
+            sheetViews=chartsheetViews,
+            pageMargins=pageMargins,
+            drawing=drawing,
         )
         expected = """
-        <chartsheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-           xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+        <chartsheet
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
             <sheetViews>
                 <sheetView tabSelected="1" zoomScale="80" workbookViewId="0" zoomToFit="1"/>
             </sheetViews>
-            <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+            <pageMargins
+                    left="0.7"
+                    right="0.7"
+                    top="0.75"
+                    bottom="0.75"
+                    header="0.3"
+                    footer="0.3"/>
             <drawing r:id="rId1"/>
         </chartsheet>
         """
@@ -73,21 +98,20 @@ class TestChartsheet:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_write_charts(self, Chartsheet):
-
+    def test_write_charts(self, chartsheet):
         class DummyChart:
-
             pass
 
-        cs = Chartsheet(parent=DummyWorkbook())
+        cs = chartsheet(parent=DummyWorkbook())
         cs.add_chart(DummyChart())
         expected = """
-        <chartsheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-           xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-           <sheetViews>
-             <sheetView workbookViewId="0" zoomToFit="1"></sheetView>
+        <chartsheet
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+            <sheetViews>
+                <sheetView workbookViewId="0" zoomToFit="1"></sheetView>
             </sheetViews>
-           <drawing r:id="rId1" />
+            <drawing r:id="rId1"/>
         </chartsheet>
         """
         xml = tostring(cs.to_tree())

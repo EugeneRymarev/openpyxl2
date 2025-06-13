@@ -6,56 +6,64 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def ChartsheetView():
-    from ..views import ChartsheetView
+def chartsheet_view():
+    from openpyxl.chartsheet.views import ChartsheetView
 
     return ChartsheetView
 
 
-class TestChartsheetView:
-    def test_read(self, ChartsheetView):
-        src = """
-        <sheetView tabSelected="1" zoomScale="80" workbookViewId="0" zoomToFit="1"/>
-        """
-        xml = fromstring(src)
-        chart = ChartsheetView.from_tree(xml)
-        assert chart.tabSelected == True
-
-    def test_write(self, ChartsheetView):
-        sheetview = ChartsheetView(
-            tabSelected=True, zoomScale=80, workbookViewId=0, zoomToFit=True
-        )
-        expected = """<sheetView tabSelected="1" zoomScale="80" workbookViewId="0" zoomToFit="1"/>"""
-        xml = tostring(sheetview.to_tree())
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-
 @pytest.fixture
-def ChartsheetViewList():
-    from ..views import ChartsheetViewList
+def chartsheet_view_list():
+    from openpyxl.chartsheet.views import ChartsheetViewList
 
     return ChartsheetViewList
 
 
-class TestChartsheetViewList:
+class TestChartsheetView:
+    def test_read(self, chartsheet_view):
+        src = """
+        <sheetView
+                tabSelected="1"
+                zoomScale="80"
+                workbookViewId="0"
+                zoomToFit="1"/>
+        """
+        xml = fromstring(src)
+        chart = chartsheet_view.from_tree(xml)
+        assert chart.tabSelected == True
 
-    def test_read(self, ChartsheetViewList):
+    def test_write(self, chartsheet_view):
+        view = chartsheet_view(
+            tabSelected=True, zoomScale=80, workbookViewId=0, zoomToFit=True,
+        )
+        expected = """
+        <sheetView
+                tabSelected="1"
+                zoomScale="80"
+                workbookViewId="0"
+                zoomToFit="1"/>
+        """
+        xml = tostring(view.to_tree())
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+
+class TestChartsheetViewList:
+    def test_read(self, chartsheet_view_list):
         src = """
         <sheetViews>
             <sheetView tabSelected="1" zoomScale="80" workbookViewId="0" zoomToFit="1"/>
         </sheetViews>
         """
         xml = fromstring(src)
-        views = ChartsheetViewList.from_tree(xml)
+        views = chartsheet_view_list.from_tree(xml)
         assert views.sheetView[0].tabSelected == 1
 
-    def test_write(self, ChartsheetViewList):
-        views = ChartsheetViewList()
-
+    def test_write(self, chartsheet_view_list):
+        views = chartsheet_view_list()
         expected = """
         <sheetViews>
-          <sheetView workbookViewId="0" zoomToFit="1"/>
+            <sheetView workbookViewId="0" zoomToFit="1"/>
         </sheetViews>
         """
         xml = tostring(views.to_tree())

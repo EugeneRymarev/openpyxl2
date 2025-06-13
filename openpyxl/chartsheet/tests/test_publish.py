@@ -6,25 +6,38 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def WebPublishItem():
-    from ..publish import WebPublishItem
+def web_publish_item():
+    from openpyxl.chartsheet.publish import WebPublishItem
 
     return WebPublishItem
 
 
-class TestWebPulishItem:
-    def test_read(self, WebPublishItem):
+@pytest.fixture
+def web_publish_items():
+    from openpyxl.chartsheet.publish import WebPublishItems
+
+    return WebPublishItems
+
+
+class TestWebPublishItem:
+    def test_read(self, web_publish_item):
         src = r"""
-        <webPublishItem id="6433" divId="Views_6433" sourceType="chart" sourceRef=""
-            sourceObject="Chart 1" destinationFile="D:\Publish.mht" autoRepublish="0"/>
+        <webPublishItem
+                id="6433"
+                divId="Views_6433"
+                sourceType="chart"
+                sourceRef=""
+                sourceObject="Chart 1"
+                destinationFile="D:\Publish.mht"
+                autoRepublish="0"/>
         """
         xml = fromstring(src)
-        webPulishItem = WebPublishItem.from_tree(xml)
-        assert webPulishItem.id == 6433
-        assert webPulishItem.sourceObject == "Chart 1"
+        item = web_publish_item.from_tree(xml)
+        assert item.id == 6433
+        assert item.sourceObject == "Chart 1"
 
-    def test_write(self, WebPublishItem):
-        webPublish = WebPublishItem(
+    def test_write(self, web_publish_item):
+        item = web_publish_item(
             id=6433,
             divId="Views_6433",
             sourceType="chart",
@@ -35,38 +48,44 @@ class TestWebPulishItem:
             autoRepublish=False,
         )
         expected = r"""
-        <webPublishItem id="6433" divId="Views_6433" sourceType="chart" sourceRef=""
-        sourceObject="Chart 1" destinationFile="D:\Publish.mht" title="First Chart" autoRepublish="0"/>
+        <webPublishItem
+                id="6433"
+                divId="Views_6433"
+                sourceType="chart"
+                sourceRef=""
+                sourceObject="Chart 1"
+                destinationFile="D:\Publish.mht"
+                title="First Chart"
+                autoRepublish="0"/>
         """
-        xml = tostring(webPublish.to_tree())
+        xml = tostring(item.to_tree())
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
 
-@pytest.fixture
-def WebPublishItems():
-    from ..publish import WebPublishItems
-
-    return WebPublishItems
-
-
 class TestWebPublishItems:
-    def test_read(self, WebPublishItems):
+    def test_read(self, web_publish_items):
         src = r"""
         <webPublishItems count="1">
-            <webPublishItem id="6433" divId="Views_6433" sourceType="chart" sourceRef=""
-            sourceObject="Chart 1" destinationFile="D:\Publish.mht" autoRepublish="0"/>
+            <webPublishItem
+                    id="6433"
+                    divId="Views_6433"
+                    sourceType="chart"
+                    sourceRef=""
+                    sourceObject="Chart 1"
+                    destinationFile="D:\Publish.mht"
+                    autoRepublish="0"/>
         </webPublishItems>
         """
         xml = fromstring(src)
-        webPublishItems = WebPublishItems.from_tree(xml)
-        assert webPublishItems.count == 1
-        assert webPublishItems.webPublishItem[0].sourceObject == "Chart 1"
+        items = web_publish_items.from_tree(xml)
+        assert items.count == 1
+        assert items.webPublishItem[0].sourceObject == "Chart 1"
 
-    def test_write(self, WebPublishItems):
-        from ..publish import WebPublishItem
+    def test_write(self, web_publish_items):
+        from openpyxl.chartsheet.publish import WebPublishItem
 
-        webPublish_6433 = WebPublishItem(
+        item = WebPublishItem(
             id=6433,
             divId="Views_6433",
             sourceType="chart",
@@ -76,7 +95,7 @@ class TestWebPublishItems:
             title="First Chart",
             autoRepublish=False,
         )
-        webPublish_64487 = WebPublishItem(
+        item2 = WebPublishItem(
             id=64487,
             divId="Views_64487",
             sourceType="chart",
@@ -86,17 +105,29 @@ class TestWebPublishItems:
             title="Second Chart",
             autoRepublish=True,
         )
-        webPublishItems = WebPublishItems(
-            webPublishItem=[webPublish_6433, webPublish_64487]
-        )
+        items = web_publish_items(webPublishItem=[item, item2])
         expected = r"""
         <WebPublishItems count="2">
-            <webPublishItem id="6433" divId="Views_6433" sourceType="chart" sourceRef=""
-            sourceObject="Chart 1" destinationFile="D:\Publish.mht" title="First Chart" autoRepublish="0"/>
-            <webPublishItem id="64487" divId="Views_64487" sourceType="chart" sourceRef="Ref_545421"
-            sourceObject="Chart 15" destinationFile="D:\Publish_12.mht" title="Second Chart" autoRepublish="1"/>
+            <webPublishItem
+                    id="6433"
+                    divId="Views_6433"
+                    sourceType="chart"
+                    sourceRef=""
+                    sourceObject="Chart 1"
+                    destinationFile="D:\Publish.mht"
+                    title="First Chart"
+                    autoRepublish="0"/>
+            <webPublishItem
+                    id="64487"
+                    divId="Views_64487"
+                    sourceType="chart"
+                    sourceRef="Ref_545421"
+                    sourceObject="Chart 15"
+                    destinationFile="D:\Publish_12.mht"
+                    title="Second Chart"
+                    autoRepublish="1"/>
         </WebPublishItems>
         """
-        xml = tostring(webPublishItems.to_tree())
+        xml = tostring(items.to_tree())
         diff = compare_xml(xml, expected)
         assert diff is None, diff

@@ -6,36 +6,35 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def ChartsheetProperties():
-    from ..properties import ChartsheetProperties
+def chartsheet_properties():
+    from openpyxl.chartsheet.properties import ChartsheetProperties
 
     return ChartsheetProperties
 
 
 class TestChartsheetPr:
-    def test_read(self, ChartsheetProperties):
+    def test_read(self, chartsheet_properties):
         src = """
         <sheetPr codeName="Chart1">
-          <tabColor rgb="FFDCD8F4" />
+            <tabColor rgb="FFDCD8F4"/>
         </sheetPr>
         """
         xml = fromstring(src)
-        chartsheetPr = ChartsheetProperties.from_tree(xml)
-        assert chartsheetPr.codeName == "Chart1"
-        assert chartsheetPr.tabColor.rgb == "FFDCD8F4"
+        properties = chartsheet_properties.from_tree(xml)
+        assert properties.codeName == "Chart1"
+        assert properties.tabColor.rgb == "FFDCD8F4"
 
-    def test_write(self, ChartsheetProperties):
-        from openpyxl.styles import Color
+    def test_write(self, chartsheet_properties):
+        from openpyxl.styles.colors import Color
 
-        chartsheetPr = ChartsheetProperties()
-        chartsheetPr.codeName = "Chart Openpyxl"
-        tabColor = Color(rgb="FFFFFFF4")
-        chartsheetPr.tabColor = tabColor
+        properties = chartsheet_properties()
+        properties.codeName = "Chart Openpyxl"
+        properties.tabColor = Color(rgb="FFFFFFF4")
         expected = """
         <sheetPr codeName="Chart Openpyxl">
-          <tabColor rgb="FFFFFFF4" />
+            <tabColor rgb="FFFFFFF4"/>
         </sheetPr>
         """
-        xml = tostring(chartsheetPr.to_tree())
+        xml = tostring(properties.to_tree())
         diff = compare_xml(xml, expected)
         assert diff is None, diff

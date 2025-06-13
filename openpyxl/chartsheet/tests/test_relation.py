@@ -6,52 +6,64 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def SheetBackgroundPicture():
-    from ..chartsheet import SheetBackgroundPicture
+def sheet_background_picture():
+    from openpyxl.chartsheet.chartsheet import SheetBackgroundPicture
 
     return SheetBackgroundPicture
 
 
-class TestSheetBackgroundPicture:
-    def test_read(self, SheetBackgroundPicture):
-        src = """
-        <picture r:id="rId5" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" />
-        """
-        xml = fromstring(src)
-        sheetBackgroundPicture = SheetBackgroundPicture.from_tree(xml)
-        assert sheetBackgroundPicture.id == "rId5"
-
-    def test_write(self, SheetBackgroundPicture):
-        sheetBackgroundPicture = SheetBackgroundPicture(id="rId5")
-        expected = """
-        <picture r:id="rId5" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" />
-        """
-        xml = tostring(sheetBackgroundPicture.to_tree())
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-
 @pytest.fixture
-def DrawingHF():
-    from ..chartsheet import DrawingHF
+def drawing_hf():
+    from openpyxl.chartsheet.chartsheet import DrawingHF
 
     return DrawingHF
 
 
-class TestDrawingHF:
-    def test_read(self, DrawingHF):
+class TestSheetBackgroundPicture:
+    def test_read(self, sheet_background_picture):
         src = """
-            <drawingHF lho="7"  lhf="6" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId3"/>
+        <picture
+                r:id="rId5"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
         """
         xml = fromstring(src)
-        drawingHF = DrawingHF.from_tree(xml)
-        assert drawingHF.lho == 7
+        picture = sheet_background_picture.from_tree(xml)
+        assert picture.id == "rId5"
 
-    def test_write(self, DrawingHF):
-        drawingHF = DrawingHF(lho=7, lhf=6, id="rId3")
+    def test_write(self, sheet_background_picture):
+        picture = sheet_background_picture(id="rId5")
         expected = """
-            <drawingHF lho="7" lhf="6" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId3" />
+        <picture
+                r:id="rId5"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
         """
-        xml = tostring(drawingHF.to_tree("drawingHF"))
+        xml = tostring(picture.to_tree())
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+
+class TestDrawingHF:
+    def test_read(self, drawing_hf):
+        src = """
+        <drawingHF
+                lho="7"
+                lhf="6"
+                r:id="rId3"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+        """
+        xml = fromstring(src)
+        drawing = drawing_hf.from_tree(xml)
+        assert drawing.lho == 7
+
+    def test_write(self, drawing_hf):
+        drawing = drawing_hf(lho=7, lhf=6, id="rId3")
+        expected = """
+        <drawingHF
+                lho="7"
+                lhf="6"
+                r:id="rId3"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+        """
+        xml = tostring(drawing.to_tree("drawingHF"))
         diff = compare_xml(xml, expected)
         assert diff is None, diff
