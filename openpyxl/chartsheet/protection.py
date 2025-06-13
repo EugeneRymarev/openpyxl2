@@ -1,24 +1,19 @@
-import hashlib
-
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.excel import Base64Binary
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.worksheet.protection import _Protected
-from openpyxl.worksheet.protection import hash_password
 
 
 class ChartsheetProtection(Serialisable, _Protected):
     tagname = "sheetProtection"
-
     algorithmName = String(allow_none=True)
     hashValue = Base64Binary(allow_none=True)
     saltValue = Base64Binary(allow_none=True)
     spinCount = Integer(allow_none=True)
     content = Bool(allow_none=True)
     objects = Bool(allow_none=True)
-
     __attrs__ = (
         "content",
         "objects",

@@ -1,15 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class WebPublishItem(Serialisable):
     tagname = "webPublishItem"
-
     id = Integer()
     divId = String()
     sourceType = Set(
@@ -55,18 +54,10 @@ class WebPublishItem(Serialisable):
 
 class WebPublishItems(Serialisable):
     tagname = "WebPublishItems"
-
     count = Integer(allow_none=True)
-    webPublishItem = Sequence(
-        expected_type=WebPublishItem,
-    )
-
+    webPublishItem = Sequence(expected_type=WebPublishItem)
     __elements__ = ("webPublishItem",)
 
-    def __init__(
-        self,
-        count=None,
-        webPublishItem=None,
-    ):
+    def __init__(self, count=None, webPublishItem=None):
         self.count = len(webPublishItem)
         self.webPublishItem = webPublishItem

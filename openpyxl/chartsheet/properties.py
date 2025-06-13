@@ -1,26 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.styles import Color
+from openpyxl.styles.colors import Color
 
 
 class ChartsheetProperties(Serialisable):
     tagname = "sheetPr"
-
     published = Bool(allow_none=True)
     codeName = String(allow_none=True)
     tabColor = Typed(expected_type=Color, allow_none=True)
-
     __elements__ = ("tabColor",)
 
-    def __init__(
-        self,
-        published=None,
-        codeName=None,
-        tabColor=None,
-    ):
+    def __init__(self, published=None, codeName=None, tabColor=None):
         self.published = published
         self.codeName = codeName
         self.tabColor = tabColor

@@ -1,10 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import Guid
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.worksheet.header_footer import HeaderFooter
 from openpyxl.worksheet.page import PageMargins
@@ -13,7 +13,6 @@ from openpyxl.worksheet.page import PrintPageSetup
 
 class CustomChartsheetView(Serialisable):
     tagname = "customSheetView"
-
     guid = Guid()
     scale = Integer()
     state = Set(values=(["visible", "hidden", "veryHidden"]))
@@ -21,7 +20,6 @@ class CustomChartsheetView(Serialisable):
     pageMargins = Typed(expected_type=PageMargins, allow_none=True)
     pageSetup = Typed(expected_type=PrintPageSetup, allow_none=True)
     headerFooter = Typed(expected_type=HeaderFooter, allow_none=True)
-
     __elements__ = ("pageMargins", "pageSetup", "headerFooter")
 
     def __init__(
@@ -45,13 +43,8 @@ class CustomChartsheetView(Serialisable):
 
 class CustomChartsheetViews(Serialisable):
     tagname = "customSheetViews"
-
     customSheetView = Sequence(expected_type=CustomChartsheetView, allow_none=True)
-
     __elements__ = ("customSheetView",)
 
-    def __init__(
-        self,
-        customSheetView=None,
-    ):
+    def __init__(self, customSheetView=None):
         self.customSheetView = customSheetView

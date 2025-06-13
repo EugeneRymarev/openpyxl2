@@ -34,7 +34,10 @@ class TestChartsheetView:
 
     def test_write(self, chartsheet_view):
         view = chartsheet_view(
-            tabSelected=True, zoomScale=80, workbookViewId=0, zoomToFit=True,
+            tabSelected=True,
+            zoomScale=80,
+            workbookViewId=0,
+            zoomToFit=True,
         )
         expected = """
         <sheetView
