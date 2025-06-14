@@ -5,6 +5,7 @@ The tokenizer is based on the Javascript tokenizer found at
 http://ewbi.blogs.com/develops/2004/12/excel_formula_p.html written by Eric
 Bachtal
 """
+
 import re
 
 
@@ -118,9 +119,8 @@ class Tokenizer:
         match = regex.match(self.formula[self.offset :])
         if match is None:
             subtype = "string" if delim == '"' else "link"
-            raise TokenizerError(
-                f"Reached end of formula while parsing {subtype} in {self.formula}"
-            )
+            msg = f"Reached end of formula while parsing {subtype} in {self.formula}"
+            raise TokenizerError(msg)
         match = match.group(0)
         if delim == '"':
             self.items.append(Token.make_operand(match))
@@ -137,13 +137,10 @@ class Tokenizer:
 
         """
         assert self.formula[self.offset] == "["
-        lefts = [
-            (t.start(), 1) for t in re.finditer(r"\[", self.formula[self.offset :])
-        ]
-        rights = [
-            (t.start(), -1) for t in re.finditer(r"\]", self.formula[self.offset :])
-        ]
-
+        lefts = re.finditer(r"\[", self.formula[self.offset :])
+        lefts = [(t.start(), 1) for t in lefts]
+        rights = re.finditer(r"\]", self.formula[self.offset :])
+        rights = [(t.start(), -1) for t in rights]
         open_count = 0
         for idx, open_close in sorted(lefts + rights):
             open_count += open_close
@@ -151,7 +148,6 @@ class Tokenizer:
                 outer_right = idx + 1
                 self.token.append(self.formula[self.offset : self.offset + outer_right])
                 return outer_right
-
         raise TokenizerError(f"Encountered unmatched '[' in {self.formula}")
 
     def _parse_error(self):
@@ -170,9 +166,8 @@ class Tokenizer:
                 self.items.append(Token.make_operand("".join(self.token) + err))
                 del self.token[:]
                 return len(err)
-        raise TokenizerError(
-            f"Invalid error code at position {self.offset} in '{self.formula}'"
-        )
+        msg = f"Invalid error code at position {self.offset} in '{self.formula}'"
+        raise TokenizerError(msg)
 
     def _parse_whitespace(self):
         """
@@ -194,9 +189,8 @@ class Tokenizer:
 
         """
         if self.formula[self.offset : self.offset + 2] in (">=", "<=", "<>"):
-            self.items.append(
-                Token(self.formula[self.offset : self.offset + 2], Token.OP_IN)
-            )
+            token = Token(self.formula[self.offset : self.offset + 2], Token.OP_IN)
+            self.items.append(token)
             return 2
         curr_char = self.formula[self.offset]  # guaranteed to be 1 char
         assert curr_char in "%*/^&=><+-"
@@ -209,7 +203,8 @@ class Tokenizer:
             token = Token(curr_char, Token.OP_PRE)
         else:
             prev = next(
-                (i for i in reversed(self.items) if i.type != Token.WSPACE), None
+                (i for i in reversed(self.items) if i.type != Token.WSPACE),
+                None,
             )
             is_infix = prev and (
                 prev.subtype == Token.CLOSE
@@ -256,7 +251,7 @@ class Tokenizer:
         assert self.formula[self.offset] in (")", "}")
         token = self.token_stack.pop().get_closer()
         if token.value != self.formula[self.offset]:
-            raise TokenizerError("Mismatched ( and { pair in '%s'" % self.formula)
+            raise TokenizerError(f"Mismatched ( and {{ pair in '{self.formula}'")
         self.items.append(token)
         return 1
 
@@ -294,11 +289,10 @@ class Tokenizer:
 
         """
         curr_char = self.formula[self.offset]
-        if (
-            curr_char in "+-"
-            and len(self.token) >= 1
-            and self.SN_RE.match("".join(self.token))
-        ):
+        con1 = curr_char in "+-"
+        con2 = len(self.token) >= 1
+        con3 = self.SN_RE.match("".join(self.token))
+        if con1 and con2 and con3:
             self.token.append(curr_char)
             self.offset += 1
             return True
@@ -316,9 +310,8 @@ class Tokenizer:
 
         """
         if self.token and self.token[-1] not in can_follow:
-            raise TokenizerError(
-                f"Unexpected character at position {self.offset} in '{self.formula}'"
-            )
+            msg = f"Unexpected character at position {self.offset} in '{self.formula}'"
+            raise TokenizerError(msg)
 
     def save_token(self):
         """If there's a token being parsed, add it to the item list."""
@@ -349,7 +342,6 @@ class Token:
     """
 
     __slots__ = ["value", "type", "subtype"]
-
     LITERAL = "LITERAL"
     OPERAND = "OPERAND"
     FUNC = "FUNC"
@@ -360,27 +352,43 @@ class Token:
     OP_IN = "OPERATOR-INFIX"
     OP_POST = "OPERATOR-POSTFIX"
     WSPACE = "WHITE-SPACE"
-
-    def __init__(self, value, type_, subtype=""):
-        self.value = value
-        self.type = type_
-        self.subtype = subtype
-
     # Literal operands:
     #
     # Literal operands are always of type 'OPERAND' and can be of subtype
     # 'TEXT' (for text strings), 'NUMBER' (for all numeric types), 'LOGICAL'
     # (for TRUE and FALSE), 'ERROR' (for literal error values), or 'RANGE'
     # (for all range references).
-
     TEXT = "TEXT"
     NUMBER = "NUMBER"
     LOGICAL = "LOGICAL"
     ERROR = "ERROR"
     RANGE = "RANGE"
+    # Subexpresssions
+    #
+    # There are 3 types of `Subexpressions`: functions, array literals, and
+    # parentheticals. Subexpressions have 'OPEN' and 'CLOSE' tokens. 'OPEN'
+    # is used when parsing the initial expression token (i.e., '(' or '{')
+    # and 'CLOSE' is used when parsing the closing expression token ('}' or
+    # ')').
+    OPEN = "OPEN"
+    CLOSE = "CLOSE"
+    # Separator tokens
+    #
+    # Argument separators always have type 'SEP' and can have one of two
+    # subtypes: 'ARG', 'ROW'. 'ARG' is used for the ',' token, when used to
+    # delimit either function arguments or array elements. 'ROW' is used for
+    # the ';' token, which is always used to delimit rows in an array
+    # literal.
+    ARG = "ARG"
+    ROW = "ROW"
+
+    def __init__(self, value, type_, subtype=""):
+        self.value = value
+        self.type = type_
+        self.subtype = subtype
 
     def __repr__(self):
-        return "{0} {1} {2}:".format(self.type, self.subtype, self.value)
+        return f"{self.type} {self.subtype} {self.value}:"
 
     @classmethod
     def make_operand(cls, value):
@@ -398,17 +406,6 @@ class Token:
             except ValueError:
                 subtype = cls.RANGE
         return cls(value, cls.OPERAND, subtype)
-
-    # Subexpresssions
-    #
-    # There are 3 types of `Subexpressions`: functions, array literals, and
-    # parentheticals. Subexpressions have 'OPEN' and 'CLOSE' tokens. 'OPEN'
-    # is used when parsing the initial expression token (i.e., '(' or '{')
-    # and 'CLOSE' is used when parsing the closing expression token ('}' or
-    # ')').
-
-    OPEN = "OPEN"
-    CLOSE = "CLOSE"
 
     @classmethod
     def make_subexp(cls, value, func=False):
@@ -438,17 +435,6 @@ class Token:
         assert self.subtype == self.OPEN
         value = "}" if self.type == self.ARRAY else ")"
         return self.make_subexp(value, func=self.type == self.FUNC)
-
-    # Separator tokens
-    #
-    # Argument separators always have type 'SEP' and can have one of two
-    # subtypes: 'ARG', 'ROW'. 'ARG' is used for the ',' token, when used to
-    # delimit either function arguments or array elements. 'ROW' is used for
-    # the ';' token, which is always used to delimit rows in an array
-    # literal.
-
-    ARG = "ARG"
-    ROW = "ROW"
 
     @classmethod
     def make_separator(cls, value):

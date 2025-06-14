@@ -1,2 +1,2 @@
 # Copyright (c) 2010-2025 openpyxl
-from .tokenizer import Tokenizer
+from openpyxl.formula.tokenizer import Tokenizer
