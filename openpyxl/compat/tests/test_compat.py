@@ -1,5 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
+import decimal
+
 import pytest
+from openpyxl.compat import deprecated
 
 
 @pytest.mark.parametrize(
@@ -14,7 +17,7 @@ import pytest
     ],
 )
 def test_safe_string(value, result):
-    from openpyxl.compat import safe_string
+    from openpyxl.compat.strings import safe_string
 
     assert safe_string(value) == result
     v = safe_string("s")
@@ -23,10 +26,10 @@ def test_safe_string(value, result):
 
 @pytest.mark.numpy_required
 def test_numeric_types():
-    import decimal
-    from ..numbers import NUMERIC_TYPES, numpy
+    from openpyxl.compat.numbers import NUMERIC_TYPES
+    from openpyxl.compat.numbers import numpy
 
-    assert NUMERIC_TYPES == (
+    expected = (
         int,
         float,
         decimal.Decimal,
@@ -59,12 +62,14 @@ def test_numeric_types():
         numpy.floating,
         numpy.integer,
     )
+    assert NUMERIC_TYPES == expected
 
 
 @pytest.mark.numpy_required
 def test_numpy_tostring():
-    from numpy import float64, bool_
-    from .. import safe_string
+    from numpy import bool_
+    from numpy import float64
+    from openpyxl.compat.strings import safe_string
 
     assert safe_string(float64(5.1)) == "5.1"
     assert safe_string(int(5)) == "5"
@@ -73,17 +78,13 @@ def test_numpy_tostring():
 
 @pytest.mark.skipif("sys.version_info[0]>=3")
 def test_safe_repr():
-    from ..strings import safe_repr
+    from openpyxl.compat.strings import safe_repr
 
     s = "D\xfcsseldorf"
     assert safe_repr(s) == s.encode("ascii", "backslashreplace")
 
 
-from .. import deprecated
-
-
 def test_deprecated_function(recwarn):
-
     @deprecated("no way")
     def fn():
         return "Hello world"
@@ -97,10 +98,8 @@ def test_deprecated_function(recwarn):
 
 
 def test_deprecated_class(recwarn):
-
     @deprecated("")
     class Simple:
-
         pass
 
     s = Simple()
@@ -111,9 +110,7 @@ def test_deprecated_class(recwarn):
 
 
 def test_deprecated_method(recwarn):
-
     class Simple:
-
         @deprecated("")
         def do(self):
             return "Nothing"
@@ -127,7 +124,6 @@ def test_deprecated_method(recwarn):
 
 
 def test_no_deprecation_reason():
-
     with pytest.raises(TypeError):
 
         @deprecated
@@ -136,7 +132,6 @@ def test_no_deprecation_reason():
 
 
 def test_product():
-
-    from ..product import prod
+    from openpyxl.compat.product import prod
 
     assert prod((3, 5, 2)) == 30
