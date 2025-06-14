@@ -1,30 +1,22 @@
 # Copyright (c) 2010-2025 openpyxl
-from io import BytesIO
+import io
+
+from openpyxl.descriptors import Strict
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.sequence import Sequence
+from openpyxl.xml.constants import IMAGE_NS
 
 try:
     from PIL import Image as PILImage
 except ImportError:
     PILImage = False
 
-from openpyxl.xml.constants import IMAGE_NS
-from openpyxl.descriptors import (
-    Strict,
-    Typed,
-    Integer,
-    String,
-    Sequence,
-)
-
-from openpyxl.packaging.relationship import Relationship
-
 
 def _import_image(img):
     if not PILImage:
         raise ImportError("You must install Pillow to fetch image objects")
-
     if not isinstance(img, PILImage.Image):
         img = PILImage.open(img)
-
     return img
 
 
@@ -36,18 +28,15 @@ class Image:
     anchor = "A1"
     format = "PNG"
     rel_type = IMAGE_NS
-
     # Also know as Alt Text, but the xml tag refers to 'descr'
     desc = None
 
     def __init__(self, img, desc=None):
-
         self.ref = img
         mark_to_close = isinstance(img, str)
         image = _import_image(img)
         self.width, self.height = image.size
         self.desc = desc
-
         try:
             self.format = image.format
         except AttributeError:
@@ -66,10 +55,9 @@ class Image:
             img.fp.seek(0)
             fp = img.fp
         else:
-            fp = BytesIO()
+            fp = io.BytesIO()
             img.save(fp, format="png")
             fp.seek(0)
-
         data = fp.read()
         fp.close()
         return data

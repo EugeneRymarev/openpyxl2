@@ -1,92 +1,69 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
-from openpyxl.descriptors.nested import EmptyTag
-from openpyxl.descriptors.nested import NestedInteger
-from openpyxl.descriptors.nested import NestedNoneSet
-from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.xml.constants import DRAWING_NS
-
-from .colors import ColorChoiceDescriptor
-from .fill import GradientFillProperties
-from .fill import PatternFillProperties
-
 """
 Line elements from drawing main schema
 """
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.nested import EmptyTag
+from openpyxl.descriptors.nested import NestedInteger
+from openpyxl.descriptors.nested import NestedNoneSet
+from openpyxl.descriptors.sequence import Sequence
+from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.colors import ColorChoiceDescriptor
+from openpyxl.drawing.fill import GradientFillProperties
+from openpyxl.drawing.fill import PatternFillProperties
+from openpyxl.xml.constants import DRAWING_NS
 
 
 class LineEndProperties(Serialisable):
-
     tagname = "end"
     namespace = DRAWING_NS
-
     type = NoneSet(values=(["none", "triangle", "stealth", "diamond", "oval", "arrow"]))
     w = NoneSet(values=(["sm", "med", "lg"]))
     len = NoneSet(values=(["sm", "med", "lg"]))
 
-    def __init__(
-        self,
-        type=None,
-        w=None,
-        len=None,
-    ):
+    def __init__(self, type=None, w=None, len=None):
         self.type = type
         self.w = w
         self.len = len
 
 
 class DashStop(Serialisable):
-
     tagname = "ds"
     namespace = DRAWING_NS
-
     d = Integer()
     length = Alias("d")
     sp = Integer()
     space = Alias("sp")
 
-    def __init__(
-        self,
-        d=0,
-        sp=0,
-    ):
+    def __init__(self, d=0, sp=0):
         self.d = d
         self.sp = sp
 
 
 class DashStopList(Serialisable):
-
     ds = Sequence(expected_type=DashStop, allow_none=True)
 
-    def __init__(
-        self,
-        ds=None,
-    ):
+    def __init__(self, ds=None):
         self.ds = ds
 
 
 class LineProperties(Serialisable):
-
     tagname = "ln"
     namespace = DRAWING_NS
-
     w = MinMax(min=0, max=20116800, allow_none=True)  # EMU
     width = Alias("w")
     cap = NoneSet(values=(["rnd", "sq", "flat"]))
     cmpd = NoneSet(values=(["sng", "dbl", "thickThin", "thinThick", "tri"]))
     algn = NoneSet(values=(["ctr", "in"]))
-
     noFill = EmptyTag()
     solidFill = ColorChoiceDescriptor()
     gradFill = Typed(expected_type=GradientFillProperties, allow_none=True)
     pattFill = Typed(expected_type=PatternFillProperties, allow_none=True)
-
     prstDash = NestedNoneSet(
         values=(
             [
@@ -106,17 +83,13 @@ class LineProperties(Serialisable):
         namespace=namespace,
     )
     dashStyle = Alias("prstDash")
-
     custDash = Typed(expected_type=DashStop, allow_none=True)
-
     round = EmptyTag()
     bevel = EmptyTag()
     miter = NestedInteger(allow_none=True, attribute="lim")
-
     headEnd = Typed(expected_type=LineEndProperties, allow_none=True)
     tailEnd = Typed(expected_type=LineEndProperties, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     __elements__ = (
         "noFill",
         "solidFill",

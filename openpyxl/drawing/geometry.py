@@ -1,75 +1,59 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import Coordinate
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Percentage
 from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.nested import NestedValue
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.colors import PRESET_COLORS
+from openpyxl.drawing.colors import HSLColor
+from openpyxl.drawing.colors import RGBPercent
+from openpyxl.drawing.colors import SchemeColor
+from openpyxl.drawing.colors import SystemColor
 from openpyxl.styles.colors import Color
 from openpyxl.xml.constants import DRAWING_NS
 
-from .colors import ColorChoiceDescriptor
-from .colors import HSLColor
-from .colors import PRESET_COLORS
-from .colors import RGBPercent
-from .colors import SchemeColor
-from .colors import SystemColor
-
 
 class Point2D(Serialisable):
-
     tagname = "off"
     namespace = DRAWING_NS
-
     x = Coordinate()
     y = Coordinate()
 
-    def __init__(
-        self,
-        x=None,
-        y=None,
-    ):
+    def __init__(self, x=None, y=None):
         self.x = x
         self.y = y
 
 
 class PositiveSize2D(Serialisable):
-
-    tagname = "ext"
-    namespace = DRAWING_NS
-
     """
     Dimensions in EMUs
     """
 
+    tagname = "ext"
+    namespace = DRAWING_NS
     cx = Integer()
     width = Alias("cx")
     cy = Integer()
     height = Alias("cy")
 
-    def __init__(
-        self,
-        cx=None,
-        cy=None,
-    ):
+    def __init__(self, cx=None, cy=None):
         self.cx = cx
         self.cy = cy
 
 
 class Transform2D(Serialisable):
-
     tagname = "xfrm"
     namespace = DRAWING_NS
-
     rot = Integer(allow_none=True)
     flipH = Bool(allow_none=True)
     flipV = Bool(allow_none=True)
@@ -77,7 +61,6 @@ class Transform2D(Serialisable):
     ext = Typed(expected_type=PositiveSize2D, allow_none=True)
     chOff = Typed(expected_type=Point2D, allow_none=True)
     chExt = Typed(expected_type=PositiveSize2D, allow_none=True)
-
     __elements__ = ("off", "ext", "chOff", "chExt")
 
     def __init__(
@@ -100,10 +83,8 @@ class Transform2D(Serialisable):
 
 
 class GroupTransform2D(Serialisable):
-
     tagname = "xfrm"
     namespace = DRAWING_NS
-
     rot = Integer(allow_none=True)
     flipH = Bool(allow_none=True)
     flipV = Bool(allow_none=True)
@@ -111,7 +92,6 @@ class GroupTransform2D(Serialisable):
     ext = Typed(expected_type=PositiveSize2D, allow_none=True)
     chOff = Typed(expected_type=Point2D, allow_none=True)
     chExt = Typed(expected_type=PositiveSize2D, allow_none=True)
-
     __elements__ = ("off", "ext", "chOff", "chExt")
 
     def __init__(
@@ -134,28 +114,19 @@ class GroupTransform2D(Serialisable):
 
 
 class SphereCoords(Serialisable):
-
     tagname = "sphereCoords"  # usually
-
     lat = Integer()
     lon = Integer()
     rev = Integer()
 
-    def __init__(
-        self,
-        lat=None,
-        lon=None,
-        rev=None,
-    ):
+    def __init__(self, lat=None, lon=None, rev=None):
         self.lat = lat
         self.lon = lon
         self.rev = rev
 
 
 class Camera(Serialisable):
-
     tagname = "camera"
-
     prst = Set(
         values=[
             "legacyObliqueTopLeft",
@@ -226,13 +197,7 @@ class Camera(Serialisable):
     zoom = Typed(expected_type=Percentage, allow_none=True)
     rot = Typed(expected_type=SphereCoords, allow_none=True)
 
-    def __init__(
-        self,
-        prst=None,
-        fov=None,
-        zoom=None,
-        rot=None,
-    ):
+    def __init__(self, prst=None, fov=None, zoom=None, rot=None):
         self.prst = prst
         self.fov = fov
         self.zoom = zoom
@@ -240,9 +205,7 @@ class Camera(Serialisable):
 
 
 class LightRig(Serialisable):
-
     tagname = "lightRig"
-
     rig = Set(
         values=[
             "legacyFlat1",
@@ -277,75 +240,43 @@ class LightRig(Serialisable):
     dir = Set(values=(["tl", "t", "tr", "l", "r", "bl", "b", "br"]))
     rot = Typed(expected_type=SphereCoords, allow_none=True)
 
-    def __init__(
-        self,
-        rig=None,
-        dir=None,
-        rot=None,
-    ):
+    def __init__(self, rig=None, dir=None, rot=None):
         self.rig = rig
         self.dir = dir
         self.rot = rot
 
 
 class Vector3D(Serialisable):
-
     tagname = "vector"
-
     dx = Integer()  # can be in or universl measure :-/
     dy = Integer()
     dz = Integer()
 
-    def __init__(
-        self,
-        dx=None,
-        dy=None,
-        dz=None,
-    ):
+    def __init__(self, dx=None, dy=None, dz=None):
         self.dx = dx
         self.dy = dy
         self.dz = dz
 
 
 class Point3D(Serialisable):
-
     tagname = "anchor"
-
     x = Integer()
     y = Integer()
     z = Integer()
 
-    def __init__(
-        self,
-        x=None,
-        y=None,
-        z=None,
-    ):
+    def __init__(self, x=None, y=None, z=None):
         self.x = x
         self.y = y
         self.z = z
 
 
 class Backdrop(Serialisable):
+    anchor = Typed(expected_type=Point3D)
+    norm = Typed(expected_type=Vector3D)
+    up = Typed(expected_type=Vector3D)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    anchor = Typed(
-        expected_type=Point3D,
-    )
-    norm = Typed(
-        expected_type=Vector3D,
-    )
-    up = Typed(
-        expected_type=Vector3D,
-    )
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
-    def __init__(
-        self,
-        anchor=None,
-        norm=None,
-        up=None,
-        extLst=None,
-    ):
+    def __init__(self, anchor=None, norm=None, up=None, extLst=None):
         self.anchor = anchor
         self.norm = norm
         self.up = up
@@ -353,23 +284,12 @@ class Backdrop(Serialisable):
 
 
 class Scene3D(Serialisable):
-
-    camera = Typed(
-        expected_type=Camera,
-    )
-    lightRig = Typed(
-        expected_type=LightRig,
-    )
+    camera = Typed(expected_type=Camera)
+    lightRig = Typed(expected_type=LightRig)
     backdrop = Typed(expected_type=Backdrop, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    def __init__(
-        self,
-        camera=None,
-        lightRig=None,
-        backdrop=None,
-        extLst=None,
-    ):
+    def __init__(self, camera=None, lightRig=None, backdrop=None, extLst=None):
         self.camera = camera
         self.lightRig = lightRig
         self.backdrop = backdrop
@@ -377,9 +297,7 @@ class Scene3D(Serialisable):
 
 
 class Bevel(Serialisable):
-
     tagname = "bevel"
-
     w = Integer()
     h = Integer()
     prst = NoneSet(
@@ -399,21 +317,14 @@ class Bevel(Serialisable):
         ]
     )
 
-    def __init__(
-        self,
-        w=None,
-        h=None,
-        prst=None,
-    ):
+    def __init__(self, w=None, h=None, prst=None):
         self.w = w
         self.h = h
         self.prst = prst
 
 
 class Shape3D(Serialisable):
-
     namespace = DRAWING_NS
-
     z = Typed(expected_type=Coordinate, allow_none=True)
     extrusionH = Integer(allow_none=True)
     contourW = Integer(allow_none=True)
@@ -440,7 +351,7 @@ class Shape3D(Serialisable):
     bevelB = Typed(expected_type=Bevel, allow_none=True)
     extrusionClr = Typed(expected_type=Color, allow_none=True)
     contourClr = Typed(expected_type=Color, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
     def __init__(
         self,
@@ -466,21 +377,13 @@ class Shape3D(Serialisable):
 
 
 class Path2D(Serialisable):
-
     w = Float()
     h = Float()
     fill = NoneSet(values=(["norm", "lighten", "lightenLess", "darken", "darkenLess"]))
     stroke = Bool(allow_none=True)
     extrusionOk = Bool(allow_none=True)
 
-    def __init__(
-        self,
-        w=None,
-        h=None,
-        fill=None,
-        stroke=None,
-        extrusionOk=None,
-    ):
+    def __init__(self, w=None, h=None, fill=None, stroke=None, extrusionOk=None):
         self.w = w
         self.h = h
         self.fill = fill
@@ -489,30 +392,19 @@ class Path2D(Serialisable):
 
 
 class Path2DList(Serialisable):
-
     path = Typed(expected_type=Path2D, allow_none=True)
 
-    def __init__(
-        self,
-        path=None,
-    ):
+    def __init__(self, path=None):
         self.path = path
 
 
 class GeomRect(Serialisable):
-
     l = Coordinate()
     t = Coordinate()
     r = Coordinate()
     b = Coordinate()
 
-    def __init__(
-        self,
-        l=None,
-        t=None,
-        r=None,
-        b=None,
-    ):
+    def __init__(self, l=None, t=None, r=None, b=None):
         self.l = l
         self.t = t
         self.r = r
@@ -520,88 +412,58 @@ class GeomRect(Serialisable):
 
 
 class AdjPoint2D(Serialisable):
-
     x = Coordinate()
     y = Coordinate()
 
-    def __init__(
-        self,
-        x=None,
-        y=None,
-    ):
+    def __init__(self, x=None, y=None):
         self.x = x
         self.y = y
 
 
 class ConnectionSite(Serialisable):
-
     ang = MinMax(min=0, max=360)  # guess work, can also be a name
-    pos = Typed(
-        expected_type=AdjPoint2D,
-    )
+    pos = Typed(expected_type=AdjPoint2D)
 
-    def __init__(
-        self,
-        ang=None,
-        pos=None,
-    ):
+    def __init__(self, ang=None, pos=None):
         self.ang = ang
         self.pos = pos
 
 
 class ConnectionSiteList(Serialisable):
-
     cxn = Typed(expected_type=ConnectionSite, allow_none=True)
 
-    def __init__(
-        self,
-        cxn=None,
-    ):
+    def __init__(self, cxn=None):
         self.cxn = cxn
 
 
 class AdjustHandleList(Serialisable):
-
     pass
 
 
 class GeomGuide(Serialisable):
-
     name = String()
     fmla = String()
 
-    def __init__(
-        self,
-        name=None,
-        fmla=None,
-    ):
+    def __init__(self, name=None, fmla=None):
         self.name = name
         self.fmla = fmla
 
 
 class GeomGuideList(Serialisable):
-
     namespace = DRAWING_NS
-
     gd = Typed(expected_type=GeomGuide, allow_none=True)
 
-    def __init__(
-        self,
-        gd=None,
-    ):
+    def __init__(self, gd=None):
         self.gd = gd
 
 
 class CustomGeometry2D(Serialisable):
-
     avLst = Typed(expected_type=GeomGuideList, allow_none=True)
     gdLst = Typed(expected_type=GeomGuideList, allow_none=True)
     ahLst = Typed(expected_type=AdjustHandleList, allow_none=True)
     cxnLst = Typed(expected_type=ConnectionSiteList, allow_none=True)
     # rect = Typed(expected_type=GeomRect, allow_none=True)
-    pathLst = Typed(
-        expected_type=Path2DList,
-    )
+    pathLst = Typed(expected_type=Path2DList)
 
     def __init__(
         self,
@@ -621,9 +483,7 @@ class CustomGeometry2D(Serialisable):
 
 
 class PresetGeometry2D(Serialisable):
-
     namespace = DRAWING_NS
-
     prst = Set(
         values=(
             [
@@ -819,25 +679,18 @@ class PresetGeometry2D(Serialisable):
     )
     avLst = Typed(expected_type=GeomGuideList, allow_none=True)
 
-    def __init__(
-        self,
-        prst=None,
-        avLst=None,
-    ):
+    def __init__(self, prst=None, avLst=None):
         self.prst = prst
         self.avLst = avLst
 
 
 class FontReference(Serialisable):
-
     namespace = DRAWING_NS
-
     idx = NoneSet(values=(["major", "minor"]))
     scrgbClr = Typed(expected_type=RGBPercent, allow_none=True)
     RGBPercent = Alias("scrgbClr")
-    srgbClr = NestedValue(
-        expected_type=str, allow_none=True
-    )  # needs pattern and can have transform
+    # needs pattern and can have transform
+    srgbClr = NestedValue(expected_type=str, allow_none=True)
     RGB = Alias("srgbClr")
     hslClr = Typed(expected_type=HSLColor, allow_none=True)
     sysClr = Typed(expected_type=SystemColor, allow_none=True)
@@ -864,21 +717,17 @@ class FontReference(Serialisable):
 
 
 class StyleMatrixReference(Serialisable):
-
     namespace = DRAWING_NS
-
     idx = Integer()
     scrgbClr = Typed(expected_type=RGBPercent, allow_none=True)
     RGBPercent = Alias("scrgbClr")
-    srgbClr = NestedValue(
-        expected_type=str, allow_none=True
-    )  # needs pattern and can have transform
+    # needs pattern and can have transform
+    srgbClr = NestedValue(expected_type=str, allow_none=True)
     RGB = Alias("srgbClr")
     hslClr = Typed(expected_type=HSLColor, allow_none=True)
     sysClr = Typed(expected_type=SystemColor, allow_none=True)
     schemeClr = Typed(expected_type=SchemeColor, allow_none=True)
     prstClr = NestedNoneSet(values=PRESET_COLORS)
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(
@@ -901,23 +750,14 @@ class StyleMatrixReference(Serialisable):
 
 
 class ShapeStyle(Serialisable):
-
     tagname = "style"
-
     lnRef = Typed(expected_type=StyleMatrixReference)
     fillRef = Typed(expected_type=StyleMatrixReference)
     effectRef = Typed(expected_type=StyleMatrixReference)
     fontRef = Typed(expected_type=FontReference)
-
     __elements__ = ("lnRef", "fillRef", "effectRef", "fontRef")
 
-    def __init__(
-        self,
-        lnRef=None,
-        fillRef=None,
-        effectRef=None,
-        fontRef=None,
-    ):
+    def __init__(self, lnRef=None, fillRef=None, effectRef=None, fontRef=None):
         self.lnRef = lnRef
         self.fillRef = fillRef
         self.effectRef = effectRef

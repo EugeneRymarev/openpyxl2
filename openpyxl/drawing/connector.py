@@ -1,58 +1,41 @@
 # Copyright (c) 2010-2025 openpyxl
 from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.chart.text import RichText
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .geometry import ShapeStyle
-from .properties import NonVisualDrawingProps
-from .properties import NonVisualDrawingShapeProps
+from openpyxl.drawing.geometry import ShapeStyle
+from openpyxl.drawing.properties import NonVisualDrawingProps
+from openpyxl.drawing.properties import NonVisualDrawingShapeProps
 
 
 class Connection(Serialisable):
-
     id = Integer()
     idx = Integer()
 
-    def __init__(
-        self,
-        id=None,
-        idx=None,
-    ):
+    def __init__(self, id=None, idx=None):
         self.id = id
         self.idx = idx
 
 
 class ConnectorLocking(Serialisable):
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
-    def __init__(
-        self,
-        extLst=None,
-    ):
+    def __init__(self, extLst=None):
         self.extLst = extLst
 
 
 class NonVisualConnectorProperties(Serialisable):
-
     cxnSpLocks = Typed(expected_type=ConnectorLocking, allow_none=True)
     stCxn = Typed(expected_type=Connection, allow_none=True)
     endCxn = Typed(expected_type=Connection, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    def __init__(
-        self,
-        cxnSpLocks=None,
-        stCxn=None,
-        endCxn=None,
-        extLst=None,
-    ):
+    def __init__(self, cxnSpLocks=None, stCxn=None, endCxn=None, extLst=None):
         self.cxnSpLocks = cxnSpLocks
         self.stCxn = stCxn
         self.endCxn = endCxn
@@ -60,32 +43,17 @@ class NonVisualConnectorProperties(Serialisable):
 
 
 class ConnectorNonVisual(Serialisable):
+    cNvPr = Typed(expected_type=NonVisualDrawingProps)
+    cNvCxnSpPr = Typed(expected_type=NonVisualConnectorProperties)
+    __elements__ = ("cNvPr", "cNvCxnSpPr")
 
-    cNvPr = Typed(
-        expected_type=NonVisualDrawingProps,
-    )
-    cNvCxnSpPr = Typed(
-        expected_type=NonVisualConnectorProperties,
-    )
-
-    __elements__ = (
-        "cNvPr",
-        "cNvCxnSpPr",
-    )
-
-    def __init__(
-        self,
-        cNvPr=None,
-        cNvCxnSpPr=None,
-    ):
+    def __init__(self, cNvPr=None, cNvCxnSpPr=None):
         self.cNvPr = cNvPr
         self.cNvCxnSpPr = cNvCxnSpPr
 
 
 class ConnectorShape(Serialisable):
-
     tagname = "cxnSp"
-
     nvCxnSpPr = Typed(expected_type=ConnectorNonVisual)
     spPr = Typed(expected_type=GraphicalProperties)
     style = Typed(expected_type=ShapeStyle, allow_none=True)
@@ -108,12 +76,9 @@ class ConnectorShape(Serialisable):
 
 
 class ShapeMeta(Serialisable):
-
     tagname = "nvSpPr"
-
     cNvPr = Typed(expected_type=NonVisualDrawingProps)
     cNvSpPr = Typed(expected_type=NonVisualDrawingShapeProps)
-
     __elements__ = ("cNvPr", "cNvSpPr")
 
     def __init__(self, cNvPr=None, cNvSpPr=None):
@@ -122,9 +87,7 @@ class ShapeMeta(Serialisable):
 
 
 class Shape(Serialisable):
-
     tagname = "sp"
-
     macro = String(allow_none=True)
     textlink = String(allow_none=True)
     fPublished = Bool(allow_none=True)
@@ -135,7 +98,6 @@ class Shape(Serialisable):
     graphicalProperties = Alias("spPr")
     style = Typed(expected_type=ShapeStyle, allow_none=True)
     txBody = Typed(expected_type=RichText, allow_none=True)
-
     __elements__ = ("nvSpPr", "spPr", "style", "txBody")
 
     def __init__(

@@ -1,52 +1,36 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import Relation
-from openpyxl.descriptors.nested import (
-    NestedText,
-)
+from openpyxl.descriptors.nested import NestedText
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .connector import Shape
-from .graphic import GraphicFrame
-from .graphic import GroupShape
-from .picture import PictureFrame
-from .xdr import XDRPoint2D
-from .xdr import XDRPositiveSize2D
+from openpyxl.drawing.connector import Shape
+from openpyxl.drawing.graphic import GraphicFrame
+from openpyxl.drawing.graphic import GroupShape
+from openpyxl.drawing.picture import PictureFrame
+from openpyxl.drawing.xdr import XDRPoint2D
+from openpyxl.drawing.xdr import XDRPositiveSize2D
 
 
 class AnchorClientData(Serialisable):
-
     fLocksWithSheet = Bool(allow_none=True)
     fPrintsWithSheet = Bool(allow_none=True)
 
-    def __init__(
-        self,
-        fLocksWithSheet=None,
-        fPrintsWithSheet=None,
-    ):
+    def __init__(self, fLocksWithSheet=None, fPrintsWithSheet=None):
         self.fLocksWithSheet = fLocksWithSheet
         self.fPrintsWithSheet = fPrintsWithSheet
 
 
 class AnchorMarker(Serialisable):
-
     tagname = "marker"
-
     col = NestedText(expected_type=int)
     colOff = NestedText(expected_type=int)
     row = NestedText(expected_type=int)
     rowOff = NestedText(expected_type=int)
 
-    def __init__(
-        self,
-        col=0,
-        colOff=0,
-        row=0,
-        rowOff=0,
-    ):
+    def __init__(self, col=0, colOff=0, row=0, rowOff=0):
         self.col = col
         self.colOff = colOff
         self.row = row
@@ -54,7 +38,6 @@ class AnchorMarker(Serialisable):
 
 
 class _AnchorBase(Serialisable):
-
     # one of
     sp = Typed(expected_type=Shape, allow_none=True)
     shape = Alias("sp")
@@ -65,9 +48,7 @@ class _AnchorBase(Serialisable):
     connectionShape = Alias("cxnSp")
     pic = Typed(expected_type=PictureFrame, allow_none=True)
     contentPart = Relation()
-
     clientData = Typed(expected_type=AnchorClientData)
-
     __elements__ = (
         "sp",
         "grpSp",
@@ -111,15 +92,13 @@ class _AnchorBase(Serialisable):
             return self.connectionShape
         elif self.shape is not None:
             return self.shape
+        return None
 
 
 class AbsoluteAnchor(_AnchorBase):
-
     tagname = "absoluteAnchor"
-
     pos = Typed(expected_type=XDRPoint2D)
     ext = Typed(expected_type=XDRPositiveSize2D)
-
     sp = _AnchorBase.sp
     grpSp = _AnchorBase.grpSp
     graphicFrame = _AnchorBase.graphicFrame
@@ -127,7 +106,6 @@ class AbsoluteAnchor(_AnchorBase):
     pic = _AnchorBase.pic
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
-
     __elements__ = ("pos", "ext") + _AnchorBase.__elements__
 
     def __init__(self, pos=None, ext=None, **kw):
@@ -141,12 +119,9 @@ class AbsoluteAnchor(_AnchorBase):
 
 
 class OneCellAnchor(_AnchorBase):
-
     tagname = "oneCellAnchor"
-
     _from = Typed(expected_type=AnchorMarker)
     ext = Typed(expected_type=XDRPositiveSize2D)
-
     sp = _AnchorBase.sp
     grpSp = _AnchorBase.grpSp
     graphicFrame = _AnchorBase.graphicFrame
@@ -154,7 +129,6 @@ class OneCellAnchor(_AnchorBase):
     pic = _AnchorBase.pic
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
-
     __elements__ = ("_from", "ext") + _AnchorBase.__elements__
 
     def __init__(self, _from=None, ext=None, **kw):
@@ -168,13 +142,10 @@ class OneCellAnchor(_AnchorBase):
 
 
 class TwoCellAnchor(_AnchorBase):
-
     tagname = "twoCellAnchor"
-
     editAs = NoneSet(values=(["twoCell", "oneCell", "absolute"]))
     _from = Typed(expected_type=AnchorMarker)
     to = Typed(expected_type=AnchorMarker)
-
     sp = _AnchorBase.sp
     grpSp = _AnchorBase.grpSp
     graphicFrame = _AnchorBase.graphicFrame
@@ -182,7 +153,6 @@ class TwoCellAnchor(_AnchorBase):
     pic = _AnchorBase.pic
     contentPart = _AnchorBase.contentPart
     clientData = _AnchorBase.clientData
-
     __elements__ = ("_from", "to") + _AnchorBase.__elements__
 
     def __init__(self, editAs=None, _from=None, to=None, **kw):

@@ -1,22 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.geometry import GroupTransform2D
+from openpyxl.drawing.geometry import Scene3D
+from openpyxl.drawing.text import Hyperlink
 from openpyxl.xml.constants import DRAWING_NS
-
-from .geometry import GroupTransform2D
-from .geometry import Scene3D
-from .text import Hyperlink
 
 
 class GroupShapeProperties(Serialisable):
-
     tagname = "grpSpPr"
-
     bwMode = NoneSet(
         values=(
             [
@@ -36,15 +33,9 @@ class GroupShapeProperties(Serialisable):
     )
     xfrm = Typed(expected_type=GroupTransform2D, allow_none=True)
     scene3d = Typed(expected_type=Scene3D, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
-    def __init__(
-        self,
-        bwMode=None,
-        xfrm=None,
-        scene3d=None,
-        extLst=None,
-    ):
+    def __init__(self, bwMode=None, xfrm=None, scene3d=None, extLst=None):
         self.bwMode = bwMode
         self.xfrm = xfrm
         self.scene3d = scene3d
@@ -52,10 +43,8 @@ class GroupShapeProperties(Serialisable):
 
 
 class GroupLocking(Serialisable):
-
     tagname = "grpSpLocks"
     namespace = DRAWING_NS
-
     noGrp = Bool(allow_none=True)
     noUngrp = Bool(allow_none=True)
     noSelect = Bool(allow_none=True)
@@ -69,7 +58,7 @@ class GroupLocking(Serialisable):
     noChangeArrowheads = Bool(allow_none=True)
     noChangeShapeType = Bool(allow_none=True)
     noTextEdit = Bool(allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
     __elements__ = ()
 
@@ -104,46 +93,29 @@ class GroupLocking(Serialisable):
 
 
 class NonVisualGroupDrawingShapeProps(Serialisable):
-
     tagname = "cNvGrpSpPr"
-
     grpSpLocks = Typed(expected_type=GroupLocking, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     __elements__ = ("grpSpLocks",)
 
-    def __init__(
-        self,
-        grpSpLocks=None,
-        extLst=None,
-    ):
+    def __init__(self, grpSpLocks=None, extLst=None):
         self.grpSpLocks = grpSpLocks
 
 
 class NonVisualDrawingShapeProps(Serialisable):
-
     tagname = "cNvSpPr"
-
     spLocks = Typed(expected_type=GroupLocking, allow_none=True)
     txBox = Bool(allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     __elements__ = ("spLocks",)
 
-    def __init__(
-        self,
-        spLocks=None,
-        txBox=None,
-        extLst=None,
-    ):
+    def __init__(self, spLocks=None, txBox=None, extLst=None):
         self.spLocks = spLocks
         self.txBox = txBox
 
 
 class NonVisualDrawingProps(Serialisable):
-
     tagname = "cNvPr"
-
     id = Integer()
     name = String()
     descr = String(allow_none=True)
@@ -151,8 +123,7 @@ class NonVisualDrawingProps(Serialisable):
     title = String(allow_none=True)
     hlinkClick = Typed(expected_type=Hyperlink, allow_none=True)
     hlinkHover = Typed(expected_type=Hyperlink, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     __elements__ = ("hlinkClick", "hlinkHover")
 
     def __init__(
@@ -177,18 +148,11 @@ class NonVisualDrawingProps(Serialisable):
 
 
 class NonVisualGroupShape(Serialisable):
-
     tagname = "nvGrpSpPr"
-
     cNvPr = Typed(expected_type=NonVisualDrawingProps)
     cNvGrpSpPr = Typed(expected_type=NonVisualGroupDrawingShapeProps)
-
     __elements__ = ("cNvPr", "cNvGrpSpPr")
 
-    def __init__(
-        self,
-        cNvPr=None,
-        cNvGrpSpPr=None,
-    ):
+    def __init__(self, cNvPr=None, cNvGrpSpPr=None):
         self.cNvPr = cNvPr
         self.cNvGrpSpPr = cNvGrpSpPr

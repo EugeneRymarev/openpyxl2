@@ -1,219 +1,146 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.colors import ColorChoice
 from openpyxl.xml.constants import DRAWING_NS
-
-from .colors import ColorChoice
 
 
 class TintEffect(Serialisable):
-
     tagname = "tint"
-
     hue = Integer()
     amt = Integer()
 
-    def __init__(
-        self,
-        hue=0,
-        amt=0,
-    ):
+    def __init__(self, hue=0, amt=0):
         self.hue = hue
         self.amt = amt
 
 
 class LuminanceEffect(Serialisable):
-
     tagname = "lum"
-
     bright = Integer()  # Pct ?
     contrast = Integer()  # Pct#
 
-    def __init__(
-        self,
-        bright=0,
-        contrast=0,
-    ):
+    def __init__(self, bright=0, contrast=0):
         self.bright = bright
         self.contrast = contrast
 
 
 class HSLEffect(Serialisable):
-
     hue = Integer()
     sat = Integer()
     lum = Integer()
 
-    def __init__(
-        self,
-        hue=None,
-        sat=None,
-        lum=None,
-    ):
+    def __init__(self, hue=None, sat=None, lum=None):
         self.hue = hue
         self.sat = sat
         self.lum = lum
 
 
 class GrayscaleEffect(Serialisable):
-
     tagname = "grayscl"
 
 
 class FillOverlayEffect(Serialisable):
-
     blend = Set(values=(["over", "mult", "screen", "darken", "lighten"]))
 
-    def __init__(
-        self,
-        blend=None,
-    ):
+    def __init__(self, blend=None):
         self.blend = blend
 
 
 class DuotoneEffect(Serialisable):
-
     pass
 
 
 class ColorReplaceEffect(Serialisable):
-
     pass
 
 
 class Color(Serialisable):
-
     pass
 
 
 class ColorChangeEffect(Serialisable):
-
     useA = Bool(allow_none=True)
-    clrFrom = Typed(
-        expected_type=Color,
-    )
-    clrTo = Typed(
-        expected_type=Color,
-    )
+    clrFrom = Typed(expected_type=Color)
+    clrTo = Typed(expected_type=Color)
 
-    def __init__(
-        self,
-        useA=None,
-        clrFrom=None,
-        clrTo=None,
-    ):
+    def __init__(self, useA=None, clrFrom=None, clrTo=None):
         self.useA = useA
         self.clrFrom = clrFrom
         self.clrTo = clrTo
 
 
 class BlurEffect(Serialisable):
-
     rad = Float()
     grow = Bool(allow_none=True)
 
-    def __init__(
-        self,
-        rad=None,
-        grow=None,
-    ):
+    def __init__(self, rad=None, grow=None):
         self.rad = rad
         self.grow = grow
 
 
 class BiLevelEffect(Serialisable):
-
     thresh = Integer()
 
-    def __init__(
-        self,
-        thresh=None,
-    ):
+    def __init__(self, thresh=None):
         self.thresh = thresh
 
 
 class AlphaReplaceEffect(Serialisable):
-
     a = Integer()
 
-    def __init__(
-        self,
-        a=None,
-    ):
+    def __init__(self, a=None):
         self.a = a
 
 
 class AlphaModulateFixedEffect(Serialisable):
-
     amt = Integer()
 
-    def __init__(
-        self,
-        amt=None,
-    ):
+    def __init__(self, amt=None):
         self.amt = amt
 
 
 class EffectContainer(Serialisable):
-
     type = Set(values=(["sib", "tree"]))
     name = String(allow_none=True)
 
-    def __init__(
-        self,
-        type=None,
-        name=None,
-    ):
+    def __init__(self, type=None, name=None):
         self.type = type
         self.name = name
 
 
 class AlphaModulateEffect(Serialisable):
+    cont = Typed(expected_type=EffectContainer)
 
-    cont = Typed(
-        expected_type=EffectContainer,
-    )
-
-    def __init__(
-        self,
-        cont=None,
-    ):
+    def __init__(self, cont=None):
         self.cont = cont
 
 
 class AlphaInverseEffect(Serialisable):
-
     pass
 
 
 class AlphaFloorEffect(Serialisable):
-
     pass
 
 
 class AlphaCeilingEffect(Serialisable):
-
     pass
 
 
 class AlphaBiLevelEffect(Serialisable):
-
     thresh = Integer()
 
-    def __init__(
-        self,
-        thresh=None,
-    ):
+    def __init__(self, thresh=None):
         self.thresh = thresh
 
 
 class GlowEffect(ColorChoice):
-
     rad = Float()
     # uses element group EG_ColorChoice
     scrgbClr = ColorChoice.scrgbClr
@@ -222,7 +149,6 @@ class GlowEffect(ColorChoice):
     sysClr = ColorChoice.sysClr
     schemeClr = ColorChoice.schemeClr
     prstClr = ColorChoice.prstClr
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(self, rad=None, **kw):
@@ -231,7 +157,6 @@ class GlowEffect(ColorChoice):
 
 
 class InnerShadowEffect(ColorChoice):
-
     blurRad = Float()
     dist = Float()
     dir = Integer()
@@ -242,7 +167,6 @@ class InnerShadowEffect(ColorChoice):
     sysClr = ColorChoice.sysClr
     schemeClr = ColorChoice.schemeClr
     prstClr = ColorChoice.prstClr
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(self, blurRad=None, dist=None, dir=None, **kw):
@@ -253,9 +177,7 @@ class InnerShadowEffect(ColorChoice):
 
 
 class OuterShadow(ColorChoice):
-
     tagname = "outerShdw"
-
     blurRad = Float(allow_none=True)
     dist = Float(allow_none=True)
     dir = Integer(allow_none=True)
@@ -272,7 +194,6 @@ class OuterShadow(ColorChoice):
     sysClr = ColorChoice.sysClr
     schemeClr = ColorChoice.schemeClr
     prstClr = ColorChoice.prstClr
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(
@@ -301,7 +222,6 @@ class OuterShadow(ColorChoice):
 
 
 class PresetShadowEffect(ColorChoice):
-
     prst = Set(
         values=(
             [
@@ -337,7 +257,6 @@ class PresetShadowEffect(ColorChoice):
     sysClr = ColorChoice.sysClr
     schemeClr = ColorChoice.schemeClr
     prstClr = ColorChoice.prstClr
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(self, prst=None, dist=None, dir=None, **kw):
@@ -348,7 +267,6 @@ class PresetShadowEffect(ColorChoice):
 
 
 class ReflectionEffect(Serialisable):
-
     blurRad = Float()
     stA = Integer()
     stPos = Integer()
@@ -398,20 +316,14 @@ class ReflectionEffect(Serialisable):
 
 
 class SoftEdgesEffect(Serialisable):
-
     rad = Float()
 
-    def __init__(
-        self,
-        rad=None,
-    ):
+    def __init__(self, rad=None):
         self.rad = rad
 
 
 class EffectList(Serialisable):
-
     namespace = DRAWING_NS
-
     blur = Typed(expected_type=BlurEffect, allow_none=True)
     fillOverlay = Typed(expected_type=FillOverlayEffect, allow_none=True)
     glow = Typed(expected_type=GlowEffect, allow_none=True)
@@ -420,7 +332,6 @@ class EffectList(Serialisable):
     prstShdw = Typed(expected_type=PresetShadowEffect, allow_none=True)
     reflection = Typed(expected_type=ReflectionEffect, allow_none=True)
     softEdge = Typed(expected_type=SoftEdgesEffect, allow_none=True)
-
     __elements__ = (
         "blur",
         "fillOverlay",

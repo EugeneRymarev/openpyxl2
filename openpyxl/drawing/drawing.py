@@ -1,6 +1,9 @@
 # Copyright (c) 2010-2025 openpyxl
 import math
 
+from openpyxl.drawing.spreadsheet_drawing import AbsoluteAnchor
+from openpyxl.drawing.spreadsheet_drawing import OneCellAnchor
+from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor
 from openpyxl.utils.units import pixels_to_EMU
 
 
@@ -13,7 +16,6 @@ class Drawing:
     count = 0
 
     def __init__(self):
-
         self.name = ""
         self.description = ""
         self.coordinates = ((1, 2), (16, 8))
@@ -50,10 +52,8 @@ class Drawing:
         self._height = h
 
     def set_dimension(self, w=0, h=0):
-
         xratio = w / self._width
         yratio = h / self._height
-
         if self.resize_proportional and w and h:
             if (xratio * self._height) < h:
                 self._height = math.ceil(xratio * self._height)
@@ -64,19 +64,14 @@ class Drawing:
 
     @property
     def anchor(self):
-        from .spreadsheet_drawing import OneCellAnchor, TwoCellAnchor, AbsoluteAnchor
-
         if self.anchortype == "absolute":
             anchor = AbsoluteAnchor()
             anchor.pos.x = pixels_to_EMU(self.left)
             anchor.pos.y = pixels_to_EMU(self.top)
-
         elif self.anchortype == "oneCell":
             anchor = OneCellAnchor()
             anchor._from.col = self.anchorcol
             anchor._from.row = self.anchorrow
-
         anchor.ext.width = pixels_to_EMU(self._width)
         anchor.ext.height = pixels_to_EMU(self._height)
-
         return anchor

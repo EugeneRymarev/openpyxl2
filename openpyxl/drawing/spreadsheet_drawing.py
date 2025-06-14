@@ -1,28 +1,27 @@
 # Copyright (c) 2010-2025 openpyxl
 from openpyxl.chart._chart import ChartBase
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.anchor import AbsoluteAnchor
+from openpyxl.drawing.anchor import OneCellAnchor
+from openpyxl.drawing.anchor import TwoCellAnchor
+from openpyxl.drawing.anchor import _AnchorBase
+from openpyxl.drawing.fill import Blip
+from openpyxl.drawing.geometry import PresetGeometry2D
+from openpyxl.drawing.graphic import GraphicFrame
+from openpyxl.drawing.graphic import GroupShape
 from openpyxl.drawing.image import Image
 from openpyxl.drawing.image import ImageGroup
+from openpyxl.drawing.picture import PictureFrame
+from openpyxl.drawing.relation import ChartRelation
 from openpyxl.packaging.relationship import Relationship
 from openpyxl.packaging.relationship import RelationshipList
-from openpyxl.utils import coordinate_to_tuple
+from openpyxl.utils.cell import coordinate_to_tuple
 from openpyxl.utils.units import cm_to_EMU
 from openpyxl.utils.units import pixels_to_EMU
 from openpyxl.xml.constants import SHEET_DRAWING_NS
-
-from .anchor import _AnchorBase
-from .anchor import AbsoluteAnchor
-from .anchor import OneCellAnchor
-from .anchor import TwoCellAnchor
-from .fill import Blip
-from .geometry import PresetGeometry2D
-from .graphic import GraphicFrame
-from .graphic import GroupShape
-from .picture import PictureFrame
-from .relation import ChartRelation
 
 
 def _check_anchor(obj):
@@ -49,14 +48,17 @@ class Choice(Serialisable):
     """Markup compatiblity choice"""
 
     tagname = "choice"
-
     twoCellAnchor = Typed(expected_type=TwoCellAnchor, allow_none=True)
     oneCellAnchor = Typed(expected_type=OneCellAnchor, allow_none=True)
     absoluteAnchor = Typed(expected_type=AbsoluteAnchor, allow_none=True)
     Requires = String()
 
     def __init__(
-        self, twoCellAnchor=None, oneCellAnchor=None, absoluteAnchor=None, Requires=None
+        self,
+        twoCellAnchor=None,
+        oneCellAnchor=None,
+        absoluteAnchor=None,
+        Requires=None,
     ):
         self.Requires = Requires
         self.twoCellAnchor = twoCellAnchor
@@ -68,7 +70,6 @@ class AlternateContent(Serialisable):
     """Markup AlternateContent"""
 
     tagname = "AlternateContent"
-
     Choice = Typed(expected_type=Choice)
 
     def __init__(self, Choice=None):
@@ -76,7 +77,6 @@ class AlternateContent(Serialisable):
 
 
 class SpreadsheetDrawing(Serialisable):
-
     tagname = "wsDr"
     mime_type = "application/vnd.openxmlformats-officedocument.drawing+xml"
     _rel_type = (
@@ -84,17 +84,11 @@ class SpreadsheetDrawing(Serialisable):
     )
     _path = PartName = "/xl/drawings/drawing{0}.xml"
     _id = None
-
     twoCellAnchor = Sequence(expected_type=TwoCellAnchor)
     oneCellAnchor = Sequence(expected_type=OneCellAnchor)
     absoluteAnchor = Sequence(expected_type=AbsoluteAnchor)
     AlternateContent = Sequence(expected_type=AlternateContent)
-
-    __elements__ = (
-        "twoCellAnchor",
-        "oneCellAnchor",
-        "absoluteAnchor",
-    )
+    __elements__ = ("twoCellAnchor", "oneCellAnchor", "absoluteAnchor")
 
     def __init__(
         self,
@@ -141,23 +135,19 @@ class SpreadsheetDrawing(Serialisable):
                 anchor.graphicFrame = self._chart_frame(idx, anchor.graphicFrame)
                 if obj.hidden:
                     anchor.graphicFrame.props.non_visual_props.hidden = True
-
             elif isinstance(obj, Image):
                 rel = Relationship(type="image", Target=obj.path)
                 if anchor.pic:
                     child = anchor.pic
                     child.blipFill.blip.embed = f"rId{idx}"
-
                 else:
                     anchor.pic = self._picture_frame(idx, obj.desc)
-
             elif isinstance(obj, ImageGroup):
                 for img, pic in zip(obj.images, anchor.groupShape.pic):
                     rel = Relationship(type="image", Target=img.path)
                     self._rels.append(rel)
                     pic.blipFill.blip.embed = rel.Id
                     rel = None  # reset to stop it being added twice
-
             else:
                 link = getattr(obj.nvSpPr.cNvPr, "hlinkClick")
                 if link:
@@ -168,11 +158,9 @@ class SpreadsheetDrawing(Serialisable):
                         TargetMode=link.mode,
                         Id=f"rId{idx}",
                     )
-
             anchors.append(anchor)
             if rel:
                 self._rels.append(rel)
-
         for a in anchors:
             if isinstance(a, OneCellAnchor):
                 self.oneCellAnchor.append(a)
@@ -180,7 +168,6 @@ class SpreadsheetDrawing(Serialisable):
                 self.twoCellAnchor.append(a)
             else:
                 self.absoluteAnchor.append(a)
-
         tree = self.to_tree()
         tree.set("xmlns", SHEET_DRAWING_NS)
         return tree
@@ -189,7 +176,7 @@ class SpreadsheetDrawing(Serialisable):
         chart_rel = ChartRelation(f"rId{idx}")
         if frame is None:
             frame = GraphicFrame()
-            frame.props.non_visual_props.name = "Chart {0}".format(idx)
+            frame.props.non_visual_props.name = f"Chart {idx}"
         frame.props.non_visual_props.id = idx
         frame.graphic.graphicData.chart = chart_rel
         return frame
@@ -197,14 +184,11 @@ class SpreadsheetDrawing(Serialisable):
     def _picture_frame(self, idx, desc=None):
         pic = PictureFrame()
         pic.nvPicPr.cNvPr.descr = desc
-
         pic.nvPicPr.cNvPr.id = idx
-        pic.nvPicPr.cNvPr.name = "Image {0}".format(idx)
-
+        pic.nvPicPr.cNvPr.name = f"Image {idx}"
         pic.blipFill.blip = Blip()
-        pic.blipFill.blip.embed = "rId{0}".format(idx)
+        pic.blipFill.blip.embed = f"rId{idx}"
         pic.blipFill.blip.cstate = "print"
-
         pic.spPr.prstGeom = PresetGeometry2D(prst="rect")
         pic.spPr.ln = None
         return pic
@@ -241,7 +225,6 @@ class SpreadsheetDrawing(Serialisable):
         """
         rels = []
         anchors = self.absoluteAnchor + self.oneCellAnchor + self.twoCellAnchor
-
         for anchor in anchors:
             child = anchor._content
             if isinstance(child, PictureFrame):
@@ -250,7 +233,6 @@ class SpreadsheetDrawing(Serialisable):
                     img.anchor = anchor
                     img.properties = child.spPr
                     rels.append(img)
-
         return rels
 
     @property
@@ -260,10 +242,8 @@ class SpreadsheetDrawing(Serialisable):
         """
         rels = []
         anchors = self.absoluteAnchor + self.oneCellAnchor + self.twoCellAnchor
-
         for anchor in anchors:
             child = anchor._content
-
             if isinstance(child, GroupShape):
                 group = [anchor]
                 for pic in child.pic:
@@ -271,9 +251,7 @@ class SpreadsheetDrawing(Serialisable):
                     if img is not None:
                         img.properties = pic.spPr
                         group.append(img)
-
                 rels.append(group)
-
         return rels
 
     @property

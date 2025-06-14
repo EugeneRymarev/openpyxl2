@@ -1,10 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import EmptyTag
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedNoneSet
@@ -205,8 +205,6 @@ PRESET_COLORS = [
     "yellow",
     "yellowGreen",
 ]
-
-
 SCHEME_COLORS = [
     "bg1",
     "tx1",
@@ -226,18 +224,29 @@ SCHEME_COLORS = [
     "dk2",
     "lt2",
 ]
+_COLOR_SET = (
+    "dk1",
+    "lt1",
+    "dk2",
+    "lt2",
+    "accent1",
+    "accent2",
+    "accent3",
+    "accent4",
+    "accent5",
+    "accent6",
+    "hlink",
+    "folHlink",
+)
 
 
 class Transform(Serialisable):
-
     pass
 
 
 class SystemColor(Serialisable):
-
     tagname = "sysClr"
     namespace = DRAWING_NS
-
     # color transform options
     tint = NestedInteger(allow_none=True)
     shade = NestedInteger(allow_none=True)
@@ -267,7 +276,6 @@ class SystemColor(Serialisable):
     blueMod = NestedInteger(allow_none=True)
     gamma = Typed(expected_type=Transform, allow_none=True)
     invGamma = Typed(expected_type=Transform, allow_none=True)
-
     val = Set(
         values=(
             [
@@ -305,7 +313,6 @@ class SystemColor(Serialisable):
         )
     )
     lastClr = RGB(allow_none=True)
-
     __elements__ = (
         "tint",
         "shade",
@@ -404,53 +411,35 @@ class SystemColor(Serialisable):
 
 
 class HSLColor(Serialisable):
-
     tagname = "hslClr"
-
     hue = Integer()
     sat = MinMax(min=0, max=100)
     lum = MinMax(min=0, max=100)
 
     # TODO add color transform options
-
-    def __init__(
-        self,
-        hue=None,
-        sat=None,
-        lum=None,
-    ):
+    def __init__(self, hue=None, sat=None, lum=None):
         self.hue = hue
         self.sat = sat
         self.lum = lum
 
 
 class RGBPercent(Serialisable):
-
     tagname = "rgbClr"
     namespace = DRAWING_NS
-
     r = MinMax(min=0, max=100)
     g = MinMax(min=0, max=100)
     b = MinMax(min=0, max=100)
-
     # TODO add color transform options
 
-    def __init__(
-        self,
-        r=None,
-        g=None,
-        b=None,
-    ):
+    def __init__(self, r=None, g=None, b=None):
         self.r = r
         self.g = g
         self.b = b
 
 
 class SchemeColor(Serialisable):
-
     tagname = "schemeClr"
     namespace = DRAWING_NS
-
     tint = NestedInteger(allow_none=True)
     shade = NestedInteger(allow_none=True)
     comp = EmptyTag(allow_none=True)
@@ -502,7 +491,6 @@ class SchemeColor(Serialisable):
             ]
         )
     )
-
     __elements__ = (
         "tint",
         "shade",
@@ -598,21 +586,17 @@ class SchemeColor(Serialisable):
 
 
 class ColorChoice(Serialisable):
-
     tagname = "colorChoice"
     namespace = DRAWING_NS
-
     scrgbClr = Typed(expected_type=RGBPercent, allow_none=True)
     RGBPercent = Alias("scrgbClr")
-    srgbClr = NestedValue(
-        expected_type=str, allow_none=True
-    )  # needs pattern and can have transform
+    # needs pattern and can have transform
+    srgbClr = NestedValue(expected_type=str, allow_none=True)
     RGB = Alias("srgbClr")
     hslClr = Typed(expected_type=HSLColor, allow_none=True)
     sysClr = Typed(expected_type=SystemColor, allow_none=True)
     schemeClr = Typed(expected_type=SchemeColor, allow_none=True)
     prstClr = NestedNoneSet(values=PRESET_COLORS)
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(
@@ -632,26 +616,8 @@ class ColorChoice(Serialisable):
         self.prstClr = prstClr
 
 
-_COLOR_SET = (
-    "dk1",
-    "lt1",
-    "dk2",
-    "lt2",
-    "accent1",
-    "accent2",
-    "accent3",
-    "accent4",
-    "accent5",
-    "accent6",
-    "hlink",
-    "folHlink",
-)
-
-
 class ColorMapping(Serialisable):
-
     tagname = "clrMapOvr"
-
     bg1 = Set(values=_COLOR_SET)
     tx1 = Set(values=_COLOR_SET)
     bg2 = Set(values=_COLOR_SET)
@@ -664,7 +630,7 @@ class ColorMapping(Serialisable):
     accent6 = Set(values=_COLOR_SET)
     hlink = Set(values=_COLOR_SET)
     folHlink = Set(values=_COLOR_SET)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
 
     def __init__(
         self,

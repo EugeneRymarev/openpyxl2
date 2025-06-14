@@ -1,12 +1,9 @@
 # Copyright (c) 2010-2022 openpyxl
 from openpyxl.packaging.relationship import RelationshipList
-from openpyxl.xml.constants import (
-    VML_NS,
-)
+from openpyxl.xml.constants import VML_NS
 
 
 class LegacyDrawing:
-
     mime_type = "application/vnd.openxmlformats-officedocument.vmlDrawing"
     rel_type = VML_NS
     _counter = 0

@@ -1,59 +1,54 @@
 # Copyright (c) 2010-2025 openpyxl
-from io import BytesIO
-from warnings import warn
+"""
+Fill elements from drawing main schema
+"""
+import io
+import warnings
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import Typed
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Percentage
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.nested import NestedValue
 from openpyxl.descriptors.sequence import NestedSequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.colors import PRESET_COLORS
+from openpyxl.drawing.colors import ColorChoice
+from openpyxl.drawing.colors import HSLColor
+from openpyxl.drawing.colors import RGBPercent
+from openpyxl.drawing.colors import SchemeColor
+from openpyxl.drawing.colors import SystemColor
+from openpyxl.drawing.effect import AlphaBiLevelEffect
+from openpyxl.drawing.effect import AlphaCeilingEffect
+from openpyxl.drawing.effect import AlphaFloorEffect
+from openpyxl.drawing.effect import AlphaInverseEffect
+from openpyxl.drawing.effect import AlphaModulateEffect
+from openpyxl.drawing.effect import AlphaModulateFixedEffect
+from openpyxl.drawing.effect import AlphaReplaceEffect
+from openpyxl.drawing.effect import BiLevelEffect
+from openpyxl.drawing.effect import BlurEffect
+from openpyxl.drawing.effect import ColorChangeEffect
+from openpyxl.drawing.effect import ColorReplaceEffect
+from openpyxl.drawing.effect import DuotoneEffect
+from openpyxl.drawing.effect import FillOverlayEffect
+from openpyxl.drawing.effect import GrayscaleEffect
+from openpyxl.drawing.effect import HSLEffect
+from openpyxl.drawing.effect import LuminanceEffect
+from openpyxl.drawing.effect import TintEffect
 from openpyxl.drawing.image import Image
 from openpyxl.xml.constants import DRAWING_NS
 
-from .colors import ColorChoice
-from .colors import HSLColor
-from .colors import PRESET_COLORS
-from .colors import RGBPercent
-from .colors import SchemeColor
-from .colors import SystemColor
-from .effect import AlphaBiLevelEffect
-from .effect import AlphaCeilingEffect
-from .effect import AlphaFloorEffect
-from .effect import AlphaInverseEffect
-from .effect import AlphaModulateEffect
-from .effect import AlphaModulateFixedEffect
-from .effect import AlphaReplaceEffect
-from .effect import BiLevelEffect
-from .effect import BlurEffect
-from .effect import ColorChangeEffect
-from .effect import ColorReplaceEffect
-from .effect import DuotoneEffect
-from .effect import FillOverlayEffect
-from .effect import GrayscaleEffect
-from .effect import HSLEffect
-from .effect import LuminanceEffect
-from .effect import TintEffect
-
-
-"""
-Fill elements from drawing main schema
-"""
-
 
 class PatternFillProperties(Serialisable):
-
     tagname = "pattFill"
     namespace = DRAWING_NS
-
     prst = NoneSet(
         values=(
             [
@@ -119,25 +114,17 @@ class PatternFillProperties(Serialisable):
     foreground = Alias("fgClr")
     bgClr = Typed(expected_type=ColorChoice, allow_none=True)
     background = Alias("bgClr")
-
     __elements__ = ("fgClr", "bgClr")
 
-    def __init__(
-        self,
-        prst=None,
-        fgClr=None,
-        bgClr=None,
-    ):
+    def __init__(self, prst=None, fgClr=None, bgClr=None):
         self.prst = prst
         self.fgClr = fgClr
         self.bgClr = bgClr
 
 
 class RelativeRect(Serialisable):
-
     tagname = "rect"
     namespace = DRAWING_NS
-
     l = Percentage(allow_none=True)
     left = Alias("l")
     t = Percentage(allow_none=True)
@@ -147,13 +134,7 @@ class RelativeRect(Serialisable):
     b = Percentage(allow_none=True)
     bottom = Alias("b")
 
-    def __init__(
-        self,
-        l=None,
-        t=None,
-        r=None,
-        b=None,
-    ):
+    def __init__(self, l=None, t=None, r=None, b=None):
         self.l = l
         self.t = t
         self.r = r
@@ -161,37 +142,28 @@ class RelativeRect(Serialisable):
 
 
 class StretchInfoProperties(Serialisable):
-
     tagname = "stretch"
     namespace = DRAWING_NS
-
     fillRect = Typed(expected_type=RelativeRect, allow_none=True)
 
-    def __init__(
-        self,
-        fillRect=RelativeRect(),
-    ):
+    def __init__(self, fillRect=RelativeRect()):
         self.fillRect = fillRect
 
 
 class GradientStop(Serialisable):
-
     tagname = "gs"
     namespace = DRAWING_NS
-
     pos = MinMax(min=0, max=100000, allow_none=True)
     # Color Choice Group
     scrgbClr = Typed(expected_type=RGBPercent, allow_none=True)
     RGBPercent = Alias("scrgbClr")
-    srgbClr = NestedValue(
-        expected_type=str, allow_none=True
-    )  # needs pattern and can have transform
+    # needs pattern and can have transform
+    srgbClr = NestedValue(expected_type=str, allow_none=True)
     RGB = Alias("srgbClr")
     hslClr = Typed(expected_type=HSLColor, allow_none=True)
     sysClr = Typed(expected_type=SystemColor, allow_none=True)
     schemeClr = Typed(expected_type=SchemeColor, allow_none=True)
     prstClr = NestedNoneSet(values=PRESET_COLORS)
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(
@@ -207,7 +179,6 @@ class GradientStop(Serialisable):
         if pos is None:
             pos = 0
         self.pos = pos
-
         self.scrgbClr = scrgbClr
         self.srgbClr = srgbClr
         self.hslClr = hslClr
@@ -217,56 +188,38 @@ class GradientStop(Serialisable):
 
 
 class LinearShadeProperties(Serialisable):
-
     tagname = "lin"
     namespace = DRAWING_NS
-
     ang = Integer()
     scaled = Bool(allow_none=True)
 
-    def __init__(
-        self,
-        ang=None,
-        scaled=None,
-    ):
+    def __init__(self, ang=None, scaled=None):
         self.ang = ang
         self.scaled = scaled
 
 
 class PathShadeProperties(Serialisable):
-
     tagname = "path"
     namespace = DRAWING_NS
-
     path = Set(values=(["shape", "circle", "rect"]))
     fillToRect = Typed(expected_type=RelativeRect, allow_none=True)
 
-    def __init__(
-        self,
-        path=None,
-        fillToRect=None,
-    ):
+    def __init__(self, path=None, fillToRect=None):
         self.path = path
         self.fillToRect = fillToRect
 
 
 class GradientFillProperties(Serialisable):
-
     tagname = "gradFill"
     namespace = DRAWING_NS
-
     flip = NoneSet(values=(["x", "y", "xy"]))
     rotWithShape = Bool(allow_none=True)
-
     gsLst = NestedSequence(expected_type=GradientStop, count=False)
     stop_list = Alias("gsLst")
-
     lin = Typed(expected_type=LinearShadeProperties, allow_none=True)
     linear = Alias("lin")
     path = Typed(expected_type=PathShadeProperties, allow_none=True)
-
     tileRect = Typed(expected_type=RelativeRect, allow_none=True)
-
     __elements__ = ("gsLst", "lin", "path", "tileRect")
 
     def __init__(
@@ -287,21 +240,17 @@ class GradientFillProperties(Serialisable):
 
 
 class SolidColorFillProperties(Serialisable):
-
     tagname = "solidFill"
-
     # uses element group EG_ColorChoice
     scrgbClr = Typed(expected_type=RGBPercent, allow_none=True)
     RGBPercent = Alias("scrgbClr")
-    srgbClr = NestedValue(
-        expected_type=str, allow_none=True
-    )  # needs pattern and can have transform
+    # needs pattern and can have transform
+    srgbClr = NestedValue(expected_type=str, allow_none=True)
     RGB = Alias("srgbClr")
     hslClr = Typed(expected_type=HSLColor, allow_none=True)
     sysClr = Typed(expected_type=SystemColor, allow_none=True)
     schemeClr = Typed(expected_type=SchemeColor, allow_none=True)
     prstClr = NestedNoneSet(values=PRESET_COLORS)
-
     __elements__ = ("scrgbClr", "srgbClr", "hslClr", "sysClr", "schemeClr", "prstClr")
 
     def __init__(
@@ -322,11 +271,9 @@ class SolidColorFillProperties(Serialisable):
 
 
 class Blip(Serialisable):
-
     tagname = "blip"
     namespace = DRAWING_NS
     blob = None
-
     # Using attribute groupAG_Blob
     cstate = NoneSet(values=(["email", "screen", "print", "hqprint"]))
     embed = Relation()  # rId
@@ -342,7 +289,7 @@ class Blip(Serialisable):
     noChangeArrowheads = Bool(allow_none=True)
     noChangeShapeType = Bool(allow_none=True)
     # some elements are choice
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     alphaBiLevel = Typed(expected_type=AlphaBiLevelEffect, allow_none=True)
     alphaCeiling = Typed(expected_type=AlphaCeilingEffect, allow_none=True)
     alphaFloor = Typed(expected_type=AlphaFloorEffect, allow_none=True)
@@ -360,7 +307,6 @@ class Blip(Serialisable):
     hsl = Typed(expected_type=HSLEffect, allow_none=True)
     lum = Typed(expected_type=LuminanceEffect, allow_none=True)
     tint = Typed(expected_type=TintEffect, allow_none=True)
-
     __elements__ = (
         "alphaBiLevel",
         "alphaCeiling",
@@ -452,20 +398,21 @@ class Blip(Serialisable):
         if self.embed is not None:
             rel = rels.get(self.embed)
             src = archive.read(rel.target)
-            data = BytesIO(src)
+            data = io.BytesIO(src)
             try:
                 img = Image(data)
             except OSError:
-                msg = "The image {0} will be removed because it cannot be read".format(
-                    rel.target
+                msg = (
+                    f"The image {rel.target} will be "
+                    "removed because it cannot be read"
                 )
-                warn(msg)
-                return
+                warnings.warn(msg)
+                return None
             return img
+        return None
 
 
 class TileInfoProperties(Serialisable):
-
     tx = Integer(allow_none=True)
     ty = Integer(allow_none=True)
     sx = Integer(allow_none=True)
@@ -473,15 +420,7 @@ class TileInfoProperties(Serialisable):
     flip = NoneSet(values=(["x", "y", "xy"]))
     algn = Set(values=(["tl", "t", "tr", "l", "ctr", "r", "bl", "b", "br"]))
 
-    def __init__(
-        self,
-        tx=None,
-        ty=None,
-        sx=None,
-        sy=None,
-        flip=None,
-        algn=None,
-    ):
+    def __init__(self, tx=None, ty=None, sx=None, sy=None, flip=None, algn=None):
         self.tx = tx
         self.ty = ty
         self.sx = sx
@@ -491,17 +430,13 @@ class TileInfoProperties(Serialisable):
 
 
 class BlipFillProperties(Serialisable):
-
     tagname = "blipFill"
-
     dpi = Integer(allow_none=True)
     rotWithShape = Bool(allow_none=True)
-
     blip = Typed(expected_type=Blip, allow_none=True)
     srcRect = Typed(expected_type=RelativeRect, allow_none=True)
     tile = Typed(expected_type=TileInfoProperties, allow_none=True)
     stretch = Typed(expected_type=StretchInfoProperties, allow_none=True)
-
     __elements__ = ("blip", "srcRect", "tile", "stretch")
 
     def __init__(

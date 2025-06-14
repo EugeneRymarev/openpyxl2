@@ -1,15 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import Coordinate
-from openpyxl.descriptors.excel import ExtensionList as OfficeArtExtensionList
+from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import HexBinary
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.nested import EmptyTag
@@ -17,33 +16,25 @@ from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedText
 from openpyxl.descriptors.nested import NestedValue
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.drawing.colors import ColorChoiceDescriptor
+from openpyxl.drawing.geometry import Color
+from openpyxl.drawing.geometry import Scene3D
+from openpyxl.drawing.line import LineProperties
 from openpyxl.xml.constants import DRAWING_NS
-
-from .colors import ColorChoiceDescriptor
-from .effect import *
-from .fill import *
-from .geometry import Color
-from .geometry import Scene3D
-from .line import LineProperties
 
 
 class EmbeddedWAVAudioFile(Serialisable):
-
     name = String(allow_none=True)
 
-    def __init__(
-        self,
-        name=None,
-    ):
+    def __init__(self, name=None):
         self.name = name
 
 
 class Hyperlink(Serialisable):
-
     tagname = "hlinkClick"
     namespace = DRAWING_NS
-
     invalidUrl = String(allow_none=True)
     action = String(allow_none=True)
     tgtFrame = String(allow_none=True)
@@ -52,12 +43,10 @@ class Hyperlink(Serialisable):
     highlightClick = Bool(allow_none=True)
     endSnd = Bool(allow_none=True)
     snd = Typed(expected_type=EmbeddedWAVAudioFile, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     id = Relation(allow_none=True)
-
     target = ""  # somewhere to store the URL
     mode = ""
-
     __elements__ = ("snd",)
 
     def __init__(
@@ -85,22 +74,14 @@ class Hyperlink(Serialisable):
 
 
 class Font(Serialisable):
-
     tagname = "latin"
     namespace = DRAWING_NS
-
     typeface = String()
     panose = HexBinary(allow_none=True)
     pitchFamily = MinMax(min=0, max=52, allow_none=True)
     charset = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        typeface=None,
-        panose=None,
-        pitchFamily=None,
-        charset=None,
-    ):
+    def __init__(self, typeface=None, panose=None, pitchFamily=None, charset=None):
         self.typeface = typeface
         self.panose = panose
         self.pitchFamily = pitchFamily
@@ -108,10 +89,8 @@ class Font(Serialisable):
 
 
 class CharacterProperties(Serialisable):
-
     tagname = "defRPr"
     namespace = DRAWING_NS
-
     kumimoji = Bool(allow_none=True)
     lang = String(allow_none=True)
     altLang = String(allow_none=True)
@@ -162,7 +141,7 @@ class CharacterProperties(Serialisable):
     hlinkClick = Typed(expected_type=Hyperlink, allow_none=True)
     hlinkMouseOver = Typed(expected_type=Hyperlink, allow_none=True)
     rtl = NestedBool(allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     # uses element group EG_FillProperties
     noFill = EmptyTag(namespace=DRAWING_NS)
     solidFill = ColorChoiceDescriptor()
@@ -179,7 +158,6 @@ class CharacterProperties(Serialisable):
     # uses element group EG_TextUnderlineFill
     uFillTx = EmptyTag()
     uFill = EmptyTag()
-
     __elements__ = (
         "ln",
         "noFill",
@@ -291,48 +269,32 @@ class CharacterProperties(Serialisable):
 
 
 class TabStop(Serialisable):
-
     pos = Typed(expected_type=Coordinate, allow_none=True)
     algn = Typed(expected_type=Set(values=(["l", "ctr", "r", "dec"])))
 
-    def __init__(
-        self,
-        pos=None,
-        algn=None,
-    ):
+    def __init__(self, pos=None, algn=None):
         self.pos = pos
         self.algn = algn
 
 
 class TabStopList(Serialisable):
-
     tab = Typed(expected_type=TabStop, allow_none=True)
 
-    def __init__(
-        self,
-        tab=None,
-    ):
+    def __init__(self, tab=None):
         self.tab = tab
 
 
 class Spacing(Serialisable):
-
     spcPct = NestedInteger(allow_none=True)
     spcPts = NestedInteger(allow_none=True)
-
     __elements__ = ("spcPct", "spcPts")
 
-    def __init__(
-        self,
-        spcPct=None,
-        spcPts=None,
-    ):
+    def __init__(self, spcPct=None, spcPts=None):
         self.spcPct = spcPct
         self.spcPts = spcPts
 
 
 class AutonumberBullet(Serialisable):
-
     type = Set(
         values=(
             [
@@ -382,20 +344,14 @@ class AutonumberBullet(Serialisable):
     )
     startAt = Integer()
 
-    def __init__(
-        self,
-        type=None,
-        startAt=None,
-    ):
+    def __init__(self, type=None, startAt=None):
         self.type = type
         self.startAt = startAt
 
 
 class ParagraphProperties(Serialisable):
-
     tagname = "pPr"
     namespace = DRAWING_NS
-
     marL = Integer(allow_none=True)
     marR = Integer(allow_none=True)
     lvl = Integer(allow_none=True)
@@ -407,7 +363,6 @@ class ParagraphProperties(Serialisable):
     fontAlgn = NoneSet(values=(["auto", "t", "ctr", "base", "b"]))
     latinLnBrk = Bool(allow_none=True)
     hangingPunct = Bool(allow_none=True)
-
     # uses element group EG_TextBulletColor
     # uses element group EG_TextBulletSize
     # uses element group EG_TextBulletTypeface
@@ -417,7 +372,7 @@ class ParagraphProperties(Serialisable):
     spcAft = Typed(expected_type=Spacing, allow_none=True)
     tabLst = Typed(expected_type=TabStopList, allow_none=True)
     defRPr = Typed(expected_type=CharacterProperties, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     buClrTx = EmptyTag()
     buClr = Typed(expected_type=Color, allow_none=True)
     buSzTx = EmptyTag()
@@ -429,7 +384,6 @@ class ParagraphProperties(Serialisable):
     buAutoNum = EmptyTag()
     buChar = NestedValue(expected_type=str, attribute="char", allow_none=True)
     buBlip = NestedValue(expected_type=Blip, attribute="blip", allow_none=True)
-
     __elements__ = (
         "lnSpc",
         "spcBef",
@@ -511,10 +465,8 @@ class ParagraphProperties(Serialisable):
 
 
 class ListStyle(Serialisable):
-
     tagname = "lstStyle"
     namespace = DRAWING_NS
-
     defPPr = Typed(expected_type=ParagraphProperties, allow_none=True)
     lvl1pPr = Typed(expected_type=ParagraphProperties, allow_none=True)
     lvl2pPr = Typed(expected_type=ParagraphProperties, allow_none=True)
@@ -525,8 +477,7 @@ class ListStyle(Serialisable):
     lvl7pPr = Typed(expected_type=ParagraphProperties, allow_none=True)
     lvl8pPr = Typed(expected_type=ParagraphProperties, allow_none=True)
     lvl9pPr = Typed(expected_type=ParagraphProperties, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
-
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     __elements__ = (
         "defPPr",
         "lvl1pPr",
@@ -567,60 +518,38 @@ class ListStyle(Serialisable):
 
 
 class RegularTextRun(Serialisable):
-
     tagname = "r"
     namespace = DRAWING_NS
-
     rPr = Typed(expected_type=CharacterProperties, allow_none=True)
     properties = Alias("rPr")
     t = NestedText(expected_type=str)
     value = Alias("t")
-
     __elements__ = ("rPr", "t")
 
-    def __init__(
-        self,
-        rPr=None,
-        t="",
-    ):
+    def __init__(self, rPr=None, t=""):
         self.rPr = rPr
         self.t = t
 
 
 class LineBreak(Serialisable):
-
     tagname = "br"
     namespace = DRAWING_NS
-
     rPr = Typed(expected_type=CharacterProperties, allow_none=True)
-
     __elements__ = ("rPr",)
 
-    def __init__(
-        self,
-        rPr=None,
-    ):
+    def __init__(self, rPr=None):
         self.rPr = rPr
 
 
 class TextField(Serialisable):
-
     id = String()
     type = String(allow_none=True)
     rPr = Typed(expected_type=CharacterProperties, allow_none=True)
     pPr = Typed(expected_type=ParagraphProperties, allow_none=True)
     t = String(allow_none=True)
-
     __elements__ = ("rPr", "pPr")
 
-    def __init__(
-        self,
-        id=None,
-        type=None,
-        rPr=None,
-        pPr=None,
-        t=None,
-    ):
+    def __init__(self, id=None, type=None, rPr=None, pPr=None, t=None):
         self.id = id
         self.type = type
         self.rPr = rPr
@@ -629,10 +558,8 @@ class TextField(Serialisable):
 
 
 class Paragraph(Serialisable):
-
     tagname = "p"
     namespace = DRAWING_NS
-
     # uses element group EG_TextRun
     pPr = Typed(expected_type=ParagraphProperties, allow_none=True)
     properties = Alias("pPr")
@@ -641,17 +568,9 @@ class Paragraph(Serialisable):
     text = Alias("r")
     br = Typed(expected_type=LineBreak, allow_none=True)
     fld = Typed(expected_type=TextField, allow_none=True)
-
     __elements__ = ("pPr", "r", "br", "fld", "endParaRPr")
 
-    def __init__(
-        self,
-        pPr=None,
-        endParaRPr=None,
-        r=None,
-        br=None,
-        fld=None,
-    ):
+    def __init__(self, pPr=None, endParaRPr=None, r=None, br=None, fld=None):
         self.pPr = pPr
         self.endParaRPr = endParaRPr
         if r is None:
@@ -662,34 +581,23 @@ class Paragraph(Serialisable):
 
 
 class GeomGuide(Serialisable):
-
     name = String(())
     fmla = String(())
 
-    def __init__(
-        self,
-        name=None,
-        fmla=None,
-    ):
+    def __init__(self, name=None, fmla=None):
         self.name = name
         self.fmla = fmla
 
 
 class GeomGuideList(Serialisable):
-
     gd = Sequence(expected_type=GeomGuide, allow_none=True)
-
     __elements__ = ("gd",)
 
-    def __init__(
-        self,
-        gd=(),
-    ):
+    def __init__(self, gd=()):
         self.gd = gd
 
 
 class PresetTextShape(Serialisable):
-
     prst = Set(
         values=(
             [
@@ -738,37 +646,25 @@ class PresetTextShape(Serialisable):
         )
     )
     avLst = Typed(expected_type=GeomGuideList, allow_none=True)
-
     __elements__ = ("avLst",)
 
-    def __init__(
-        self,
-        prst=None,
-        avLst=None,
-    ):
+    def __init__(self, prst=None, avLst=None):
         self.prst = prst
         self.avLst = avLst
 
 
 class TextNormalAutofit(Serialisable):
-
     fontScale = Integer()
     lnSpcReduction = Integer()
 
-    def __init__(
-        self,
-        fontScale=None,
-        lnSpcReduction=None,
-    ):
+    def __init__(self, fontScale=None, lnSpcReduction=None):
         self.fontScale = fontScale
         self.lnSpcReduction = lnSpcReduction
 
 
 class RichTextProperties(Serialisable):
-
     tagname = "bodyPr"
     namespace = DRAWING_NS
-
     rot = Integer(allow_none=True)
     spcFirstLastPara = Bool(allow_none=True)
     vertOverflow = NoneSet(values=(["overflow", "ellipsis", "clip"]))
@@ -802,12 +698,11 @@ class RichTextProperties(Serialisable):
     compatLnSpc = Bool(allow_none=True)
     prstTxWarp = Typed(expected_type=PresetTextShape, allow_none=True)
     scene3d = Typed(expected_type=Scene3D, allow_none=True)
-    extLst = Typed(expected_type=OfficeArtExtensionList, allow_none=True)
+    extLst = Typed(expected_type=ExtensionList, allow_none=True)
     noAutofit = EmptyTag()
     normAutofit = EmptyTag()
     spAutoFit = EmptyTag()
     flatTx = NestedInteger(attribute="z", allow_none=True)
-
     __elements__ = ("prstTxWarp", "scene3d", "noAutofit", "normAutofit", "spAutoFit")
 
     def __init__(
