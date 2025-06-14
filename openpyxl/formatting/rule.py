@@ -1,13 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.styles.colors import Color
 from openpyxl.styles.colors import ColorDescriptor
@@ -34,37 +34,25 @@ class ValueDescriptor(Float):
 
 
 class FormatObject(Serialisable):
-
     tagname = "cfvo"
-
     type = Set(values=(["num", "percent", "max", "min", "formula", "percentile"]))
     val = ValueDescriptor(allow_none=True)
     gte = Bool(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
-    def __init__(
-        self,
-        type,
-        val=None,
-        gte=None,
-        extLst=None,
-    ):
+    def __init__(self, type, val=None, gte=None, extLst=None):
         self.type = type
         self.val = val
         self.gte = gte
 
 
 class RuleType(Serialisable):
-
     cfvo = Sequence(expected_type=FormatObject)
 
 
 class IconSet(RuleType):
-
     tagname = "iconSet"
-
     iconSet = NoneSet(
         values=(
             [
@@ -91,7 +79,6 @@ class IconSet(RuleType):
     showValue = Bool(allow_none=True)
     percent = Bool(allow_none=True)
     reverse = Bool(allow_none=True)
-
     __elements__ = ("cfvo",)
 
     def __init__(
@@ -110,14 +97,11 @@ class IconSet(RuleType):
 
 
 class DataBar(RuleType):
-
     tagname = "dataBar"
-
     minLength = Integer(allow_none=True)
     maxLength = Integer(allow_none=True)
     showValue = Bool(allow_none=True)
     color = ColorDescriptor()
-
     __elements__ = ("cfvo", "color")
 
     def __init__(
@@ -136,26 +120,17 @@ class DataBar(RuleType):
 
 
 class ColorScale(RuleType):
-
     tagname = "colorScale"
-
     color = Sequence(expected_type=Color)
-
     __elements__ = ("cfvo", "color")
 
-    def __init__(
-        self,
-        cfvo=None,
-        color=None,
-    ):
+    def __init__(self, cfvo=None, color=None):
         self.cfvo = cfvo
         self.color = color
 
 
 class Rule(Serialisable):
-
     tagname = "cfRule"
-
     type = Set(
         values=(
             [
@@ -230,7 +205,6 @@ class Rule(Serialisable):
     iconSet = Typed(expected_type=IconSet, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
     dxf = Typed(expected_type=DifferentialStyle, allow_none=True)
-
     __elements__ = ("colorScale", "dataBar", "iconSet", "formula")
     __attrs__ = (
         "type",
@@ -330,7 +304,12 @@ def FormulaRule(formula=None, stopIfTrue=None, font=None, border=None, fill=None
 
 
 def CellIsRule(
-    operator=None, formula=None, stopIfTrue=None, font=None, border=None, fill=None
+    operator=None,
+    formula=None,
+    stopIfTrue=None,
+    font=None,
+    border=None,
+    fill=None,
 ):
     """
     Conditional formatting rule based on cell contents.
@@ -345,19 +324,24 @@ def CellIsRule(
         "==": "equal",
         "!=": "notEqual",
     }
-
     operator = expand.get(operator, operator)
-
     rule = Rule(
-        type="cellIs", operator=operator, formula=formula, stopIfTrue=stopIfTrue
+        type="cellIs",
+        operator=operator,
+        formula=formula,
+        stopIfTrue=stopIfTrue,
     )
     rule.dxf = DifferentialStyle(font=font, border=border, fill=fill)
-
     return rule
 
 
 def IconSetRule(
-    icon_style=None, type=None, values=None, showValue=None, percent=None, reverse=None
+    icon_style=None,
+    type=None,
+    values=None,
+    showValue=None,
+    percent=None,
+    reverse=None,
 ):
     """
     Convenience function for creating icon set rules
@@ -373,7 +357,6 @@ def IconSetRule(
         reverse=reverse,
     )
     rule = Rule(type="iconSet", iconSet=icon_set)
-
     return rule
 
 
@@ -397,5 +380,4 @@ def DataBarRule(
         maxLength=maxLength,
     )
     rule = Rule(type="dataBar", dataBar=data_bar)
-
     return rule

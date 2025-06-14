@@ -1,20 +1,17 @@
 # Copyright (c) 2010-2025 openpyxl
-from collections import OrderedDict
+import collections
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Convertible
-from openpyxl.descriptors import Sequence
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Convertible
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.formatting.rule import Rule
 from openpyxl.worksheet.cell_range import MultiCellRange
-
-from .rule import Rule
 
 
 class ConditionalFormatting(Serialisable):
-
     tagname = "conditionalFormatting"
-
     sqref = Convertible(expected_type=MultiCellRange)
     cells = Alias("sqref")
     pivot = Bool(allow_none=True)
@@ -35,7 +32,7 @@ class ConditionalFormatting(Serialisable):
         return hash(self.sqref)
 
     def __repr__(self):
-        return "<{cls} {cells}>".format(cls=self.__class__.__name__, cells=self.sqref)
+        return f"<{self.__class__.__name__} {self.sqref}>"
 
     def __contains__(self, coord):
         """
@@ -48,7 +45,7 @@ class ConditionalFormattingList:
     """Conditional formatting rules."""
 
     def __init__(self):
-        self._cf_rules = OrderedDict()
+        self._cf_rules = collections.OrderedDict()
         self.max_priority = 0
 
     def add(self, range_string, cfRule):
@@ -60,14 +57,12 @@ class ConditionalFormattingList:
         if isinstance(range_string, str):
             cf = ConditionalFormatting(range_string)
         if not isinstance(cfRule, Rule):
-            raise ValueError(
-                "Only instances of openpyxl.formatting.rule.Rule may be added"
-            )
+            msg = "Only instances of openpyxl.formatting.rule.Rule may be added"
+            raise ValueError(msg)
         rule = cfRule
         self.max_priority += 1
         if not rule.priority:
             rule.priority = self.max_priority
-
         self._cf_rules.setdefault(cf, []).append(rule)
 
     def __bool__(self):
