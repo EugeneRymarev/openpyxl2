@@ -1,5 +1,7 @@
 # Copyright (c) 2010-2025 openpyxl
 from openpyxl.descriptors.base import Alias
+# TODO: delete after last reformat commit
+from openpyxl.descriptors.base import Bool
 from openpyxl.descriptors.base import Descriptor
 from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.sequence import Sequence
