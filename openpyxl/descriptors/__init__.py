@@ -9,6 +9,7 @@ from openpyxl.descriptors.base import Integer
 from openpyxl.descriptors.base import MatchPattern
 from openpyxl.descriptors.base import String
 from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import NoneSet
 
 
 class MetaStrict(type):
