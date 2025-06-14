@@ -6,6 +6,7 @@ from openpyxl.descriptors.sequence import Sequence
 # TODO: delete after last reformat commit
 from openpyxl.descriptors.base import Bool
 from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MatchPattern
 
 
 class MetaStrict(type):
