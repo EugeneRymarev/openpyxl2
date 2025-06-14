@@ -2,28 +2,27 @@ import pytest
 
 
 @pytest.fixture
-def Translator():
-    from .. import translate
+def translator():
+    from openpyxl.formula import translate
 
     return translate.Translator
 
 
 @pytest.fixture
-def Tokenizer():
-    from .. import tokenizer
+def tokenizer():
+    from openpyxl.formula import tokenizer
 
     return tokenizer.Tokenizer
 
 
 @pytest.fixture
-def TranslatorError():
-    from .. import translate
+def translator_error():
+    from openpyxl.formula import translate
 
     return translate.TranslatorError
 
 
 class TestTranslator:
-
     @pytest.mark.parametrize(
         "origin, row, col",
         [
@@ -34,8 +33,8 @@ class TestTranslator:
             ("XFD111", 111, 16384),
         ],
     )
-    def test_init(self, Translator, origin, row, col):
-        trans = Translator("=formula", origin)
+    def test_init(self, translator, origin, row, col):
+        trans = translator("=formula", origin)
         assert trans.row == row
         assert trans.col == col
         assert trans.tokenizer.formula == "=formula"
@@ -57,9 +56,9 @@ class TestTranslator:
             "",
         ],
     )
-    def test_get_tokens(self, Translator, Tokenizer, formula):
-        trans = Translator(formula, "A1")
-        tok = Tokenizer(formula)
+    def test_get_tokens(self, translator, tokenizer, formula):
+        trans = translator(formula, "A1")
+        tok = tokenizer(formula)
         for t1, t2 in zip(tok.items, trans.get_tokens()):
             assert t1.value == t2.value
             assert t1.type == t2.type
@@ -88,8 +87,8 @@ class TestTranslator:
             ["$III$305:$IIT$503", None],
         ],
     )
-    def test_row_range_re(self, Translator, test_str, groups):
-        match = Translator.ROW_RANGE_RE.match(test_str)
+    def test_row_range_re(self, translator, test_str, groups):
+        match = translator.ROW_RANGE_RE.match(test_str)
         if groups is None:
             assert match is None
         else:
@@ -118,8 +117,8 @@ class TestTranslator:
             ["$III$305:$IIT$503", None],
         ],
     )
-    def test_col_range_re(self, Translator, test_str, groups):
-        match = Translator.COL_RANGE_RE.match(test_str)
+    def test_col_range_re(self, translator, test_str, groups):
+        match = translator.COL_RANGE_RE.match(test_str)
         if groups is None:
             assert match is None
         else:
@@ -148,8 +147,8 @@ class TestTranslator:
             ["$III$305:$IIT$503", None],
         ],
     )
-    def test_cell_ref_re(self, Translator, test_str, groups):
-        match = Translator.CELL_REF_RE.match(test_str)
+    def test_cell_ref_re(self, translator, test_str, groups):
+        match = translator.CELL_REF_RE.match(test_str)
         if groups is None:
             assert match is None
         else:
@@ -168,12 +167,12 @@ class TestTranslator:
             ("$12", -15, "$12"),
         ],
     )
-    def test_translate_row(self, Translator, TranslatorError, test_str, rdelta, value):
+    def test_translate_row(self, translator, translator_error, test_str, rdelta, value):
         if value is None:
-            with pytest.raises(TranslatorError):
-                Translator.translate_row(test_str, rdelta)
+            with pytest.raises(translator_error):
+                translator.translate_row(test_str, rdelta)
         else:
-            assert Translator.translate_row(test_str, rdelta) == value
+            assert translator.translate_row(test_str, rdelta) == value
 
     @pytest.mark.parametrize(
         "test_str, cdelta, value",
@@ -189,12 +188,12 @@ class TestTranslator:
             ("$AA", -100, "$AA"),
         ],
     )
-    def test_translate_col(self, Translator, TranslatorError, test_str, cdelta, value):
+    def test_translate_col(self, translator, translator_error, test_str, cdelta, value):
         if value is None:
-            with pytest.raises(TranslatorError):
-                Translator.translate_col(test_str, cdelta)
+            with pytest.raises(translator_error):
+                translator.translate_col(test_str, cdelta)
         else:
-            assert Translator.translate_col(test_str, cdelta) == value
+            assert translator.translate_col(test_str, cdelta) == value
 
     @pytest.mark.parametrize(
         "test_str, value",
@@ -207,8 +206,8 @@ class TestTranslator:
             ("Sheet-2!named_range_2", ("Sheet-2!", "named_range_2")),
         ],
     )
-    def test_strip_ws_name(self, Translator, test_str, value):
-        assert Translator.strip_ws_name(test_str) == value
+    def test_strip_ws_name(self, translator, test_str, value):
+        assert translator.strip_ws_name(test_str) == value
 
     @pytest.mark.parametrize(
         "test_str, rdelta, cdelta, value",
@@ -235,13 +234,19 @@ class TestTranslator:
         ],
     )
     def test_translate_range(
-        self, Translator, TranslatorError, test_str, rdelta, cdelta, value
+        self,
+        translator,
+        translator_error,
+        test_str,
+        rdelta,
+        cdelta,
+        value,
     ):
         if value is None:
-            with pytest.raises(TranslatorError):
-                Translator.translate_range(test_str, rdelta, cdelta)
+            with pytest.raises(translator_error):
+                translator.translate_range(test_str, rdelta, cdelta)
         else:
-            assert value == Translator.translate_range(test_str, rdelta, cdelta)
+            assert value == translator.translate_range(test_str, rdelta, cdelta)
 
     @pytest.mark.parametrize(
         "formula, origin, dest, result",
@@ -272,11 +277,11 @@ class TestTranslator:
             ("", "A1", "B2", ""),
         ],
     )
-    def test_translate_formula_range(self, Translator, formula, origin, dest, result):
-        trans = Translator(formula, origin)
+    def test_translate_formula_range(self, translator, formula, origin, dest, result):
+        trans = translator(formula, origin)
         assert trans.translate_formula(dest) == result
 
-    def test_translate_formula_coordinates(self, Translator):
-        trans = Translator("='Summary slices'!C3", "A1")
+    def test_translate_formula_coordinates(self, translator):
+        trans = translator("='Summary slices'!C3", "A1")
         result = trans.translate_formula(row_delta=2, col_delta=3)
         assert result == "='Summary slices'!F5"

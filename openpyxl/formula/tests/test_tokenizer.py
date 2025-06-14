@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture
 def tokenizer():
-    from .. import tokenizer
+    from openpyxl.formula import tokenizer
 
     return tokenizer
 
@@ -31,7 +31,6 @@ ROW = "ROW"
 
 
 class TestTokenizerRegexes:
-
     @pytest.mark.parametrize(
         "string, success",
         [
@@ -113,7 +112,6 @@ class TestTokenizerRegexes:
 
 
 class TestTokenizer:
-
     def test_init(self, tokenizer):
         tok = tokenizer.Tokenizer("abcdefg")
         assert tok.formula == "abcdefg"
@@ -417,7 +415,6 @@ class TestTokenizer:
             ("MyTable!#REF!", OPERAND, RANGE),
             (")", FUNC, CLOSE),
         ]
-
         assert result == tokens
         assert tok.render() == formula
 
@@ -429,7 +426,8 @@ class TestTokenizer:
             tok._parse_error()
 
     @pytest.mark.parametrize(
-        "formula, value", [(" " * i, " ") for i in range(1, 10)] + [("\n", "\n")]
+        "formula, value",
+        [(" " * i, " ") for i in range(1, 10)] + [("\n", "\n")],
     )
     def test_parse_whitespace(self, tokenizer, formula, value):
         tok = tokenizer.Tokenizer(formula)
@@ -479,11 +477,7 @@ class TestTokenizer:
 
     @pytest.mark.parametrize(
         "prefix, char, type_",
-        [
-            ("name", "(", FUNC),
-            ("", "(", PAREN),
-            ("", "{", ARRAY),
-        ],
+        [("name", "(", FUNC), ("", "(", PAREN), ("", "{", ARRAY)],
     )
     def test_parse_opener(self, tokenizer, prefix, char, type_):
         tok = tokenizer.Tokenizer(prefix + char)
@@ -653,7 +647,7 @@ class TestTokenizer:
             ),
             (
                 '=+IF(A$3<>$B7,"",(MIN(IF({TRUE, FALSE;1,2},A6:B6,$S7))>='
-                + "LOWER_BOUND)*($BR6>$S72123))"
+                "LOWER_BOUND)*($BR6>$S72123))"
             ),
             "=(AW$4=$D7)+0%",
             "Just text",
@@ -668,7 +662,6 @@ class TestTokenizer:
 
 
 class TestToken:
-
     def test_init(self, tokenizer):
         tokenizer.Token("val", "type", "subtype")
 
@@ -719,7 +712,6 @@ class TestToken:
         assert tok.value == ")"
         assert tok.type == FUNC
         assert tok.subtype == CLOSE
-
         tok = tokenizer.Token.make_subexp("TEST(", True)
         assert tok.value == "TEST("
         assert tok.type == FUNC
