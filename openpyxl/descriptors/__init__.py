@@ -13,6 +13,7 @@ from openpyxl.descriptors.base import NoneSet
 from openpyxl.descriptors.base import Max
 from openpyxl.descriptors.base import Min
 from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import Set
 
 
 
