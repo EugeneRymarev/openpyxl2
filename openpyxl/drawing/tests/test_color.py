@@ -6,173 +6,179 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def ColorChoice():
-    from ..colors import ColorChoice
+def color_choice():
+    from openpyxl.drawing.colors import ColorChoice
 
     return ColorChoice
 
 
-class TestColorChoice:
+@pytest.fixture
+def system_color():
+    from openpyxl.drawing.colors import SystemColor
 
-    def test_ctor(self, ColorChoice):
-        color = ColorChoice()
+    return SystemColor
+
+
+@pytest.fixture
+def hsl_color():
+    from openpyxl.drawing.colors import HSLColor
+
+    return HSLColor
+
+
+@pytest.fixture
+def rgb_percent():
+    from openpyxl.drawing.colors import RGBPercent
+
+    return RGBPercent
+
+
+@pytest.fixture
+def color_mapping():
+    from openpyxl.drawing.colors import ColorMapping
+
+    return ColorMapping
+
+
+@pytest.fixture
+def scheme_color():
+    from openpyxl.drawing.colors import SchemeColor
+
+    return SchemeColor
+
+
+class TestColorChoice:
+    def test_ctor(self, color_choice):
+        color = color_choice()
         color.RGB = "000000"
         xml = tostring(color.to_tree())
         expected = """
-        <colorChoice xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
-          <srgbClr val="000000" />
+        <colorChoice
+                xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <srgbClr val="000000"/>
         </colorChoice>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, ColorChoice):
-        src = """
-        <colorChoice />
-        """
+    def test_from_xml(self, color_choice):
+        src = "<colorChoice/>"
         node = fromstring(src)
-        color = ColorChoice.from_tree(node)
-        assert color == ColorChoice()
-
-
-@pytest.fixture
-def SystemColor():
-    from ..colors import SystemColor
-
-    return SystemColor
+        color = color_choice.from_tree(node)
+        assert color == color_choice()
 
 
 class TestSystemColor:
-
-    def test_ctor(self, SystemColor):
-        colors = SystemColor()
+    def test_ctor(self, system_color):
+        colors = system_color()
         xml = tostring(colors.to_tree())
         expected = """
-        <sysClr xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" val="windowText"></sysClr>
+        <sysClr val="windowText"
+                 xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+        </sysClr>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, SystemColor):
-        src = """
-        <sysClr val="windowText"></sysClr>
-        """
+    def test_from_xml(self, system_color):
+        src = '<sysClr val="windowText"></sysClr>'
         node = fromstring(src)
-        colors = SystemColor.from_tree(node)
-        assert colors == SystemColor(val="windowText")
-
-
-@pytest.fixture
-def HSLColor():
-    from ..colors import HSLColor
-
-    return HSLColor
+        colors = system_color.from_tree(node)
+        assert colors == system_color(val="windowText")
 
 
 class TestHSLColor:
-
-    def test_ctor(self, HSLColor):
-        colors = HSLColor(hue=50, sat=10, lum=90)
+    def test_ctor(self, hsl_color):
+        colors = hsl_color(hue=50, sat=10, lum=90)
         xml = tostring(colors.to_tree())
-        expected = """
-        <hslClr hue="50" lum="90" sat="10" />
-        """
+        expected = '<hslClr hue="50" lum="90" sat="10"/>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, HSLColor):
-        src = """
-        <hslClr hue="0" lum="70" sat="20" />
-        """
+    def test_from_xml(self, hsl_color):
+        src = '<hslClr hue="0" lum="70" sat="20"/>'
         node = fromstring(src)
-        colors = HSLColor.from_tree(node)
-        assert colors == HSLColor(hue=0, sat=20, lum=70)
-
-
-@pytest.fixture
-def RGBPercent():
-    from ..colors import RGBPercent
-
-    return RGBPercent
+        colors = hsl_color.from_tree(node)
+        assert colors == hsl_color(hue=0, sat=20, lum=70)
 
 
 class TestRGBPercent:
-
-    def test_ctor(self, RGBPercent):
-        colors = RGBPercent(r=30, g=40, b=20)
+    def test_ctor(self, rgb_percent):
+        colors = rgb_percent(r=30, g=40, b=20)
         xml = tostring(colors.to_tree())
         expected = """
-        <rgbClr xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" b="20" g="40" r="30" />
+        <rgbClr xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+                b="20"
+                g="40"
+                r="30"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, RGBPercent):
-        src = """
-        <rgbClr b="20" g="40" r="30" />
-        """
+    def test_from_xml(self, rgb_percent):
+        src = '<rgbClr b="20" g="40" r="30"/>'
         node = fromstring(src)
-        colors = RGBPercent.from_tree(node)
-        assert colors == RGBPercent(r=30, g=40, b=20)
-
-
-@pytest.fixture
-def ColorMapping():
-    from ..colors import ColorMapping
-
-    return ColorMapping
+        colors = rgb_percent.from_tree(node)
+        assert colors == rgb_percent(r=30, g=40, b=20)
 
 
 class TestColorMapping:
-
-    def test_ctor(self, ColorMapping):
-        colors = ColorMapping()
+    def test_ctor(self, color_mapping):
+        colors = color_mapping()
         xml = tostring(colors.to_tree())
         expected = """
-        <clrMapOvr accent1="accent1" accent2="accent2"
-           accent3="accent3" accent4="accent4" accent5="accent5"
-           accent6="accent6" bg1="lt1" bg2="lt2" folHlink="folHlink"
-           hlink="hlink" tx1="dk1" tx2="dk2"
-        />
+        <clrMapOvr
+                accent1="accent1"
+                accent2="accent2"
+                accent3="accent3"
+                accent4="accent4"
+                accent5="accent5"
+                accent6="accent6"
+                bg1="lt1"
+                bg2="lt2"
+                folHlink="folHlink"
+                hlink="hlink"
+                tx1="dk1"
+                tx2="dk2"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, ColorMapping):
+    def test_from_xml(self, color_mapping):
         src = """
-        <clrMapOvr accent1="accent1" accent2="accent2"
-           accent3="accent3" accent4="accent4" accent5="accent5"
-           accent6="accent6" bg1="lt1" bg2="lt2" folHlink="folHlink"
-           hlink="hlink" tx1="dk1" tx2="dk2"
-        />
+        <clrMapOvr
+                accent1="accent1"
+                accent2="accent2"
+                accent3="accent3"
+                accent4="accent4"
+                accent5="accent5"
+                accent6="accent6"
+                bg1="lt1"
+                bg2="lt2"
+                folHlink="folHlink"
+                hlink="hlink"
+                tx1="dk1"
+                tx2="dk2"/>
         """
         node = fromstring(src)
-        colors = ColorMapping.from_tree(node)
-        assert colors == ColorMapping()
-
-
-@pytest.fixture
-def SchemeColor():
-    from ..colors import SchemeColor
-
-    return SchemeColor
+        colors = color_mapping.from_tree(node)
+        assert colors == color_mapping()
 
 
 class TestSchemeColor:
-
-    def test_ctor(self, SchemeColor):
-        sclr = SchemeColor(val="tx1")
+    def test_ctor(self, scheme_color):
+        sclr = scheme_color(val="tx1")
         xml = tostring(sclr.to_tree())
         expected = """
-        <schemeClr xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" val="tx1" />
+        <schemeClr
+                xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+                val="tx1"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, SchemeColor):
-        src = """
-            <schemeClr val="tx1" />
-        """
+    def test_from_xml(self, scheme_color):
+        src = '<schemeClr val="tx1"/>'
         node = fromstring(src)
-        sclr = SchemeColor.from_tree(node)
-        assert sclr == SchemeColor(val="tx1")
+        sclr = scheme_color.from_tree(node)
+        assert sclr == scheme_color(val="tx1")

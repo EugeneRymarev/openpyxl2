@@ -1,41 +1,74 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def Paragraph():
-    from ..text import Paragraph
+def paragraph():
+    from openpyxl.drawing.text import Paragraph
 
     return Paragraph
 
 
-class TestParagraph:
+@pytest.fixture
+def paragraph_properties():
+    from openpyxl.drawing.text import ParagraphProperties
 
-    def test_ctor(self, Paragraph):
-        text = Paragraph()
+    return ParagraphProperties
+
+
+@pytest.fixture
+def character_properties():
+    from openpyxl.drawing.text import CharacterProperties
+
+    return CharacterProperties
+
+
+@pytest.fixture
+def font():
+    from openpyxl.drawing.text import Font
+
+    return Font
+
+
+@pytest.fixture
+def hyperlink():
+    from openpyxl.drawing.text import Hyperlink
+
+    return Hyperlink
+
+
+@pytest.fixture
+def line_break():
+    from openpyxl.drawing.text import LineBreak
+
+    return LineBreak
+
+
+class TestParagraph:
+    def test_ctor(self, paragraph):
+        text = paragraph()
         xml = tostring(text.to_tree())
         expected = """
         <p xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
-          <r>
-          <t/>
-          </r>
+            <r>
+                <t/>
+            </r>
         </p>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, Paragraph):
-        src = """
-        <p />
-        """
+    def test_from_xml(self, paragraph):
+        src = "<p/>"
         node = fromstring(src)
-        text = Paragraph.from_tree(node)
-        assert text == Paragraph()
+        text = paragraph.from_tree(node)
+        assert text == paragraph()
 
-    def test_multiline(self, Paragraph):
+    def test_multiline(self, paragraph):
         src = """
         <p>
             <r>
@@ -47,42 +80,29 @@ class TestParagraph:
         </p>
         """
         node = fromstring(src)
-        para = Paragraph.from_tree(node)
+        para = paragraph.from_tree(node)
         assert len(para.text) == 2
 
 
-@pytest.fixture
-def ParagraphProperties():
-    from ..text import ParagraphProperties
-
-    return ParagraphProperties
-
-
 class TestParagraphProperties:
-
-    def test_ctor(self, ParagraphProperties):
-        text = ParagraphProperties(defTabSz=91400)
+    def test_ctor(self, paragraph_properties):
+        text = paragraph_properties(defTabSz=91400)
         xml = tostring(text.to_tree())
         expected = """
-        <pPr xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" defTabSz="91400" />
+        <pPr xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+             defTabSz="91400"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, ParagraphProperties):
-        src = """
-        <pPr defTabSz="91400" />
-        """
+    def test_from_xml(self, paragraph_properties):
+        src = '<pPr defTabSz="91400"/>'
         node = fromstring(src)
-        text = ParagraphProperties.from_tree(node)
-        assert text == ParagraphProperties(defTabSz=91400)
-
-
-from ..spreadsheet_drawing import SpreadsheetDrawing
+        text = paragraph_properties.from_tree(node)
+        assert text == paragraph_properties(defTabSz=91400)
 
 
 class TestTextBox:
-
     def test_from_xml(self, datadir):
         datadir.chdir()
         with open("text_box_drawing.xml") as src:
@@ -97,124 +117,89 @@ class TestTextBox:
         assert len(text.p) == 2
 
 
-@pytest.fixture
-def CharacterProperties():
-    from ..text import CharacterProperties
-
-    return CharacterProperties
-
-
 class TestCharacterProperties:
-
-    def test_ctor(self, CharacterProperties):
-        from ..text import Font
+    def test_ctor(self, character_properties):
+        from openpyxl.drawing.text import Font
 
         normal_font = Font(typeface="Arial")
-        text = CharacterProperties(
-            latin=normal_font, sz=900, b=False, solidFill="FFC000"
+        text = character_properties(
+            latin=normal_font,
+            sz=900,
+            b=False,
+            solidFill="FFC000",
         )
-
         xml = tostring(text.to_tree())
         expected = """
-        <a:defRPr xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-        b="0" sz="900">
-           <a:solidFill>
-              <a:srgbClr val="FFC000"/>
-           </a:solidFill>
-           <a:latin typeface="Arial"/>
+        <a:defRPr
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+                b="0"
+                sz="900">
+            <a:solidFill>
+                <a:srgbClr val="FFC000"/>
+            </a:solidFill>
+            <a:latin typeface="Arial"/>
         </a:defRPr>
         """
-
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, CharacterProperties):
-        src = """
-        <defRPr sz="110"/>
-        """
+    def test_from_xml(self, character_properties):
+        src = '<defRPr sz="110"/>'
         node = fromstring(src)
-        text = CharacterProperties.from_tree(node)
-        assert text == CharacterProperties(sz=110)
-
-
-@pytest.fixture
-def Font():
-    from ..text import Font
-
-    return Font
+        text = character_properties.from_tree(node)
+        assert text == character_properties(sz=110)
 
 
 class TestFont:
-
-    def test_ctor(self, Font):
-        fut = Font("Arial")
+    def test_ctor(self, font):
+        fut = font("Arial")
         xml = tostring(fut.to_tree())
         expected = """
         <latin typeface="Arial"
-xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" />
+               xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, Font):
+    def test_from_xml(self, font):
         src = """
-        <latin typeface="Arial" pitchFamily="40"
-xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" />
+        <latin typeface="Arial"
+               pitchFamily="40"
+               xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"/>
         """
         node = fromstring(src)
-        fut = Font.from_tree(node)
-        assert fut == Font(typeface="Arial", pitchFamily=40)
-
-
-@pytest.fixture
-def Hyperlink():
-    from ..text import Hyperlink
-
-    return Hyperlink
+        fut = font.from_tree(node)
+        assert fut == font(typeface="Arial", pitchFamily=40)
 
 
 class TestHyperlink:
-
-    def test_ctor(self, Hyperlink):
-        link = Hyperlink()
+    def test_ctor(self, hyperlink):
+        link = hyperlink()
         xml = tostring(link.to_tree())
         expected = """
-        <hlinkClick xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+        <hlinkClick
+                xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, Hyperlink):
-        src = """
-        <hlinkClick tooltip="Select/de-select all"/>
-        """
+    def test_from_xml(self, hyperlink):
+        src = '<hlinkClick tooltip="Select/de-select all"/>'
         node = fromstring(src)
-        link = Hyperlink.from_tree(node)
-        assert link == Hyperlink(tooltip="Select/de-select all")
-
-
-@pytest.fixture
-def LineBreak():
-    from ..text import LineBreak
-
-    return LineBreak
+        link = hyperlink.from_tree(node)
+        assert link == hyperlink(tooltip="Select/de-select all")
 
 
 class TestLineBreak:
-
-    def test_ctor(self, LineBreak):
-        fut = LineBreak()
+    def test_ctor(self, line_break):
+        fut = line_break()
         xml = tostring(fut.to_tree())
-        expected = (
-            """ <br xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" /> """
-        )
+        expected = '<br xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"/>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, LineBreak):
-        src = """
-        <br />
-        """
+    def test_from_xml(self, line_break):
+        src = "<br/>"
         node = fromstring(src)
-        fut = LineBreak.from_tree(node)
-        assert fut == LineBreak()
+        fut = line_break.from_tree(node)
+        assert fut == line_break()

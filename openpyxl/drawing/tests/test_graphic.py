@@ -6,169 +6,197 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def NonVisualGraphicFrame():
-    from ..graphic import NonVisualGraphicFrame
+def non_visual_graphic_frame():
+    from openpyxl.drawing.graphic import NonVisualGraphicFrame
 
     return NonVisualGraphicFrame
 
 
-class TestNonVisualGraphicFrame:
-
-    def test_ctor(self, NonVisualGraphicFrame):
-        graphic = NonVisualGraphicFrame()
-        xml = tostring(graphic.to_tree())
-        expected = """
-        <nvGraphicFramePr>
-          <cNvPr id="0" name="Chart 0"></cNvPr>
-          <cNvGraphicFramePr></cNvGraphicFramePr>
-        </nvGraphicFramePr>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, NonVisualGraphicFrame):
-        src = """
-        <nvGraphicFramePr>
-          <cNvPr id="0" name="Chart 0"></cNvPr>
-          <cNvGraphicFramePr></cNvGraphicFramePr>
-        </nvGraphicFramePr>
-        """
-        node = fromstring(src)
-        graphic = NonVisualGraphicFrame.from_tree(node)
-        assert graphic == NonVisualGraphicFrame()
-
-
 @pytest.fixture
-def GraphicData():
-    from ..graphic import GraphicData
+def graphic_data():
+    from openpyxl.drawing.graphic import GraphicData
 
     return GraphicData
 
 
-class TestGraphicData:
-
-    def test_ctor(self, GraphicData):
-        graphic = GraphicData()
-        xml = tostring(graphic.to_tree())
-        expected = """
-        <graphicData xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" uri="http://schemas.openxmlformats.org/drawingml/2006/chart" />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, GraphicData):
-        src = """
-        <graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart" />
-        """
-        node = fromstring(src)
-        graphic = GraphicData.from_tree(node)
-        assert graphic == GraphicData()
-
-    def test_contains_chart(self, GraphicData):
-        src = """
-        <graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart">
-          <c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId2"/>
-        </graphicData>
-        """
-        node = fromstring(src)
-        graphic = GraphicData.from_tree(node)
-        assert graphic.chart is not None
-
-
 @pytest.fixture
-def GraphicObject():
-    from ..graphic import GraphicObject
+def graphic_object():
+    from openpyxl.drawing.graphic import GraphicObject
 
     return GraphicObject
 
 
-class TestGraphicObject:
+@pytest.fixture
+def graphic_frame():
+    from openpyxl.drawing.graphic import GraphicFrame
 
-    def test_ctor(self, GraphicObject):
-        graphic = GraphicObject()
+    return GraphicFrame
+
+
+@pytest.fixture
+def group_transform_2d():
+    from openpyxl.drawing.geometry import GroupTransform2D
+
+    return GroupTransform2D
+
+
+@pytest.fixture
+def group_shape():
+    from openpyxl.drawing.graphic import GroupShape
+
+    return GroupShape
+
+
+@pytest.fixture
+def non_visual_graphic_frame_properties():
+    from openpyxl.drawing.graphic import NonVisualGraphicFrameProperties
+
+    return NonVisualGraphicFrameProperties
+
+
+class TestNonVisualGraphicFrame:
+    def test_ctor(self, non_visual_graphic_frame):
+        graphic = non_visual_graphic_frame()
         xml = tostring(graphic.to_tree())
         expected = """
-        <graphic xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
-          <graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"></graphicData>
+        <nvGraphicFramePr>
+            <cNvPr id="0" name="Chart 0"></cNvPr>
+            <cNvGraphicFramePr></cNvGraphicFramePr>
+        </nvGraphicFramePr>
+        """
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, non_visual_graphic_frame):
+        src = """
+        <nvGraphicFramePr>
+            <cNvPr id="0" name="Chart 0"></cNvPr>
+            <cNvGraphicFramePr></cNvGraphicFramePr>
+        </nvGraphicFramePr>
+        """
+        node = fromstring(src)
+        graphic = non_visual_graphic_frame.from_tree(node)
+        assert graphic == non_visual_graphic_frame()
+
+
+class TestGraphicData:
+    def test_ctor(self, graphic_data):
+        graphic = graphic_data()
+        xml = tostring(graphic.to_tree())
+        expected = """
+        <graphicData
+                xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+                uri="http://schemas.openxmlformats.org/drawingml/2006/chart"/>
+        """
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, graphic_data):
+        src = """
+        <graphicData
+                uri="http://schemas.openxmlformats.org/drawingml/2006/chart"/>
+        """
+        node = fromstring(src)
+        graphic = graphic_data.from_tree(node)
+        assert graphic == graphic_data()
+
+    def test_contains_chart(self, graphic_data):
+        src = """
+        <graphicData
+                uri="http://schemas.openxmlformats.org/drawingml/2006/chart">
+            <c:chart
+                    xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"
+                    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                    r:id="rId2"/>
+        </graphicData>
+        """
+        node = fromstring(src)
+        graphic = graphic_data.from_tree(node)
+        assert graphic.chart is not None
+
+
+class TestGraphicObject:
+    def test_ctor(self, graphic_object):
+        graphic = graphic_object()
+        xml = tostring(graphic.to_tree())
+        expected = """
+        <graphic
+                xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <graphicData
+                    uri="http://schemas.openxmlformats.org/drawingml/2006/chart">
+            </graphicData>
         </graphic>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, GraphicObject):
+    def test_from_xml(self, graphic_object):
         src = """
         <graphic>
-          <graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"></graphicData>
-        </graphic>        """
+            <graphicData
+                    uri="http://schemas.openxmlformats.org/drawingml/2006/chart">
+            </graphicData>
+        </graphic>
+        """
         node = fromstring(src)
-        graphic = GraphicObject.from_tree(node)
-        assert graphic == GraphicObject()
-
-
-@pytest.fixture
-def GraphicFrame():
-    from ..graphic import GraphicFrame
-
-    return GraphicFrame
+        graphic = graphic_object.from_tree(node)
+        assert graphic == graphic_object()
 
 
 class TestGraphicFrame:
-
-    def test_ctor(self, GraphicFrame):
-        graphic = GraphicFrame()
+    def test_ctor(self, graphic_frame):
+        graphic = graphic_frame()
         xml = tostring(graphic.to_tree())
         expected = """
-        <graphicFrame xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-          <nvGraphicFramePr>
-            <cNvPr id="0" name="Chart 0"></cNvPr>
-            <cNvGraphicFramePr></cNvGraphicFramePr>
-          </nvGraphicFramePr>
-          <xfrm />
-          <a:graphic>
-            <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart" />
-          </a:graphic>
+        <graphicFrame
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <nvGraphicFramePr>
+                <cNvPr id="0" name="Chart 0"></cNvPr>
+                <cNvGraphicFramePr></cNvGraphicFramePr>
+            </nvGraphicFramePr>
+            <xfrm/>
+            <a:graphic>
+                <a:graphicData
+                        uri="http://schemas.openxmlformats.org/drawingml/2006/chart"/>
+            </a:graphic>
         </graphicFrame>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, GraphicFrame):
+    def test_from_xml(self, graphic_frame):
         src = """
         <graphicFrame>
-          <nvGraphicFramePr>
-            <cNvPr id="0" name="Chart 0"></cNvPr>
-            <cNvGraphicFramePr></cNvGraphicFramePr>
-          </nvGraphicFramePr>
-          <xfrm></xfrm>
-          <graphic>
-            <graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"></graphicData>
-          </graphic>
+            <nvGraphicFramePr>
+                <cNvPr id="0" name="Chart 0"></cNvPr>
+                <cNvGraphicFramePr></cNvGraphicFramePr>
+            </nvGraphicFramePr>
+            <xfrm></xfrm>
+            <graphic>
+                <graphicData
+                    uri="http://schemas.openxmlformats.org/drawingml/2006/chart">
+                </graphicData>
+            </graphic>
         </graphicFrame>
         """
         node = fromstring(src)
-        graphic = GraphicFrame.from_tree(node)
-        assert graphic == GraphicFrame()
-
-
-@pytest.fixture
-def GroupTransform2D():
-    from ..geometry import GroupTransform2D
-
-    return GroupTransform2D
+        graphic = graphic_frame.from_tree(node)
+        assert graphic == graphic_frame()
 
 
 class TestGroupTransform2D:
-
-    def test_ctor(self, GroupTransform2D):
-        xfrm = GroupTransform2D(rot=0)
+    def test_ctor(self, group_transform_2d):
+        xfrm = group_transform_2d(rot=0)
         xml = tostring(xfrm.to_tree())
         expected = """
-        <xfrm rot="0" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"></xfrm>
+        <xfrm rot="0"
+              xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+        </xfrm>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, GroupTransform2D):
+    def test_from_xml(self, group_transform_2d):
         src = """
         <a:xfrm xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
             <a:off x="0" y="394447"/>
@@ -178,34 +206,25 @@ class TestGroupTransform2D:
         </a:xfrm>
         """
         node = fromstring(src)
-        xfrm = GroupTransform2D.from_tree(node)
+        xfrm = group_transform_2d.from_tree(node)
         assert xfrm.off.y == 394447
 
 
-@pytest.fixture
-def GroupShape():
-    from ..graphic import GroupShape
-
-    return GroupShape
-
-
 class TestGroupShape:
-
     @pytest.mark.xfail
-    def test_ctor(self, GroupShape):
-        grp = GroupShape()
+    def test_ctor(self, group_shape):
+        grp = group_shape()
         xml = tostring(grp.to_tree())
-        expected = """
-        <root />
-        """
+        expected = "<root/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
     @pytest.mark.xfail
-    def test_from_xml(self, GroupShape):
+    def test_from_xml(self, group_shape):
         src = """
-        <xdr:grpSp xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
-        xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+        <xdr:grpSp
+                xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
             <xdr:nvGrpSpPr>
                 <xdr:cNvPr id="14" name="Group 13"/>
                 <xdr:cNvGrpSpPr/>
@@ -260,7 +279,11 @@ class TestGroupShape:
                     </a:fontRef>
                 </xdr:style>
                 <xdr:txBody>
-                    <a:bodyPr vertOverflow="clip" horzOverflow="clip" rtlCol="0" anchor="t"/>
+                    <a:bodyPr
+                            vertOverflow="clip"
+                            horzOverflow="clip"
+                            rtlCol="0"
+                            anchor="t"/>
                     <a:lstStyle/>
                     <a:p>
                         <a:pPr algn="l"/>
@@ -269,35 +292,22 @@ class TestGroupShape:
                 </xdr:txBody>
             </xdr:sp>
         </xdr:grpSp>
-
         """
         node = fromstring(src)
-        grp = GroupShape.from_tree(node)
-        assert grp == GroupShape()
-
-
-@pytest.fixture
-def NonVisualGraphicFrameProperties():
-    from ..graphic import NonVisualGraphicFrameProperties
-
-    return NonVisualGraphicFrameProperties
+        grp = group_shape.from_tree(node)
+        assert grp == group_shape()
 
 
 class TestNonVisualGraphicFrameProperties:
-
-    def test_ctor(self, NonVisualGraphicFrameProperties):
-        graphic = NonVisualGraphicFrameProperties()
+    def test_ctor(self, non_visual_graphic_frame_properties):
+        graphic = non_visual_graphic_frame_properties()
         xml = tostring(graphic.to_tree())
-        expected = """
-        <cNvGraphicFramePr></cNvGraphicFramePr>
-        """
+        expected = "<cNvGraphicFramePr></cNvGraphicFramePr>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, NonVisualGraphicFrameProperties):
-        src = """
-        <cNvGraphicFramePr></cNvGraphicFramePr>
-        """
+    def test_from_xml(self, non_visual_graphic_frame_properties):
+        src = "<cNvGraphicFramePr></cNvGraphicFramePr>"
         node = fromstring(src)
-        graphic = NonVisualGraphicFrameProperties.from_tree(node)
-        assert graphic == NonVisualGraphicFrameProperties()
+        graphic = non_visual_graphic_frame_properties.from_tree(node)
+        assert graphic == non_visual_graphic_frame_properties()

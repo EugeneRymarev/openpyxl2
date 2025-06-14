@@ -1,205 +1,187 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.drawing.geometry import GroupTransform2D
+from openpyxl.drawing.geometry import Point2D
+from openpyxl.drawing.geometry import PositiveSize2D
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def NonVisualDrawingProps():
-    from ..properties import NonVisualDrawingProps
+def non_visual_drawing_props():
+    from openpyxl.drawing.properties import NonVisualDrawingProps
 
     return NonVisualDrawingProps
 
 
-class TestNonVisualDrawingProps:
-
-    def test_ctor(self, NonVisualDrawingProps):
-        graphic = NonVisualDrawingProps(id=2, name="Chart 1")
-        xml = tostring(graphic.to_tree())
-        expected = """
-         <cNvPr id="2" name="Chart 1"></cNvPr>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, NonVisualDrawingProps):
-        src = """
-         <cNvPr id="3" name="Chart 2"></cNvPr>
-        """
-        node = fromstring(src)
-        graphic = NonVisualDrawingProps.from_tree(node)
-        assert graphic == NonVisualDrawingProps(id=3, name="Chart 2")
-
-
 @pytest.fixture
-def NonVisualGroupDrawingShapeProps():
-    from ..properties import NonVisualGroupDrawingShapeProps
+def non_visual_group_drawing_shape_props():
+    from openpyxl.drawing.properties import NonVisualGroupDrawingShapeProps
 
     return NonVisualGroupDrawingShapeProps
 
 
-class TestNonVisualGroupDrawingShapeProps:
-
-    def test_ctor(self, NonVisualGroupDrawingShapeProps):
-        props = NonVisualGroupDrawingShapeProps()
-        xml = tostring(props.to_tree())
-        expected = """
-        <cNvGrpSpPr />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, NonVisualGroupDrawingShapeProps):
-        src = """
-        <cNvGrpSpPr />
-        """
-        node = fromstring(src)
-        props = NonVisualGroupDrawingShapeProps.from_tree(node)
-        assert props == NonVisualGroupDrawingShapeProps()
-
-
 @pytest.fixture
-def NonVisualGroupShape():
-    from ..properties import NonVisualGroupShape
+def non_visual_group_shape():
+    from openpyxl.drawing.properties import NonVisualGroupShape
 
     return NonVisualGroupShape
 
 
-class TestNonVisualGroupShape:
+@pytest.fixture
+def group_locking():
+    from openpyxl.drawing.properties import GroupLocking
 
+    return GroupLocking
+
+
+@pytest.fixture
+def group_shape_properties():
+    from openpyxl.drawing.properties import GroupShapeProperties
+
+    return GroupShapeProperties
+
+
+@pytest.fixture
+def non_visual_drawing_shape_props():
+    from openpyxl.drawing.properties import NonVisualDrawingShapeProps
+
+    return NonVisualDrawingShapeProps
+
+
+class TestNonVisualDrawingProps:
+    def test_ctor(self, non_visual_drawing_props):
+        graphic = non_visual_drawing_props(id=2, name="Chart 1")
+        xml = tostring(graphic.to_tree())
+        expected = '<cNvPr id="2" name="Chart 1"></cNvPr>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, non_visual_drawing_props):
+        src = '<cNvPr id="3" name="Chart 2"></cNvPr>'
+        node = fromstring(src)
+        graphic = non_visual_drawing_props.from_tree(node)
+        assert graphic == non_visual_drawing_props(id=3, name="Chart 2")
+
+
+class TestNonVisualGroupDrawingShapeProps:
+    def test_ctor(self, non_visual_group_drawing_shape_props):
+        props = non_visual_group_drawing_shape_props()
+        xml = tostring(props.to_tree())
+        expected = "<cNvGrpSpPr/>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, non_visual_group_drawing_shape_props):
+        src = "<cNvGrpSpPr/>"
+        node = fromstring(src)
+        props = non_visual_group_drawing_shape_props.from_tree(node)
+        assert props == non_visual_group_drawing_shape_props()
+
+
+class TestNonVisualGroupShape:
     def test_ctor(
         self,
-        NonVisualGroupShape,
-        NonVisualDrawingProps,
-        NonVisualGroupDrawingShapeProps,
+        non_visual_group_shape,
+        non_visual_drawing_props,
+        non_visual_group_drawing_shape_props,
     ):
-        props = NonVisualGroupShape(
-            cNvPr=NonVisualDrawingProps(id=2208, name="Group 1"),
-            cNvGrpSpPr=NonVisualGroupDrawingShapeProps(),
+        props = non_visual_group_shape(
+            cNvPr=non_visual_drawing_props(id=2208, name="Group 1"),
+            cNvGrpSpPr=non_visual_group_drawing_shape_props(),
         )
         xml = tostring(props.to_tree())
         expected = """
         <nvGrpSpPr>
-             <cNvPr id="2208" name="Group 1" />
-             <cNvGrpSpPr />
-         </nvGrpSpPr>
+            <cNvPr id="2208" name="Group 1"/>
+            <cNvGrpSpPr/>
+        </nvGrpSpPr>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
     def test_from_xml(
         self,
-        NonVisualGroupShape,
-        NonVisualDrawingProps,
-        NonVisualGroupDrawingShapeProps,
+        non_visual_group_shape,
+        non_visual_drawing_props,
+        non_visual_group_drawing_shape_props,
     ):
         src = """
         <nvGrpSpPr>
-             <cNvPr id="2208" name="Group 1" />
-             <cNvGrpSpPr />
-         </nvGrpSpPr>
+            <cNvPr id="2208" name="Group 1"/>
+            <cNvGrpSpPr/>
+        </nvGrpSpPr>
         """
         node = fromstring(src)
-        props = NonVisualGroupShape.from_tree(node)
-        assert props == NonVisualGroupShape(
-            cNvPr=NonVisualDrawingProps(id=2208, name="Group 1"),
-            cNvGrpSpPr=NonVisualGroupDrawingShapeProps(),
+        props = non_visual_group_shape.from_tree(node)
+        expected = non_visual_group_shape(
+            cNvPr=non_visual_drawing_props(id=2208, name="Group 1"),
+            cNvGrpSpPr=non_visual_group_drawing_shape_props(),
         )
-
-
-@pytest.fixture
-def GroupLocking():
-    from ..properties import GroupLocking
-
-    return GroupLocking
+        assert props == expected
 
 
 class TestGroupLocking:
-
-    def test_ctor(self, GroupLocking):
-        lock = GroupLocking()
+    def test_ctor(self, group_locking):
+        lock = group_locking()
         xml = tostring(lock.to_tree())
         expected = """
-        <grpSpLocks xmlns="http://schemas.openxmlformats.org/drawingml/2006/main" />
+        <grpSpLocks
+                xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, GroupLocking):
-        src = """
-        <grpSpLocks />
-        """
+    def test_from_xml(self, group_locking):
+        src = "<grpSpLocks/>"
         node = fromstring(src)
-        lock = GroupLocking.from_tree(node)
-        assert lock == GroupLocking()
-
-
-@pytest.fixture
-def GroupShapeProperties():
-    from ..properties import GroupShapeProperties
-
-    return GroupShapeProperties
-
-
-from ..geometry import Point2D, PositiveSize2D, GroupTransform2D
+        lock = group_locking.from_tree(node)
+        assert lock == group_locking()
 
 
 class TestGroupShapeProperties:
-
-    def test_ctor(self, GroupShapeProperties):
+    def test_ctor(self, group_shape_properties):
         xfrm = GroupTransform2D(
             off=Point2D(x=2222500, y=0),
             ext=PositiveSize2D(cx=2806700, cy=825500),
             chOff=Point2D(x=303, y=0),
             chExt=PositiveSize2D(cx=321, cy=111),
         )
-        props = GroupShapeProperties(bwMode="auto", xfrm=xfrm)
+        props = group_shape_properties(bwMode="auto", xfrm=xfrm)
         xml = tostring(props.to_tree())
         expected = """
-        <grpSpPr bwMode="auto" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-          <a:xfrm rot="0">
-            <a:off x="2222500" y="0"/>
-            <a:ext cx="2806700" cy="825500"/>
-            <a:chOff x="303" y="0"/>
-            <a:chExt cx="321" cy="111"/>
-          </a:xfrm>
+        <grpSpPr
+                bwMode="auto"
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <a:xfrm rot="0">
+                <a:off x="2222500" y="0"/>
+                <a:ext cx="2806700" cy="825500"/>
+                <a:chOff x="303" y="0"/>
+                <a:chExt cx="321" cy="111"/>
+            </a:xfrm>
         </grpSpPr>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, GroupShapeProperties):
-        src = """
-        <grpSpPr />
-        """
+    def test_from_xml(self, group_shape_properties):
+        src = "<grpSpPr/>"
         node = fromstring(src)
-        fut = GroupShapeProperties.from_tree(node)
-        assert fut == GroupShapeProperties()
-
-
-@pytest.fixture
-def NonVisualDrawingShapeProps():
-    from ..properties import NonVisualDrawingShapeProps
-
-    return NonVisualDrawingShapeProps
+        fut = group_shape_properties.from_tree(node)
+        assert fut == group_shape_properties()
 
 
 class TestNonVisualDrawingShapeProps:
-
-    def test_ctor(self, NonVisualDrawingShapeProps):
-        props = NonVisualDrawingShapeProps(txBox=True)
+    def test_ctor(self, non_visual_drawing_shape_props):
+        props = non_visual_drawing_shape_props(txBox=True)
         xml = tostring(props.to_tree())
-        expected = """
-        <cNvSpPr txBox="1" />
-        """
+        expected = '<cNvSpPr txBox="1"/>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, NonVisualDrawingShapeProps):
-        src = """
-        <cNvSpPr txBox="1" />
-        """
+    def test_from_xml(self, non_visual_drawing_shape_props):
+        src = '<cNvSpPr txBox="1"/>'
         node = fromstring(src)
-        props = NonVisualDrawingShapeProps.from_tree(node)
-        assert props == NonVisualDrawingShapeProps(txBox=True)
+        props = non_visual_drawing_shape_props.from_tree(node)
+        assert props == non_visual_drawing_shape_props(txBox=True)

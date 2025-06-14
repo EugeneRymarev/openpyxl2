@@ -2,10 +2,9 @@
 
 
 def test_color_descriptor():
-    from ..colors import ColorChoiceDescriptor
+    from openpyxl.drawing.colors import ColorChoiceDescriptor
 
     class DummyStyle:
-
         value = ColorChoiceDescriptor("value")
 
     style = DummyStyle()
