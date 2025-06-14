@@ -15,6 +15,7 @@ from openpyxl.descriptors.base import Min
 from openpyxl.descriptors.base import MinMax
 from openpyxl.descriptors.base import Set
 from openpyxl.descriptors.base import DateTime
+from openpyxl.descriptors.base import Convertible
 
 
 
