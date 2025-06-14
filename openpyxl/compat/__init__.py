@@ -1,34 +1,30 @@
 # Copyright (c) 2010-2025 openpyxl
+import functools
 import inspect
 import warnings
-from functools import wraps
 
-from .numbers import NUMERIC_TYPES
-from .strings import safe_string
-
-
-class DummyCode:
-
-    pass
-
+from openpyxl.compat.numbers import NUMERIC_TYPES
+from openpyxl.compat.strings import safe_string
 
 # from https://github.com/tantale/deprecated/blob/master/deprecated/__init__.py
 # with an enhancement to update docstrings of deprecated functions
 string_types = (type(b""), type(""))
 
 
-def deprecated(reason):
+class DummyCode:
+    pass
 
+
+def deprecated(reason):
     if isinstance(reason, string_types):
 
         def decorator(func1):
-
             if inspect.isclass(func1):
                 fmt1 = "Call to deprecated class {name} ({reason})."
             else:
                 fmt1 = "Call to deprecated function {name} ({reason})."
 
-            @wraps(func1)
+            @functools.wraps(func1)
             def new_func1(*args, **kwargs):
                 # warnings.simplefilter('default', DeprecationWarning)
                 warnings.warn(
@@ -47,9 +43,7 @@ def deprecated(reason):
             return new_func1
 
         return decorator
-
     elif inspect.isclass(reason) or inspect.isfunction(reason):
         raise TypeError("Reason for deprecation must be supplied")
-
     else:
         raise TypeError(repr(type(reason)))

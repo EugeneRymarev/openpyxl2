@@ -33,7 +33,6 @@ class Cached(type):
     def __call__(self, *args):
         if args in self.__cache:
             return self.__cache[args]
-
         obj = super().__call__(*args)
         self.__cache[args] = obj
         return obj
