@@ -1,25 +1,24 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.comments.comments import Comment
 from openpyxl.reader.excel import load_workbook
 from openpyxl.xml.functions import fromstring
 
-from ..comments import Comment
-
 
 def test_read_comments(datadir):
-    datadir.chdir()
-    from ..comment_sheet import CommentSheet
+    from openpyxl.comments.comment_sheet import CommentSheet
 
+    datadir.chdir()
     with open("comments2.xml") as src:
         node = fromstring(src.read())
-
     sheet = CommentSheet.from_tree(node)
     comments = list(sheet.comments)
-    assert comments == [
+    expected = [
         ("A1", Comment("Cuke:\nFirst Comment", "Cuke")),
         ("D1", Comment("Cuke:\nSecond Comment", "Cuke")),
         ("A2", Comment("Not Cuke:\nThird Comment", "Not Cuke")),
     ]
+    assert comments == expected
 
 
 def test_comments_cell_association(datadir):
