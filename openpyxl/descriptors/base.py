@@ -9,11 +9,8 @@ import re
 from openpyxl import DEBUG
 from openpyxl.utils.datetime import from_ISO8601
 
-from .namespace import namespaced
-
 
 class Descriptor:
-
     def __init__(self, name=None, **kw):
         self.name = name
         for k, v in kw.items():
@@ -83,7 +80,7 @@ class Max(Convertible):
         if (self.allow_none and value is not None) or not self.allow_none:
             value = _convert(self.expected_type, value)
             if value > self.max:
-                raise ValueError("Max value is {0}".format(self.max))
+                raise ValueError(f"Max value is {self.max}")
         super().__set__(instance, value)
 
 
@@ -102,7 +99,7 @@ class Min(Convertible):
         if (self.allow_none and value is not None) or not self.allow_none:
             value = _convert(self.expected_type, value)
             if value < self.min:
-                raise ValueError("Min value is {0}".format(self.min))
+                raise ValueError(f"Min value is {self.min}")
         super().__set__(instance, value)
 
 
@@ -120,7 +117,7 @@ class Set(Descriptor):
             raise TypeError("missing set of values")
         kw["values"] = set(kw["values"])
         super().__init__(name, **kw)
-        self.__doc__ = "Value must be one of {0}".format(self.values)
+        self.__doc__ = f"Value must be one of {self.values}"
 
     def __set__(self, instance, value):
         if value not in self.values:
@@ -142,17 +139,14 @@ class NoneSet(Set):
 
 
 class Integer(Convertible):
-
     expected_type = int
 
 
 class Float(Convertible):
-
     expected_type = float
 
 
 class Bool(Convertible):
-
     expected_type = bool
 
     def __set__(self, instance, value):
@@ -163,27 +157,22 @@ class Bool(Convertible):
 
 
 class String(Typed):
-
     expected_type = str
 
 
 class Text(String, Convertible):
-
     pass
 
 
 class ASCII(Typed):
-
     expected_type = bytes
 
 
 class Tuple(Typed):
-
     expected_type = tuple
 
 
 class Length(Descriptor):
-
     def __init__(self, name=None, **kw):
         if "length" not in kw:
             raise TypeError("value length must be supplied")
@@ -191,7 +180,7 @@ class Length(Descriptor):
 
     def __set__(self, instance, value):
         if len(value) != self.length:
-            raise ValueError("Value must be length {0}".format(self.length))
+            raise ValueError(f"Value must be length {self.length}")
         super().__set__(instance, value)
 
 
@@ -235,26 +224,20 @@ class MatchPattern(Descriptor):
     def __init__(self, name=None, **kw):
         if "pattern" not in kw and not hasattr(self, "pattern"):
             raise TypeError("missing pattern value")
-
         super().__init__(name, **kw)
         self.test_pattern = re.compile(self.pattern, re.VERBOSE)
 
     def __set__(self, instance, value):
-
         if value is None and not self.allow_none:
             raise ValueError("Value must not be none")
-
         if (self.allow_none and value is not None) or not self.allow_none:
             if not self.test_pattern.match(value):
-                raise ValueError(
-                    "Value does not match pattern {0}".format(self.pattern)
-                )
-
+                msg = f"Value does not match pattern {self.pattern}"
+                raise ValueError(msg)
         super().__set__(instance, value)
 
 
 class DateTime(Typed):
-
     expected_type = datetime.datetime
 
     def __set__(self, instance, value):

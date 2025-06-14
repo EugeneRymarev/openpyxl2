@@ -1,24 +1,18 @@
 # Copyright (c) 2010-2025 openpyxl
-from copy import copy
-from keyword import kwlist
+import copy
+import keyword
 
-KEYWORDS = frozenset(kwlist)
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors import MetaSerialisable
+from openpyxl.descriptors.base import Descriptor
+from openpyxl.descriptors.namespace import namespaced
+from openpyxl.descriptors.sequence import MultiSequencePart
+from openpyxl.descriptors.sequence import NestedSequence
+from openpyxl.descriptors.sequence import Sequence
+from openpyxl.xml.functions import Element
+from openpyxl.xml.functions import localname
 
-from . import Descriptor
-from . import MetaSerialisable
-from .sequence import (
-    Sequence,
-    NestedSequence,
-    MultiSequencePart,
-)
-from .namespace import namespaced
-
-from openpyxl.compat import safe_string
-from openpyxl.xml.functions import (
-    Element,
-    localname,
-)
-
+KEYWORDS = frozenset(keyword.kwlist)
 seq_types = (list, tuple)
 
 
@@ -35,7 +29,6 @@ class Serialisable(metaclass=MetaSerialisable):
     __nested__ = None
     __elements__ = None
     __namespaced__ = None
-
     idx_base = 0
 
     @property
@@ -55,7 +48,6 @@ class Serialisable(metaclass=MetaSerialisable):
             if ns in attrib:
                 attrib[key] = attrib[ns]
                 del attrib[ns]
-
         # strip attributes with unknown namespaces
         for key in list(attrib):
             if key.startswith("{"):
@@ -67,10 +59,8 @@ class Serialisable(metaclass=MetaSerialisable):
                 n = key.replace("-", "_")
                 attrib[n] = attrib[key]
                 del attrib[key]
-
         if node.text and "attr_text" in cls.__attrs__:
             attrib["attr_text"] = node.text
-
         for el in node:
             tag = localname(el)
             if tag in KEYWORDS:
@@ -78,7 +68,6 @@ class Serialisable(metaclass=MetaSerialisable):
             desc = getattr(cls, tag, None)
             if desc is None or isinstance(desc, property):
                 continue
-
             if hasattr(desc, "from_tree"):
                 # descriptor manages conversion
                 obj = desc.from_tree(el)
@@ -89,7 +78,6 @@ class Serialisable(metaclass=MetaSerialisable):
                 else:
                     # primitive
                     obj = el.text
-
             if isinstance(desc, NestedSequence):
                 attrib[tag] = obj
             elif isinstance(desc, Sequence):
@@ -100,37 +88,29 @@ class Serialisable(metaclass=MetaSerialisable):
                 attrib[desc.store].append(obj)
             else:
                 attrib[tag] = obj
-
         return cls(**attrib)
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
-
         if tagname is None:
             tagname = self.tagname
-
         # keywords have to be masked
         if tagname.startswith("_"):
             tagname = tagname[1:]
-
         tagname = namespaced(self, tagname, namespace)
         namespace = getattr(self, "namespace", namespace)
-
         attrs = dict(self)
         for key, ns in self.__namespaced__:
             if key in attrs:
                 attrs[ns] = attrs[key]
                 del attrs[key]
-
         el = Element(tagname, attrs)
         if "attr_text" in self.__attrs__:
             el.text = safe_string(getattr(self, "attr_text"))
-
         for child_tag in self.__elements__:
             desc = getattr(self.__class__, child_tag, None)
             obj = getattr(self, child_tag)
             if hasattr(desc, "namespace") and hasattr(obj, "namespace"):
                 obj.namespace = desc.namespace
-
             if isinstance(obj, seq_types):
                 if isinstance(desc, NestedSequence):
                     # wrap sequence in container
@@ -182,17 +162,14 @@ class Serialisable(metaclass=MetaSerialisable):
         return not self == other
 
     def __repr__(self):
-        s = "<{0}.{1} object>\nParameters:".format(
-            self.__module__, self.__class__.__name__
-        )
+        s = f"<{self.__module__}.{self.__class__.__name__} object>\nParameters:"
         args = []
         for k in self.__attrs__ + self.__elements__:
             v = getattr(self, k)
             if isinstance(v, Descriptor):
                 v = None
-            args.append("{0}={1}".format(k, repr(v)))
+            args.append(f"{k}={repr(v)}")
         args = ", ".join(args)
-
         return "\n".join([s, args])
 
     def __hash__(self):
@@ -202,7 +179,6 @@ class Serialisable(metaclass=MetaSerialisable):
             if isinstance(val, list):
                 val = tuple(val)
             fields.append(val)
-
         return hash(tuple(fields))
 
     def __add__(self, other):
@@ -227,6 +203,6 @@ class Serialisable(metaclass=MetaSerialisable):
         # copy any non-persisted attributed
         for k in self.__dict__:
             if k not in self.__attrs__ + self.__elements__:
-                v = copy(getattr(self, k))
+                v = copy.copy(getattr(self, k))
                 setattr(cp, k, v)
         return cp

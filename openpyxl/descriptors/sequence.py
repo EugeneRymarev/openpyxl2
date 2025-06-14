@@ -1,12 +1,11 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.compat import safe_string
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Descriptor
+from openpyxl.descriptors.base import _convert
+from openpyxl.descriptors.namespace import namespaced
 from openpyxl.utils.indexed_list import IndexedList
 from openpyxl.xml.functions import Element
-
-from .base import _convert
-from .base import Alias
-from .base import Descriptor
-from .namespace import namespaced
 
 
 class Sequence(Descriptor):
@@ -27,7 +26,6 @@ class Sequence(Descriptor):
         seq = self.container(_convert(self.expected_type, value) for value in seq)
         if self.unique:
             seq = IndexedList(seq)
-
         super().__set__(instance, seq)
 
     def to_tree(self, tagname, obj, namespace=None):
@@ -67,7 +65,6 @@ class ValueSequence(Sequence):
             yield Element(tagname, {self.attribute: safe_string(v)})
 
     def from_tree(self, node):
-
         return node.get(self.attribute)
 
 

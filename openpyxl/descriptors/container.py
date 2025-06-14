@@ -8,7 +8,6 @@ from openpyxl.xml.functions import Element
 
 
 class ElementList(list):
-
     @property
     def tagname(self):
         raise NotImplementedError
@@ -30,7 +29,6 @@ class ElementList(list):
 
     def append(self, value):
         if not isinstance(value, self.expected_type):
-            raise TypeError(
-                f"Value must of type {self.expected_type} {type(value)} provided"
-            )
+            msg = f"Value must of type {self.expected_type} {type(value)} provided"
+            raise TypeError(msg)
         super().append(value)

@@ -1,10 +1,11 @@
 # Copyright (c) 2010-2025 openpyxl
-from .base import *
-from .sequence import Sequence
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Descriptor
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.sequence import Sequence
 
 
 class MetaStrict(type):
-
     def __new__(cls, clsname, bases, methods):
         for k, v in methods.items():
             if isinstance(v, Descriptor):
@@ -13,12 +14,10 @@ class MetaStrict(type):
 
 
 class Strict(metaclass=MetaStrict):
-
     pass
 
 
 class MetaSerialisable(type):
-
     def __new__(cls, clsname, bases, methods):
         attrs = []
         nested = []
@@ -28,7 +27,7 @@ class MetaSerialisable(type):
             if isinstance(v, Descriptor):
                 ns = getattr(v, "namespace", None)
                 if ns:
-                    namespaced.append((k, "{%s}%s" % (ns, k)))
+                    namespaced.append((k, f"{{{ns}}}{k}"))
                 if getattr(v, "nested", False):
                     nested.append(k)
                     elements.append(k)
@@ -46,7 +45,6 @@ class MetaSerialisable(type):
                 else:
                     if not isinstance(v, Alias):
                         attrs.append(k)
-
         if methods.get("__attrs__") is None:
             methods["__attrs__"] = tuple(attrs)
         methods["__namespaced__"] = tuple(namespaced)

@@ -2,25 +2,22 @@
 """
 Excel specific descriptors
 """
-from openpyxl.compat import safe_string
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MatchPattern
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
+from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.xml.constants import REL_NS
 from openpyxl.xml.functions import Element
 
-from . import Integer
-from . import MatchPattern
-from . import MinMax
-from . import Sequence
-from . import String
-from .serialisable import Serialisable
-
 
 class HexBinary(MatchPattern):
-
     pattern = "[0-9a-fA-F]+$"
 
 
 class UniversalMeasure(MatchPattern):
-
     pattern = r"[0-9]+(\.[0-9]+)?(mm|cm|in|pt|pc|pi)"
 
 
@@ -31,7 +28,6 @@ class TextPoint(MinMax):
     """
 
     expected_type = int
-
     min = -400000
     max = 400000
 
@@ -40,7 +36,6 @@ Coordinate = Integer
 
 
 class Percentage(MinMax):
-
     pattern = r"((100)|([0-9][0-9]?))(\.[0-9][0-9]?)?%"  # strict
     min = -1000000
     max = 1000000
@@ -53,36 +48,30 @@ class Percentage(MinMax):
 
 
 class Extension(Serialisable):
-
     uri = String()
 
-    def __init__(
-        self,
-        uri=None,
-    ):
+    def __init__(self, uri=None):
         self.uri = uri
 
 
 class ExtensionList(Serialisable):
-
     ext = Sequence(expected_type=Extension)
 
-    def __init__(
-        self,
-        ext=(),
-    ):
+    def __init__(self, ext=()):
         self.ext = ext
 
 
 class Relation(String):
-
     namespace = REL_NS
     allow_none = True
 
 
 class Base64Binary(MatchPattern):
     # http://www.w3.org/TR/xmlschema11-2/#nt-Base64Binary
-    pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$"
+    pattern = (
+        r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2"
+        r"}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$"
+    )
 
 
 class Guid(MatchPattern):
@@ -91,12 +80,13 @@ class Guid(MatchPattern):
 
 
 class CellRange(MatchPattern):
-
-    pattern = r"^[$]?([A-Za-z]{1,3})[$]?(\d+)(:[$]?([A-Za-z]{1,3})[$]?(\d+)?)?$|^[A-Za-z]{1,3}:[A-Za-z]{1,3}$"
+    pattern = (
+        r"^[$]?([A-Za-z]{1,3})[$]?(\d+)(:[$]?([A-Za-z]{1,"
+        r"3})[$]?(\d+)?)?$|^[A-Za-z]{1,3}:[A-Za-z]{1,3}$"
+    )
     allow_none = True
 
     def __set__(self, instance, value):
-
         if value is not None:
             value = value.upper()
         super().__set__(instance, value)
@@ -107,5 +97,5 @@ def _explicit_none(tagname, value, namespace=None):
     Override serialisation because explicit none required
     """
     if namespace is not None:
-        tagname = "{%s}%s" % (namespace, tagname)
+        tagname = f"{{{namespace}}}{tagname}"
     return Element(tagname, val=safe_string(value))
