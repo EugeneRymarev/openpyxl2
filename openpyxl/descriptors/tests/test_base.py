@@ -1,12 +1,130 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.descriptors import Strict
 
-from .. import Strict
+
+@pytest.fixture
+def boolean():
+    from openpyxl.descriptors.base import Bool
+
+    class Dummy(Strict):
+        value = Bool()
+
+    return Dummy()
+
+
+@pytest.fixture
+def integer():
+    from openpyxl.descriptors.base import Integer
+
+    class Dummy(Strict):
+        value = Integer()
+
+    return Dummy()
+
+
+@pytest.fixture
+def float_():
+    from openpyxl.descriptors.base import Float
+
+    class Dummy(Strict):
+        value = Float()
+
+    return Dummy()
+
+
+@pytest.fixture
+def allow_none():
+    from openpyxl.descriptors.base import Float
+
+    class Dummy(Strict):
+        value = Float(allow_none=True)
+
+    return Dummy()
+
+
+@pytest.fixture
+def maximum():
+    from openpyxl.descriptors.base import Max
+
+    class Dummy(Strict):
+        value = Max(max=5)
+
+    return Dummy()
+
+
+@pytest.fixture
+def minimum():
+    from openpyxl.descriptors.base import Min
+
+    class Dummy(Strict):
+        value = Min(min=0)
+
+    return Dummy()
+
+
+@pytest.fixture
+def min_max():
+    from openpyxl.descriptors.base import MinMax
+
+    class Dummy(Strict):
+        value = MinMax(min=-1, max=1)
+
+    return Dummy()
+
+
+@pytest.fixture
+def set_():
+    from openpyxl.descriptors.base import Set
+
+    class Dummy(Strict):
+        value = Set(values=[1, "a", None])
+
+    return Dummy()
+
+
+@pytest.fixture
+def ascii_():
+    from openpyxl.descriptors.base import ASCII
+
+    class Dummy(Strict):
+        value = ASCII()
+
+    return Dummy()
+
+
+@pytest.fixture
+def string():
+    from openpyxl.descriptors.base import String
+
+    class Dummy(Strict):
+        value = String()
+
+    return Dummy()
+
+
+@pytest.fixture
+def tuple_():
+    from openpyxl.descriptors.base import Tuple
+
+    class Dummy(Strict):
+        value = Tuple()
+
+    return Dummy()
+
+
+@pytest.fixture
+def length():
+    from openpyxl.descriptors.base import Length
+
+    class Dummy(Strict):
+        value = Length(length=4)
+
+    return Dummy()
 
 
 class TestDescriptor:
-
-    from ..base import Descriptor
+    from openpyxl.descriptors.base import Descriptor
 
     class Dummy:
         pass
@@ -23,20 +141,7 @@ class TestDescriptor:
         assert client.key == 42
 
 
-@pytest.fixture
-def boolean():
-
-    from ..base import Bool
-
-    class Dummy(Strict):
-
-        value = Bool()
-
-    return Dummy()
-
-
 class TestBool:
-
     def test_valid(self, boolean):
         boolean.value = True
         assert boolean.value
@@ -44,10 +149,7 @@ class TestBool:
     @pytest.mark.parametrize(
         "value, expected",
         [
-            (
-                1,
-                True,
-            ),
+            (1, True),
             (0, False),
             ("true", True),
             ("false", False),
@@ -63,10 +165,9 @@ class TestBool:
 
 
 def test_nested():
-    from ..base import Bool
+    from openpyxl.descriptors.base import Bool
 
     class DummyNested(Strict):
-
         value = Bool(nested=True)
 
     dummy = DummyNested()
@@ -74,20 +175,7 @@ def test_nested():
     assert dummy.__class__.value.nested == True
 
 
-@pytest.fixture
-def integer():
-
-    from ..base import Integer
-
-    class Dummy(Strict):
-
-        value = Integer()
-
-    return Dummy()
-
-
 class TestInt:
-
     def test_valid(self, integer):
         integer.value = 4
         assert integer.value == 4
@@ -97,88 +185,37 @@ class TestInt:
         with pytest.raises(TypeError):
             integer.value = value
 
-    @pytest.mark.parametrize(
-        "value, expected",
-        [
-            ("4", 4),
-            (4.5, 4),
-        ],
-    )
+    @pytest.mark.parametrize("value, expected", [("4", 4), (4.5, 4)])
     def test_cast(self, integer, value, expected):
         integer.value = value
         assert integer.value == expected
 
 
-@pytest.fixture
-def float():
-
-    from ..base import Float
-
-    class Dummy(Strict):
-
-        value = Float()
-
-    return Dummy()
-
-
 class TestFloat:
-
-    def test_valid(self, float):
-        float.value = 4
-        assert float.value == 4
+    def test_valid(self, float_):
+        float_.value = 4
+        assert float_.value == 4
 
     @pytest.mark.parametrize("value", ["a", None])
-    def test_invalid(self, float, value):
+    def test_invalid(self, float_, value):
         with pytest.raises(TypeError):
-            float.value = value
+            float_.value = value
 
-    @pytest.mark.parametrize(
-        "value, expected",
-        [
-            ("4.5", 4.5),
-            (4.5, 4.5),
-            (4, 4.0),
-        ],
-    )
-    def test_cast(self, float, value, expected):
-        float.value = value
-        assert float.value == expected
-
-
-@pytest.fixture
-def allow_none():
-
-    from ..base import Float
-
-    class Dummy(Strict):
-
-        value = Float(allow_none=True)
-
-    return Dummy()
+    @pytest.mark.parametrize("value, expected", [("4.5", 4.5), (4.5, 4.5), (4, 4.0)])
+    def test_cast(self, float_, value, expected):
+        float_.value = value
+        assert float_.value == expected
 
 
 class TestAllowNone:
-
     def test_valid(self, allow_none):
         allow_none.value = None
         assert allow_none.value is None
 
 
-@pytest.fixture
-def maximum():
-    from ..base import Max
-
-    class Dummy(Strict):
-
-        value = Max(max=5)
-
-    return Dummy()
-
-
 class TestMax:
-
     def test_ctor(self):
-        from ..base import Max
+        from openpyxl.descriptors.base import Max
 
         with pytest.raises(TypeError):
 
@@ -194,21 +231,9 @@ class TestMax:
             maximum.value = 6
 
 
-@pytest.fixture
-def minimum():
-    from ..base import Min
-
-    class Dummy(Strict):
-
-        value = Min(min=0)
-
-    return Dummy()
-
-
 class TestMin:
-
     def test_ctor(self):
-        from ..base import Min
+        from openpyxl.descriptors.base import Min
 
         with pytest.raises(TypeError):
 
@@ -224,21 +249,9 @@ class TestMin:
             minimum.value = -1
 
 
-@pytest.fixture
-def min_max():
-    from ..base import MinMax
-
-    class Dummy(Strict):
-
-        value = MinMax(min=-1, max=1)
-
-    return Dummy()
-
-
 class TestMinMax:
-
     def test_ctor(self):
-        from ..base import MinMax
+        from openpyxl.descriptors.base import MinMax
 
         with pytest.raises(TypeError):
 
@@ -259,42 +272,28 @@ class TestMinMax:
             min_max.value = 2
 
 
-@pytest.fixture
-def set():
-    from ..base import Set
-
-    class Dummy(Strict):
-
-        value = Set(values=[1, "a", None])
-
-    return Dummy()
-
-
 class TestValues:
-
     def test_ctor(self):
-        from ..base import Set
+        from openpyxl.descriptors.base import Set
 
         with pytest.raises(TypeError):
 
             class Dummy(Strict):
-
                 value = Set()
 
-    def test_valid(self, set):
-        set.value = 1
-        assert set.value == 1
+    def test_valid(self, set_):
+        set_.value = 1
+        assert set_.value == 1
 
-    def test_invalid(self, set):
+    def test_invalid(self, set_):
         with pytest.raises(ValueError):
-            set.value = 2
+            set_.value = 2
 
 
 def test_noneset():
-    from ..base import NoneSet
+    from openpyxl.descriptors.base import NoneSet
 
     class Dummy(Strict):
-
         value = NoneSet(values=[1, 2, 3])
 
     obj = Dummy()
@@ -304,46 +303,18 @@ def test_noneset():
         obj.value = 5
 
 
-@pytest.fixture
-def ascii():
-
-    from ..base import ASCII
-
-    class Dummy(Strict):
-
-        value = ASCII()
-
-    return Dummy()
-
-
 class TestASCII:
+    def test_valid(self, ascii_):
+        ascii_.value = b"some text"
+        assert ascii_.value == b"some text"
 
-    def test_valid(self, ascii):
-        ascii.value = b"some text"
-        assert ascii.value == b"some text"
-
-    value = b"\xc3\xbc".decode("utf-8")
-
-    @pytest.mark.parametrize("value", [value, 10, []])
-    def test_invalid(self, ascii, value):
+    @pytest.mark.parametrize("value", [b"\xc3\xbc".decode("utf-8"), 10, []])
+    def test_invalid(self, ascii_, value):
         with pytest.raises(TypeError):
-            ascii.value = value
-
-
-@pytest.fixture
-def string():
-
-    from ..base import String
-
-    class Dummy(Strict):
-
-        value = String()
-
-    return Dummy()
+            ascii_.value = value
 
 
 class TestString:
-
     def test_valid(self, string):
         value = b"\xc3\xbc".decode("utf-8")
         string.value = value
@@ -354,44 +325,20 @@ class TestString:
             string.value = 5
 
 
-@pytest.fixture
-def Tuple():
-    from ..base import Tuple
-
-    class Dummy(Strict):
-
-        value = Tuple()
-
-    return Dummy()
-
-
 class TestTuple:
+    def test_valid(self, tuple_):
+        tuple_.value = (1, 2)
+        assert tuple_.value == (1, 2)
 
-    def test_valid(self, Tuple):
-        Tuple.value = (1, 2)
-        assert Tuple.value == (1, 2)
-
-    def test_invalid(self, Tuple):
+    def test_invalid(self, tuple_):
         with pytest.raises(TypeError):
-            Tuple.value = [1, 2, 3]
-
-
-@pytest.fixture
-def Length():
-    from ..base import Length
-
-    class Dummy(Strict):
-
-        value = Length(length=4)
-
-    return Dummy()
+            tuple_.value = [1, 2, 3]
 
 
 class TestLength:
+    def test_valid(self, length):
+        length.value = "this"
 
-    def test_valid(self, Length):
-        Length.value = "this"
-
-    def test_invalid(self, Length):
+    def test_invalid(self, length):
         with pytest.raises(ValueError):
-            Length.value = "2"
+            length.value = "2"

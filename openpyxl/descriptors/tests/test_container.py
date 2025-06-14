@@ -1,16 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.container import ElementList
+from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
-from ..base import Integer
-from ..container import ElementList
-from ..serialisable import Serialisable
-
 
 class TestElementList:
-
     def ctor(self):
         container = ElementList()
         with pytest.raises(TypeError):
@@ -18,7 +16,6 @@ class TestElementList:
 
 
 class Relation(Serialisable):
-
     tagname = "relation"
     link = Integer(allow_none=True)
 
@@ -27,13 +24,11 @@ class Relation(Serialisable):
 
 
 class RelList(ElementList):
-
     expected_type = Relation
     tagname = "relationships"
 
 
 class TestRelList:
-
     def test_ctor(self):
         els = [Relation() for i in range(3)]
         container = RelList(els)
@@ -50,16 +45,18 @@ class TestRelList:
         xml = container.to_tree()
         expected = """
         <relationships>
-             <relation></relation>
-        </relationships>"""
+            <relation></relation>
+        </relationships>
+        """
         diff = compare_xml(tostring(xml), expected)
         assert diff is None, diff
 
     def test_from_tree(self):
         xml = """
         <relationships>
-             <relation link="3"></relation>
-        </relationships>"""
+            <relation link="3"></relation>
+        </relationships>
+        """
         tree = fromstring(xml)
         container = RelList.from_tree(tree)
         assert len(container) == 1

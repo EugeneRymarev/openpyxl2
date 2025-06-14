@@ -1,20 +1,17 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
-from ..serialisable import Serialisable
-
 
 @pytest.fixture
-def NestedValue():
-    from ..nested import NestedValue
+def nested_value():
+    from openpyxl.descriptors.nested import NestedValue
 
     class Simple(Serialisable):
-
         tagname = "simple"
-
         size = NestedValue(expected_type=int)
 
         def __init__(self, size):
@@ -23,69 +20,12 @@ def NestedValue():
     return Simple
 
 
-class TestValue:
-
-    def test_to_tree(self, NestedValue):
-
-        simple = NestedValue(4)
-
-        assert simple.size == 4
-        xml = tostring(NestedValue.size.to_tree("size", simple.size))
-        expected = """
-        <size val="4"></size>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_tree(self, NestedValue):
-
-        xml = """
-            <size val="4"></size>
-            """
-        node = fromstring(xml)
-        simple = NestedValue(size=node)
-        assert simple.size == 4
-
-    def test_tag_mismatch(self, NestedValue):
-
-        xml = """
-        <length val="4"></length>
-        """
-        node = fromstring(xml)
-        with pytest.raises(ValueError):
-            simple = NestedValue(size=node)
-
-    def test_nested_to_tree(self, NestedValue):
-        simple = NestedValue(4)
-        xml = tostring(simple.to_tree())
-        expected = """
-        <simple>
-          <size val="4"/>
-        </simple>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_nested_from_tree(self, NestedValue):
-        xml = """
-        <simple>
-          <size val="4"/>
-        </simple>
-        """
-        node = fromstring(xml)
-        obj = NestedValue.from_tree(node)
-        assert obj.size == 4
-
-
 @pytest.fixture
-def NestedText():
-
-    from ..nested import NestedText
+def nested_text():
+    from openpyxl.descriptors.nested import NestedText
 
     class Simple(Serialisable):
-
         tagname = "simple"
-
         coord = NestedText(expected_type=int)
 
         def __init__(self, coord):
@@ -94,56 +34,118 @@ def NestedText():
     return Simple
 
 
-class TestText:
+@pytest.fixture
+def empty():
+    from openpyxl.descriptors.nested import EmptyTag
 
-    def test_to_tree(self, NestedText):
+    class Simple(Serialisable):
+        tagname = "break"
+        height = EmptyTag()
 
-        simple = NestedText(4)
+        def __init__(self, height=None):
+            self.height = height
 
-        assert simple.coord == 4
-        xml = tostring(NestedText.coord.to_tree("coord", simple.coord))
-        expected = """
-        <coord>4</coord>
-        """
+    return Simple
+
+
+@pytest.fixture
+def custom_attribute():
+    from openpyxl.descriptors.nested import NestedValue
+
+    class Simple(Serialisable):
+        tagname = "simple"
+        size = NestedValue(expected_type=int, attribute="something")
+
+        def __init__(self, size):
+            self.size = size
+
+    return Simple
+
+
+class TestValue:
+    def test_to_tree(self, nested_value):
+        simple = nested_value(4)
+        assert simple.size == 4
+        xml = tostring(nested_value.size.to_tree("size", simple.size))
+        expected = '<size val="4"></size>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_tree(self, NestedText):
-        xml = """
-            <coord>4</coord>
-            """
+    def test_from_tree(self, nested_value):
+        xml = '<size val="4"></size>'
         node = fromstring(xml)
+        simple = nested_value(size=node)
+        assert simple.size == 4
 
-        simple = NestedText(node)
-        assert simple.coord == 4
+    def test_tag_mismatch(self, nested_value):
+        xml = '<length val="4"></length>'
+        node = fromstring(xml)
+        with pytest.raises(ValueError):
+            simple = nested_value(size=node)
 
-    def test_nested_to_tree(self, NestedText):
-        simple = NestedText(4)
+    def test_nested_to_tree(self, nested_value):
+        simple = nested_value(4)
         xml = tostring(simple.to_tree())
         expected = """
         <simple>
-          <coord>4</coord>
+            <size val="4"/>
         </simple>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_nested_from_tree(self, NestedText):
+    def test_nested_from_tree(self, nested_value):
         xml = """
         <simple>
-          <coord>4</coord>
+            <size val="4"/>
         </simple>
         """
         node = fromstring(xml)
-        obj = NestedText.from_tree(node)
+        obj = nested_value.from_tree(node)
+        assert obj.size == 4
+
+
+class TestText:
+    def test_to_tree(self, nested_text):
+        simple = nested_text(4)
+        assert simple.coord == 4
+        xml = tostring(nested_text.coord.to_tree("coord", simple.coord))
+        expected = "<coord>4</coord>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_tree(self, nested_text):
+        xml = "<coord>4</coord>"
+        node = fromstring(xml)
+        simple = nested_text(node)
+        assert simple.coord == 4
+
+    def test_nested_to_tree(self, nested_text):
+        simple = nested_text(4)
+        xml = tostring(simple.to_tree())
+        expected = """
+        <simple>
+            <coord>4</coord>
+        </simple>
+        """
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_nested_from_tree(self, nested_text):
+        xml = """
+        <simple>
+            <coord>4</coord>
+        </simple>
+        """
+        node = fromstring(xml)
+        obj = nested_text.from_tree(node)
         assert obj.coord == 4
 
 
 def test_bool_value():
-    from ..nested import NestedBool
+    from openpyxl.descriptors.nested import NestedBool
 
     class Simple(Serialisable):
-
         bold = NestedBool()
 
         def __init__(self, bold):
@@ -151,7 +153,7 @@ def test_bool_value():
 
     xml = """
     <font>
-       <bold val="true"/>
+        <bold val="true"/>
     </font>
     """
     node = fromstring(xml)
@@ -160,10 +162,9 @@ def test_bool_value():
 
 
 def test_noneset_value():
-    from ..nested import NestedNoneSet
+    from openpyxl.descriptors.nested import NestedNoneSet
 
     class Simple(Serialisable):
-
         underline = NestedNoneSet(values=("1", "2", "3"))
 
         def __init__(self, underline):
@@ -171,20 +172,18 @@ def test_noneset_value():
 
     xml = """
     <font>
-       <underline val="1" />
+        <underline val="1"/>
     </font>
     """
-
     node = fromstring(xml)
     simple = Simple.from_tree(node)
     assert simple.underline == "1"
 
 
 def test_min_max_value():
-    from ..nested import NestedMinMax
+    from openpyxl.descriptors.nested import NestedMinMax
 
     class Simple(Serialisable):
-
         size = NestedMinMax(min=5, max=10)
 
         def __init__(self, size):
@@ -192,22 +191,19 @@ def test_min_max_value():
 
     xml = """
     <font>
-         <size val="6"/>
+        <size val="6"/>
     </font>
     """
-
     node = fromstring(xml)
     simple = Simple.from_tree(node)
     assert simple.size == 6
 
 
 def test_nested_integer():
-    from ..nested import NestedInteger
+    from openpyxl.descriptors.nested import NestedInteger
 
     class Simple(Serialisable):
-
         tagname = "font"
-
         size = NestedInteger()
 
         def __init__(self, size):
@@ -218,12 +214,10 @@ def test_nested_integer():
 
 
 def test_nested_float():
-    from ..nested import NestedFloat
+    from openpyxl.descriptors.nested import NestedFloat
 
     class Simple(Serialisable):
-
         tagname = "font"
-
         size = NestedFloat()
 
         def __init__(self, size):
@@ -234,12 +228,10 @@ def test_nested_float():
 
 
 def test_nested_string():
-    from ..nested import NestedString
+    from openpyxl.descriptors.nested import NestedString
 
     class Simple(Serialisable):
-
         tagname = "font"
-
         name = NestedString()
 
         def __init__(self, name):
@@ -249,84 +241,46 @@ def test_nested_string():
     assert simple.name == "4"
 
 
-@pytest.fixture
-def Empty():
-    from ..nested import EmptyTag
-
-    class Simple(Serialisable):
-
-        tagname = "break"
-
-        height = EmptyTag()
-
-        def __init__(self, height=None):
-            self.height = height
-
-    return Simple
-
-
 class TestEmptyTag:
-
     @pytest.mark.parametrize(
-        "value, result", [(False, False), (True, True), (None, False), (1, True)]
+        "value, result",
+        [(False, False), (True, True), (None, False), (1, True)],
     )
-    def test_ctor(self, Empty, value, result):
-        obj = Empty(value)
+    def test_ctor(self, empty, value, result):
+        obj = empty(value)
         assert obj.height is result
 
     @pytest.mark.parametrize(
-        "value, result", [(False, "<break />"), (True, "<break><height /></break>")]
+        "value, result",
+        [(False, "<break/>"), (True, "<break><height/></break>")],
     )
-    def test_to_tree(self, Empty, value, result):
-        obj = Empty(height=value)
+    def test_to_tree(self, empty, value, result):
+        obj = empty(height=value)
         xml = tostring(obj.to_tree())
         diff = compare_xml(xml, result)
         assert diff is None, diff
 
     @pytest.mark.parametrize(
-        "value, src", [(False, "<break />"), (True, "<break><height /></break>")]
+        "value, src",
+        [(False, "<break/>"), (True, "<break><height/></break>")],
     )
-    def test_from_xml(self, Empty, value, src):
+    def test_from_xml(self, empty, value, src):
         node = fromstring(src)
-        obj = Empty.from_tree(node)
+        obj = empty.from_tree(node)
         assert obj.height is value
 
 
-@pytest.fixture
-def CustomAttribute():
-    from ..nested import NestedValue
-
-    class Simple(Serialisable):
-
-        tagname = "simple"
-
-        size = NestedValue(expected_type=int, attribute="something")
-
-        def __init__(self, size):
-            self.size = size
-
-    return Simple
-
-
 class TestCustomAttribute:
-
-    def test_to_tree(self, CustomAttribute):
-
-        simple = CustomAttribute(4)
-
+    def test_to_tree(self, custom_attribute):
+        simple = custom_attribute(4)
         assert simple.size == 4
-        xml = tostring(CustomAttribute.size.to_tree("size", simple.size))
-        expected = """
-        <size something="4"></size>
-        """
+        xml = tostring(custom_attribute.size.to_tree("size", simple.size))
+        expected = '<size something="4"></size>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_tree(self, CustomAttribute):
-
-        xml = """
-        <size something="4"></size>
-        """
+    def test_from_tree(self, custom_attribute):
+        xml = '<size something="4"></size>'
         node = fromstring(xml)
-        simple = CustomAttribute(size=node)
+        simple = custom_attribute(size=node)
         assert simple.size == 4
