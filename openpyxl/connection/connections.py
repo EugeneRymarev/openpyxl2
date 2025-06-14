@@ -2,13 +2,13 @@
 # Copyright (c) 2010-2025 openpyxl
 import warnings
 
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedString
@@ -16,14 +16,12 @@ from openpyxl.descriptors.sequence import NestedSequence
 from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.xml.constants import SHEET_MAIN_NS
-from openpyxl.xml.functions import Element
 
 
 class Parameter(Serialisable):
     """Parameter Properties"""
 
     tagname = "parameter"
-
     name = String(allow_none=True)
     sqlType = Integer(allow_none=True)
     parameterType = NoneSet(values=(["prompt", "value", "cell"]))
@@ -63,19 +61,25 @@ class Parameter(Serialisable):
 class TextField(Serialisable):
     # Implements CT_TextField
     tagname = "textField"
-
     type = Set(
         values=(
-            ["general", "text", "MDY", "DMY", "YMD", "MYD", "DYM", "YDM", "skip", "EMD"]
+            [
+                "general",
+                "text",
+                "MDY",
+                "DMY",
+                "YMD",
+                "MYD",
+                "DYM",
+                "YDM",
+                "skip",
+                "EMD",
+            ]
         )
     )
     position = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        type="general",
-        position=0,
-    ):
+    def __init__(self, type="general", position=0):
         self.type = type
         self.position = position
 
@@ -84,7 +88,6 @@ class TextPr(Serialisable):
     """Text Import Properties"""
 
     tagname = "textPr"
-
     textFields = NestedSequence(expected_type=TextField, count=True)
     prompt = Bool(allow_none=True)
     fileType = NoneSet(values=(["mac", "win", "dos"]))
@@ -101,7 +104,6 @@ class TextPr(Serialisable):
     consecutive = Bool(allow_none=True)
     qualifier = NoneSet(values=(["doubleQuote", "singleQuote"]))
     delimiter = String(allow_none=True)
-
     __elements__ = ("textFields",)
 
     def __init__(
@@ -149,22 +151,14 @@ class TableMissing(Serialisable):
 
 
 class Tables(Serialisable):
-
     tagname = "tables"
-
     # some elements are choice
     m = Typed(expected_type=TableMissing, allow_none=True)
     s = NestedString(allow_none=True, attribute="v")
     x = NestedInteger(allow_none=True, attribute="v")
     count = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        m=None,
-        s=None,
-        x=None,
-        count=None,
-    ):
+    def __init__(self, m=None, s=None, x=None, count=None):
         self.m = m
         self.s = s
         self.x = x
@@ -175,7 +169,6 @@ class WebPr(Serialisable):
     """Web Properties"""
 
     tagname = "webPr"
-
     tables = Typed(expected_type=Tables, allow_none=True)
     xml = Bool(allow_none=True)
     sourceData = Bool(allow_none=True)
@@ -190,7 +183,6 @@ class WebPr(Serialisable):
     htmlTables = Bool(allow_none=True)
     htmlFormat = NoneSet(values=(["rtf", "all"]))
     editPage = String(allow_none=True)
-
     __elements__ = ("tables",)
 
     def __init__(
@@ -230,7 +222,6 @@ class OlapPr(Serialisable):
     """OLAP Properties"""
 
     tagname = "olapPr"
-
     local = Bool(allow_none=True)
     localConnection = String(allow_none=True)
     localRefresh = Bool(allow_none=True)
@@ -268,7 +259,6 @@ class DbPr(Serialisable):
     """Database Properties"""
 
     tagname = "dbPr"
-
     connection = String()
     command = String(allow_none=True)
     serverCommand = String(allow_none=True)
@@ -290,7 +280,6 @@ class DbPr(Serialisable):
 class Connection(Serialisable):
     # Implements CT_Connection
     tagname = "connection"
-
     dbPr = Typed(expected_type=DbPr, allow_none=True)
     olapPr = Typed(expected_type=OlapPr, allow_none=True)
     webPr = Typed(expected_type=WebPr, allow_none=True)
@@ -318,7 +307,6 @@ class Connection(Serialisable):
     credentials = NoneSet(values=(["integrated", "stored", "prompt"]))
     singleSignOnId = String(allow_none=True)
     _cache = None  # Any pivot caches attached to this connection
-
     __elements__ = ("dbPr", "olapPr", "webPr", "textPr", "parameters")
 
     def __init__(
@@ -399,37 +387,33 @@ class Connection(Serialisable):
 
 
 class ConnectionSequenceDescriptor(Sequence):
-
     expected_type = Connection
 
     def __set__(self, instance, seq):
         cxns = []
         for cxn in seq:
             if cxn.type and not cxn.is_known_connection:
-                warnings.warn(
-                    f"Connections type {cxn.type} is not supported, references to it will be dropped to keep the Workbook valid."
+                msg = (
+                    f"Connections type {cxn.type} is not "
+                    "supported, references to it will be "
+                    "dropped to keep the Workbook valid."
                 )
+                warnings.warn(msg)
                 continue
             cxns.append(cxn)
         super().__set__(instance, cxns)
 
 
 class ConnectionList(Serialisable):
-
     tagname = "connections"
     _path = "/xl/connections.xml"
     mime_type = (
         "application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml"
     )
-
     connection = ConnectionSequenceDescriptor()
-
     __elements__ = ("connection",)
 
-    def __init__(
-        self,
-        connection=(),
-    ):
+    def __init__(self, connection=()):
         self.connection = connection
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
