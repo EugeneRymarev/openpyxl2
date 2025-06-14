@@ -8,6 +8,7 @@ from openpyxl.descriptors.base import Bool
 from openpyxl.descriptors.base import Integer
 from openpyxl.descriptors.base import MatchPattern
 from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Float
 
 
 class MetaStrict(type):
