@@ -19,6 +19,12 @@ from openpyxl.descriptors.nested import NestedValue
 from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.drawing.colors import ColorChoiceDescriptor
+from openpyxl.drawing.effect import EffectContainer
+from openpyxl.drawing.effect import EffectList
+from openpyxl.drawing.fill import Blip
+from openpyxl.drawing.fill import BlipFillProperties
+from openpyxl.drawing.fill import GradientFillProperties
+from openpyxl.drawing.fill import PatternFillProperties
 from openpyxl.drawing.geometry import Color
 from openpyxl.drawing.geometry import Scene3D
 from openpyxl.drawing.line import LineProperties
