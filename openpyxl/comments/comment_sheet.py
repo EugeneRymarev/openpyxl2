@@ -1,11 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
 ## Incomplete!
 from openpyxl.cell.text import Text
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.comments.author import AuthorList
+from openpyxl.comments.comments import Comment
+from openpyxl.comments.shape_writer import ShapeWriter
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Guid
 from openpyxl.descriptors.sequence import NestedSequence
@@ -13,13 +16,8 @@ from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.utils.indexed_list import IndexedList
 from openpyxl.xml.constants import SHEET_MAIN_NS
 
-from .author import AuthorList
-from .comments import Comment
-from .shape_writer import ShapeWriter
-
 
 class Properties(Serialisable):
-
     locked = Bool(allow_none=True)
     defaultSize = Bool(allow_none=True)
     _print = Bool(allow_none=True)
@@ -36,7 +34,6 @@ class Properties(Serialisable):
     rowHidden = Bool(allow_none=True)
     colHidden = Bool(allow_none=True)
     # anchor = Typed(expected_type=ObjectAnchor, )
-
     __elements__ = ("anchor",)
 
     def __init__(
@@ -77,9 +74,7 @@ class Properties(Serialisable):
 
 
 class CommentRecord(Serialisable):
-
     tagname = "comment"
-
     ref = String()
     authorId = Integer()
     guid = Guid(allow_none=True)
@@ -87,7 +82,6 @@ class CommentRecord(Serialisable):
     text = Typed(expected_type=Text)
     commentPr = Typed(expected_type=Properties, allow_none=True)
     author = String(allow_none=True)
-
     __elements__ = ("text", "commentPr")
     __attrs__ = ("ref", "authorId", "guid", "shapeId")
 
@@ -137,13 +131,10 @@ class CommentRecord(Serialisable):
 
 
 class CommentSheet(Serialisable):
-
     tagname = "comments"
-
     authors = Typed(expected_type=AuthorList)
     commentList = NestedSequence(expected_type=CommentRecord, count=0)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     _id = None
     _path = "/xl/comments/comment{0}.xml"
     mime_type = (
@@ -151,15 +142,9 @@ class CommentSheet(Serialisable):
     )
     _rel_type = "comments"
     _rel_id = None
-
     __elements__ = ("authors", "commentList")
 
-    def __init__(
-        self,
-        authors=None,
-        commentList=None,
-        extLst=None,
-    ):
+    def __init__(self, authors=None, commentList=None, extLst=None):
         self.authors = authors
         self.commentList = commentList
 
@@ -174,7 +159,6 @@ class CommentSheet(Serialisable):
         Return a dictionary of comments keyed by coord
         """
         authors = self.authors.author
-
         for c in self.commentList:
             yield c.ref, Comment(c.content, authors[c.authorId], c.height, c.width)
 
@@ -184,11 +168,9 @@ class CommentSheet(Serialisable):
         Create a comment sheet from a list of comments for a particular worksheet
         """
         authors = IndexedList()
-
         # dedupe authors and get indexes
         for comment in comments:
             comment.authorId = authors.add(comment.author)
-
         return cls(authors=AuthorList(authors), commentList=comments)
 
     def write_shapes(self, vml=None):

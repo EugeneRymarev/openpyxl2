@@ -2,7 +2,6 @@
 
 
 class Comment:
-
     _parent = None
 
     def __init__(self, text, author, height=79, width=144):
@@ -19,7 +18,7 @@ class Comment:
         return self.content == other.content and self.author == other.author
 
     def __repr__(self):
-        return "Comment: {0} by {1}".format(self.content, self.author)
+        return f"Comment: {self.content} by {self.author}"
 
     def __copy__(self):
         """Create a detached copy of this comment."""
@@ -31,8 +30,12 @@ class Comment:
         Bind comment to a particular cell
         """
         if cell is not None and self._parent is not None and self._parent != cell:
-            fmt = "Comment already assigned to {0} in worksheet {1}. Cannot assign a comment to more than one cell"
-            raise AttributeError(fmt.format(cell.coordinate, cell.parent.title))
+            msg = (
+                f"Comment already assigned to {cell.coordinate} "
+                f"in worksheet {cell.parent.title}. Cannot assign "
+                "a comment to more than one cell"
+            )
+            raise AttributeError(msg)
         self._parent = cell
 
     def unbind(self):
