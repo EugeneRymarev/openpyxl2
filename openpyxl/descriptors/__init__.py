@@ -7,6 +7,7 @@ from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.base import Bool
 from openpyxl.descriptors.base import Integer
 from openpyxl.descriptors.base import MatchPattern
+from openpyxl.descriptors.base import String
 
 
 class MetaStrict(type):
