@@ -18,21 +18,21 @@ def record():
 
 @pytest.fixture
 def number():
-    from openpyxl.pivot.record import Number
+    from openpyxl.pivot.fields import Number
 
     return Number
 
 
 @pytest.fixture
 def text():
-    from openpyxl.pivot.record import Text
+    from openpyxl.pivot.fields import Text
 
     return Text
 
 
 @pytest.fixture
 def index():
-    from openpyxl.pivot.record import Index
+    from openpyxl.pivot.fields import Index
 
     return Index
 

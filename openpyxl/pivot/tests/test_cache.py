@@ -5,7 +5,7 @@ import zipfile
 
 import pytest
 from openpyxl.packaging.manifest import Manifest
-from openpyxl.pivot.record import Text
+from openpyxl.pivot.fields import Text
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
@@ -885,7 +885,7 @@ class TestFieldUsage:
 
 class TestGroupItems:
     def test_ctor(self, group_items):
-        from openpyxl.pivot.record import Text
+        from openpyxl.pivot.fields import Text
 
         group = group_items(s=[Text(v="1-2"), Text(v="3-4")])
         xml = tostring(group.to_tree())

@@ -2,6 +2,7 @@
 import datetime
 
 import pytest
+
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
@@ -9,56 +10,56 @@ from openpyxl.xml.functions import tostring
 
 @pytest.fixture
 def error():
-    from openpyxl.pivot.record import Error
+    from openpyxl.pivot.fields import Error
 
     return Error
 
 
 @pytest.fixture
 def boolean():
-    from openpyxl.pivot.record import Boolean
+    from openpyxl.pivot.fields import Boolean
 
     return Boolean
 
 
 @pytest.fixture
 def missing():
-    from openpyxl.pivot.record import Missing
+    from openpyxl.pivot.fields import Missing
 
     return Missing
 
 
 @pytest.fixture
 def number():
-    from openpyxl.pivot.record import Number
+    from openpyxl.pivot.fields import Number
 
     return Number
 
 
 @pytest.fixture
 def text():
-    from openpyxl.pivot.record import Text
+    from openpyxl.pivot.fields import Text
 
     return Text
 
 
 @pytest.fixture
 def index():
-    from openpyxl.pivot.record import Index
+    from openpyxl.pivot.fields import Index
 
     return Index
 
 
 @pytest.fixture
 def date_time_field():
-    from openpyxl.pivot.record import DateTimeField
+    from openpyxl.pivot.fields import DateTimeField
 
     return DateTimeField
 
 
 @pytest.fixture
 def tuple_list():
-    from openpyxl.pivot.record import TupleList
+    from openpyxl.pivot.fields import TupleList
 
     return TupleList
 
