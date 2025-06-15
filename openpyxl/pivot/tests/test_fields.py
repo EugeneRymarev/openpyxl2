@@ -1,5 +1,5 @@
 # Copyright (c) 2010-2025 openpyxl
-from datetime import datetime
+import datetime
 
 import pytest
 from openpyxl.tests.helper import compare_xml
@@ -8,207 +8,171 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def Error():
-    from ..record import Error
+def error():
+    from openpyxl.pivot.record import Error
 
     return Error
 
 
-class TestError:
-
-    def test_ctor(self, Error):
-        error = Error(v="error")
-        xml = tostring(error.to_tree())
-        expected = """
-        <e v="error" />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, Error):
-        src = """
-        <e v="error" />
-        """
-        node = fromstring(src)
-        error = Error.from_tree(node)
-        assert error == Error(v="error")
-
-
 @pytest.fixture
-def Boolean():
-    from ..record import Boolean
+def boolean():
+    from openpyxl.pivot.record import Boolean
 
     return Boolean
 
 
-class TestBoolean:
-
-    def test_ctor(self, Boolean):
-        boolean = Boolean()
-        xml = tostring(boolean.to_tree())
-        expected = """
-        <b v="0" />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, Boolean):
-        src = """
-        <b />
-        """
-        node = fromstring(src)
-        boolean = Boolean.from_tree(node)
-        assert boolean == Boolean()
-
-
 @pytest.fixture
-def Missing():
-    from ..record import Missing
+def missing():
+    from openpyxl.pivot.record import Missing
 
     return Missing
 
 
-class TestMissing:
-
-    def test_ctor(self, Missing):
-        missing = Missing()
-        xml = tostring(missing.to_tree())
-        expected = """
-        <m />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, Missing):
-        src = """
-        <m />
-        """
-        node = fromstring(src)
-        missing = Missing.from_tree(node)
-        assert missing == Missing()
-
-
 @pytest.fixture
-def Number():
-    from ..record import Number
+def number():
+    from openpyxl.pivot.record import Number
 
     return Number
 
 
-class TestNumber:
-
-    def test_ctor(self, Number):
-        number = Number(v=24)
-        xml = tostring(number.to_tree())
-        expected = """
-        <n v="24"/>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, Number):
-        src = """
-        <n v="15" />
-        """
-        node = fromstring(src)
-        number = Number.from_tree(node)
-        assert number == Number(v=15)
-
-
 @pytest.fixture
-def Text():
-    from ..record import Text
+def text():
+    from openpyxl.pivot.record import Text
 
     return Text
 
 
-class TestText:
-
-    def test_ctor(self, Text):
-        text = Text(v="UCLA")
-        xml = tostring(text.to_tree())
-        expected = """
-        <s v="UCLA" />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, Text):
-        src = """
-        <s v="UCLA" />
-        """
-        node = fromstring(src)
-        text = Text.from_tree(node)
-        assert text == Text(v="UCLA")
-
-
 @pytest.fixture
-def Index():
-    from ..record import Index
+def index():
+    from openpyxl.pivot.record import Index
 
     return Index
 
 
-class TestIndex:
-
-    def test_ctor(self, Index):
-        record = Index()
-        xml = tostring(record.to_tree())
-        expected = """
-        <x v="0" />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, Index):
-        src = """
-        <x v="1" />
-        """
-        node = fromstring(src)
-        record = Index.from_tree(node)
-        assert record == Index(v=1)
-
-
 @pytest.fixture
-def DateTimeField():
-    from ..record import DateTimeField
+def date_time_field():
+    from openpyxl.pivot.record import DateTimeField
 
     return DateTimeField
 
 
-class TestDateTimeField:
-
-    def test_ctor(self, DateTimeField):
-        record = DateTimeField(v=datetime(2016, 3, 24))
-        xml = tostring(record.to_tree())
-        expected = """
-        <d v="2016-03-24T00:00:00"/>
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, DateTimeField):
-        src = """
-        <d v="2016-03-24T00:00:00"/>
-        """
-        node = fromstring(src)
-        record = DateTimeField.from_tree(node)
-        assert record == DateTimeField(v=datetime(2016, 3, 24))
-
-
 @pytest.fixture
-def TupleList():
-    from ..record import TupleList
+def tuple_list():
+    from openpyxl.pivot.record import TupleList
 
     return TupleList
 
 
+class TestError:
+    def test_ctor(self, error):
+        e = error(v="error")
+        xml = tostring(e.to_tree())
+        expected = '<e v="error"/>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, error):
+        src = '<e v="error"/>'
+        node = fromstring(src)
+        e = error.from_tree(node)
+        assert e == error(v="error")
+
+
+class TestBoolean:
+    def test_ctor(self, boolean):
+        b = boolean()
+        xml = tostring(b.to_tree())
+        expected = '<b v="0"/>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, boolean):
+        src = "<b/>"
+        node = fromstring(src)
+        b = boolean.from_tree(node)
+        assert b == boolean()
+
+
+class TestMissing:
+    def test_ctor(self, missing):
+        m = missing()
+        xml = tostring(m.to_tree())
+        expected = "<m/>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, missing):
+        src = "<m/>"
+        node = fromstring(src)
+        m = missing.from_tree(node)
+        assert m == missing()
+
+
+class TestNumber:
+    def test_ctor(self, number):
+        n = number(v=24)
+        xml = tostring(n.to_tree())
+        expected = '<n v="24"/>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, number):
+        src = '<n v="15"/>'
+        node = fromstring(src)
+        n = number.from_tree(node)
+        assert n == number(v=15)
+
+
+class TestText:
+    def test_ctor(self, text):
+        t = text(v="UCLA")
+        xml = tostring(t.to_tree())
+        expected = '<s v="UCLA"/>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, text):
+        src = '<s v="UCLA"/>'
+        node = fromstring(src)
+        t = text.from_tree(node)
+        assert t == text(v="UCLA")
+
+
+class TestIndex:
+    def test_ctor(self, index):
+        record = index()
+        xml = tostring(record.to_tree())
+        expected = '<x v="0"/>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, index):
+        src = '<x v="1"/>'
+        node = fromstring(src)
+        record = index.from_tree(node)
+        assert record == index(v=1)
+
+
+class TestDateTimeField:
+    def test_ctor(self, date_time_field):
+        record = date_time_field(v=datetime.datetime(2016, 3, 24))
+        xml = tostring(record.to_tree())
+        expected = '<d v="2016-03-24T00:00:00"/>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, date_time_field):
+        src = '<d v="2016-03-24T00:00:00"/>'
+        node = fromstring(src)
+        record = date_time_field.from_tree(node)
+        assert record == date_time_field(v=datetime.datetime(2016, 3, 24))
+
+
 class TestTupleList:
+    def test_ctor(self, tuple_list):
+        from openpyxl.pivot.fields import Tuple
 
-    def test_ctor(self, TupleList):
-        from ..fields import Tuple
-
-        record = TupleList(tpl=Tuple(item=1))
+        record = tuple_list(tpl=Tuple(item=1))
         xml = tostring(record.to_tree())
         expected = """
         <tpls>
@@ -218,8 +182,8 @@ class TestTupleList:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, TupleList):
-        from ..fields import Tuple
+    def test_from_xml(self, tuple_list):
+        from openpyxl.pivot.fields import Tuple
 
         src = """
         <tpls c="1">
@@ -227,5 +191,5 @@ class TestTupleList:
         </tpls>
         """
         node = fromstring(src)
-        record = TupleList.from_tree(node)
-        assert record == TupleList(c=1, tpl=Tuple(hier=1, item=4294967295))
+        record = tuple_list.from_tree(node)
+        assert record == tuple_list(c=1, tpl=Tuple(hier=1, item=4294967295))
