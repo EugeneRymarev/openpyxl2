@@ -1,5 +1,4 @@
 # Copyright (c) 2010-2025 openpyxl
-# package imports
 from openpyxl.cell.rich_text import CellRichText
 from openpyxl.cell.rich_text import TextBlock
 from openpyxl.cell.text import InlineFont
@@ -12,10 +11,8 @@ def test_read_string_table(datadir):
     datadir.chdir()
     src = "sharedStrings.xml"
     with open(src, "rb") as content:
-        assert read_string_table(content) == [
-            "This is cell A1 in Sheet 1",
-            "This is cell G5",
-        ]
+        expected = ["This is cell A1 in Sheet 1", "This is cell G5"]
+        assert read_string_table(content) == expected
 
 
 def test_empty_string(datadir):
@@ -29,7 +26,7 @@ def test_formatted_string_table(datadir):
     datadir.chdir()
     src = "shared-strings-rich.xml"
     with open(src, "rb") as content:
-        assert repr(read_rich_text(content)) == repr(
+        expected = repr(
             [
                 "Welcome",
                 CellRichText(
@@ -63,3 +60,4 @@ def test_formatted_string_table(datadir):
                 "     let's play ",
             ]
         )
+        assert repr(read_rich_text(content)) == expected

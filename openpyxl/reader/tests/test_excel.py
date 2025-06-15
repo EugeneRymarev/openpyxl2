@@ -1,17 +1,20 @@
 # Copyright (c) 2010-2025 openpyxl
+import io
 import os
-from io import BytesIO
-from shutil import copyfile
-from tempfile import NamedTemporaryFile
-from zipfile import BadZipfile
-from zipfile import ZipFile
+import shutil
+import tempfile
+import zipfile
 
 import pytest
 from openpyxl.packaging.manifest import Manifest
 from openpyxl.packaging.manifest import Override
 from openpyxl.packaging.relationship import Relationship
+from openpyxl.reader.excel import ExcelReader
 from openpyxl.utils.exceptions import InvalidFileException
-from openpyxl.workbook import Workbook
+from openpyxl.workbook.workbook import Workbook
+from openpyxl.worksheet.controls import ActiveXControl
+from openpyxl.worksheet.controls import ControlList
+from openpyxl.worksheet.controls import FormControl
 from openpyxl.xml.constants import ARC_WORKBOOK
 from openpyxl.xml.constants import XLSM
 from openpyxl.xml.constants import XLSX
@@ -21,26 +24,33 @@ from openpyxl.xml.functions import fromstring
 
 
 @pytest.fixture
-def load_workbook():
-    from ..excel import load_workbook
+def load_workbook_():
+    from openpyxl.reader.excel import load_workbook
 
     return load_workbook
 
 
-def test_read_empty_file(datadir, load_workbook):
+@pytest.fixture
+def worksheet_processor():
+    from openpyxl.reader.excel import WorksheetProcessor
+
+    return WorksheetProcessor
+
+
+def test_read_empty_file(datadir, load_workbook_):
     datadir.chdir()
-    with pytest.raises(BadZipfile):
-        load_workbook("null_file.xlsx")
+    with pytest.raises(zipfile.BadZipfile):
+        load_workbook_("null_file.xlsx")
 
 
-def test_load_workbook_from_fileobj(datadir, load_workbook):
+def test_load_workbook_from_fileobj(datadir, load_workbook_):
     """can a workbook be loaded from a file object without exceptions
     This tests for regressions of
     https://bitbucket.org/openpyxl/openpyxl/issue/433
     """
     datadir.chdir()
     with open("empty_with_no_properties.xlsx", "rb") as f:
-        load_workbook(f)
+        load_workbook_(f)
 
 
 @pytest.mark.parametrize(
@@ -52,54 +62,50 @@ def test_load_workbook_from_fileobj(datadir, load_workbook):
     ],
 )
 def test_find_standard_workbook_part(datadir, wb_type, wb_name):
-    from ..excel import _find_workbook_part
+    from openpyxl.reader.excel import _find_workbook_part
 
-    src = """
-        <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-        <Override ContentType="{0}"
-          PartName="{1}"/>
-        </Types>
-        """.format(
-        wb_type, wb_name
-    )
+    src = f"""
+    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+        <Override ContentType="{wb_type}" PartName="{wb_name}"/>
+    </Types>
+    """
     node = fromstring(src)
     package = Manifest.from_tree(node)
-
     assert _find_workbook_part(package) == Override(wb_name, wb_type)
 
 
 def test_no_workbook():
-    from ..excel import _find_workbook_part
+    from openpyxl.reader.excel import _find_workbook_part
 
     with pytest.raises(IOError):
         part = _find_workbook_part(Manifest())
 
 
 def test_overwritten_default():
-    from ..excel import _find_workbook_part
+    from openpyxl.reader.excel import _find_workbook_part
 
     src = """
     <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-      <Default Extension="xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+        <Default
+                Extension="xml"
+                ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
     </Types>
     """
     node = fromstring(src)
     package = Manifest.from_tree(node)
-
     assert _find_workbook_part(package) == Override("/xl/workbook.xml", XLSX)
 
 
 @pytest.mark.parametrize("extension", [".xlsb", ".xls", "no-format"])
-def test_invalid_file_extension(extension, load_workbook):
-    tmp = NamedTemporaryFile(suffix=extension)
+def test_invalid_file_extension(extension, load_workbook_):
+    tmp = tempfile.NamedTemporaryFile(suffix=extension)
     with pytest.raises(InvalidFileException):
-        load_workbook(filename=tmp.name)
+        load_workbook_(filename=tmp.name)
 
 
-def test_style_assignment(datadir, load_workbook):
+def test_style_assignment(datadir, load_workbook_):
     datadir.chdir()
-
-    wb = load_workbook("complex-styles.xlsx")
+    wb = load_workbook_("complex-styles.xlsx")
     assert len(wb._alignments) == 9
     assert len(wb._fills) == 6
     assert len(wb._fonts) == 8
@@ -111,70 +117,60 @@ def test_style_assignment(datadir, load_workbook):
 
 
 @pytest.mark.parametrize("ro", [False, True])
-def test_close_read(datadir, load_workbook, ro):
+def test_close_read(datadir, load_workbook_, ro):
     datadir.chdir()
-
-    wb = load_workbook("complex-styles.xlsx", read_only=ro)
+    wb = load_workbook_("complex-styles.xlsx", read_only=ro)
     assert hasattr(wb, "_archive") is ro
-
     wb.close()
-
     if ro:
         assert wb._archive.fp is None
 
 
 @pytest.mark.parametrize("wo", [False, True])
 def test_close_write(wo):
-    from openpyxl.workbook import Workbook
+    from openpyxl.workbook.workbook import Workbook
 
     wb = Workbook(write_only=wo)
     wb.close()
 
 
-def test_read_stringio(load_workbook):
-    filelike = BytesIO(b"certainly not a valid XSLX content")
+def test_read_stringio(load_workbook_):
+    filelike = io.BytesIO(b"certainly not a valid XSLX content")
     # Test invalid file-like objects are detected and not handled as regular files
-    with pytest.raises(BadZipfile):
-        load_workbook(filelike)
+    with pytest.raises(zipfile.BadZipfile):
+        load_workbook_(filelike)
 
 
-def test_load_workbook_with_vba(datadir, load_workbook):
+def test_load_workbook_with_vba(datadir, load_workbook_):
     datadir.chdir()
-
     test_file = "form_controls.xlsm"
     # open the workbook directly from the file
-    wb = load_workbook(test_file)
+    wb = load_workbook_(test_file)
     assert wb._vba is not None
 
 
-def test_no_external_links(datadir, load_workbook):
+def test_no_external_links(datadir, load_workbook_):
     datadir.chdir()
-
-    wb = load_workbook("bug137.xlsx", keep_links=False)
+    wb = load_workbook_("bug137.xlsx", keep_links=False)
     assert wb._external_links == []
 
 
-def test_file_closes(datadir, load_workbook):
+def test_file_closes(datadir, load_workbook_):
     """Test whether workbook file is closed correctly after loading"""
     datadir.chdir()
     filename = "empty_with_no_properties-copy.xlsx"
     # create a copy that can be deleted later
-    copyfile("empty_with_no_properties.xlsx", filename)
-
-    load_workbook(filename)
+    shutil.copyfile("empty_with_no_properties.xlsx", filename)
+    load_workbook_(filename)
     # remove would fail if the file is not closed correctly after loading
     os.remove(filename)
 
 
-from ..excel import ExcelReader
-
-
 class TestExcelReader:
-
     def test_ctor(self, datadir):
         datadir.chdir()
         reader = ExcelReader("complex-styles.xlsx")
-        assert reader.valid_files == [
+        expected = [
             "[Content_Types].xml",
             "_rels/.rels",
             "xl/_rels/workbook.xml.rels",
@@ -187,6 +183,7 @@ class TestExcelReader:
             "docProps/core.xml",
             "docProps/app.xml",
         ]
+        assert reader.valid_files == expected
 
     def test_read_manifest(self, datadir):
         datadir.chdir()
@@ -228,19 +225,16 @@ class TestExcelReader:
         assert very_hidden.sheet_state == "veryHidden"
 
     def test_read_chartsheet(self, datadir):
-        datadir.chdir()
-        reader = ExcelReader("contains_chartsheets.xlsx")
-        reader.read_manifest()
-        reader.read_workbook()
-
-        rel = Relationship(Target="xl/chartsheets/sheet1.xml", type="chartsheet")
-
         class Sheet:
             pass
 
+        datadir.chdir()
+        reader = ExcelReader("contains_chartsheets.xlsx")
+        reader.read_manifest()
+        rel = Relationship(Target="xl/chartsheets/sheet1.xml", type="chartsheet")
+        reader.read_workbook()
         sheet = Sheet()
         sheet.name = "chart"
-
         reader.read_chartsheet(sheet, rel)
         assert reader.wb["chart"].title == "chart"
 
@@ -269,13 +263,6 @@ class TestExcelReader:
 
 
 @pytest.fixture
-def WorksheetProcessor():
-    from ..excel import WorksheetProcessor
-
-    return WorksheetProcessor
-
-
-@pytest.fixture
 def controls(datadir):
     datadir.chdir()
     with open("form_controls.xml", "rb") as src:
@@ -283,92 +270,74 @@ def controls(datadir):
     return ControlList.from_tree(xml)
 
 
-from openpyxl.worksheet.controls import (
-    ControlList,
-    FormControl,
-    ActiveXControl,
-)
-
-
 class TestWorksheetProcessor:
-
-    def test_find_children(self, datadir, WorksheetProcessor):
+    def test_find_children(self, datadir, worksheet_processor):
         datadir.chdir()
-        archive = ZipFile("legacy_drawing.xlsm")
+        archive = zipfile.ZipFile("legacy_drawing.xlsm")
         wb = Workbook()
         ws = wb.create_sheet()
-        processor = WorksheetProcessor(ws, archive)
+        processor = worksheet_processor(ws, archive)
         processor.find_children("xl/worksheets/sheet1.xml")
         assert len(processor.rels.vmlDrawing) == 1
         archive.close()
 
     @pytest.mark.xfail
-    def test_get_controls(self, datadir, WorksheetProcessor, controls):
+    def test_get_controls(self, datadir, worksheet_processor, controls):
         datadir.chdir()
-        archive = ZipFile("form_controls.xlsm")
+        archive = zipfile.ZipFile("form_controls.xlsm")
         wb = Workbook()
         ws = wb.create_sheet()
         ws.controls = controls
-
-        processor = WorksheetProcessor(ws, archive)
+        processor = worksheet_processor(ws, archive)
         processor.find_children("xl/worksheets/sheet1.xml")
         assert len(processor.rels.ctrlProp) == 2
         assert len(processor.rels.control) == 5
         processor.get_controls()
         assert isinstance(ws.controls.control[-1].shape, FormControl)
-
         archive.close()
 
-    def test_get_activex(self, datadir, WorksheetProcessor, load_workbook):
+    def test_get_activex(self, datadir, worksheet_processor, load_workbook_):
         datadir.chdir()
-        archive = ZipFile("form_controls.xlsm")
-        wb = load_workbook("form_controls.xlsm")
+        archive = zipfile.ZipFile("form_controls.xlsm")
+        wb = load_workbook_("form_controls.xlsm")
         ws = wb.active
-
-        processor = WorksheetProcessor(ws, archive)
+        processor = worksheet_processor(ws, archive)
         processor.find_children("xl/worksheets/sheet1.xml")
         processor.get_activex()
         ctrl = ws.controls.control[0].shape
         assert isinstance(ctrl, ActiveXControl)
         assert ctrl.bin[:10] == b"@2\x05\xd7i\xce\xcd\x11\xa7w"
-
         embedded = []
         for ctrl in ws.controls.control:
             prop = ctrl.controlPr
             if prop.id:
                 embedded.append(prop.image)
-
         assert len(embedded) == 3
         assert embedded[0].Target == "xl/media/image1.emf"
         assert embedded[0].blob._data()[:10] == b"\x01\x00\x00\x00l\x00\x00\x00\x00\x00"
-
         archive.close()
 
-    def test_get_comments(self, datadir, WorksheetProcessor):
+    def test_get_comments(self, datadir, worksheet_processor):
         datadir.chdir()
-        archive = ZipFile("legacy_drawing.xlsm")
+        archive = zipfile.ZipFile("legacy_drawing.xlsm")
         wb = Workbook()
         ws = wb.create_sheet()
-
-        processor = WorksheetProcessor(ws, archive)
+        processor = worksheet_processor(ws, archive)
         processor.find_children("xl/worksheets/sheet1.xml")
         processor.get_comments()
-
         assert ws._cells != {}  # make sure sheet is not empty
         comment = ws["B5"].comment
         assert comment.author == "Author"
 
-    def test_get_legacy(self, datadir, WorksheetProcessor):
+    def test_get_legacy(self, datadir, worksheet_processor):
         datadir.chdir()
-        archive = ZipFile("form_controls.xlsm")
+        archive = zipfile.ZipFile("form_controls.xlsm")
         wb = Workbook()
         ws = wb.create_sheet()
         ws.legacy_drawing = "rId3"
-
-        processor = WorksheetProcessor(ws, archive)
+        processor = worksheet_processor(ws, archive)
         processor.find_children("xl/worksheets/sheet1.xml")
         processor.get_legacy()
-
         drawing = ws.legacy_drawing
         assert drawing.path == "/xl/drawings/vmlDrawing0.vml"
         rel = drawing.children[0]
