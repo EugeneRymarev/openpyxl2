@@ -1,69 +1,57 @@
 # Copyright (c) 2010-2025 openpyxl
 """Read an xlsx file into Python"""
 # Python stdlib
-import os.path
+import io
+import os
 import warnings
-from io import BytesIO
-from zipfile import (
-    ZipFile,
-)
+import zipfile
 
+from openpyxl.cell.cell import MergedCell
+from openpyxl.chartsheet.chartsheet import Chartsheet
+from openpyxl.comments.comment_sheet import CommentSheet
+from openpyxl.connection.connections import ConnectionList
+from openpyxl.drawing.image import Image
+from openpyxl.drawing.legacy import LegacyDrawing
+from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
+from openpyxl.packaging.core import DocumentProperties
+from openpyxl.packaging.custom import CustomPropertyList
+from openpyxl.packaging.manifest import Manifest
+from openpyxl.packaging.manifest import Override
+from openpyxl.packaging.relationship import RelationshipList
+from openpyxl.packaging.relationship import get_dependents
+from openpyxl.packaging.relationship import get_rels_path
 from openpyxl.pivot.table import TableDefinition
+from openpyxl.reader.drawings import find_images
+from openpyxl.reader.strings import read_rich_text
+from openpyxl.reader.strings import read_string_table
+from openpyxl.reader.workbook import WorkbookParser
+from openpyxl.styles.stylesheet import apply_stylesheet
+from openpyxl.utils.exceptions import InvalidFileException
+from openpyxl.volatile.volatile import VolTypesList
+from openpyxl.worksheet._read_only import ReadOnlyWorksheet
+from openpyxl.worksheet._reader import WorksheetReader
+from openpyxl.worksheet.controls import ActiveXControl
+from openpyxl.worksheet.controls import FormControl
+from openpyxl.worksheet.table import Table
+from openpyxl.xml.constants import ARC_CONNECTIONS
+from openpyxl.xml.constants import ARC_CONTENT_TYPES
+from openpyxl.xml.constants import ARC_CORE
+from openpyxl.xml.constants import ARC_CUSTOM
+from openpyxl.xml.constants import ARC_THEME
+from openpyxl.xml.constants import ARC_VOLATILE_DEPENDENCIES
+from openpyxl.xml.constants import ARC_WORKBOOK
+from openpyxl.xml.constants import SHARED_STRINGS
+from openpyxl.xml.constants import XLSM
+from openpyxl.xml.constants import XLSX
+from openpyxl.xml.constants import XLTM
+from openpyxl.xml.constants import XLTX
+from openpyxl.xml.functions import fromstring
 
 # Allow blanket setting of KEEP_VBA for testing
 try:
-    from ..tests import KEEP_VBA
+    from openpyxl.tests import KEEP_VBA
 except ImportError:
     KEEP_VBA = False
-
-# package imports
-from openpyxl.utils.exceptions import InvalidFileException
-from openpyxl.xml.constants import (
-    ARC_CORE,
-    ARC_CUSTOM,
-    ARC_CONTENT_TYPES,
-    ARC_WORKBOOK,
-    ARC_THEME,
-    ARC_VOLATILE_DEPENDENCIES,
-    ARC_CONNECTIONS,
-    SHARED_STRINGS,
-    XLTM,
-    XLTX,
-    XLSM,
-    XLSX,
-)
-from openpyxl.cell import MergedCell
-from openpyxl.comments.comment_sheet import CommentSheet
-
-from .strings import read_string_table, read_rich_text
-from .workbook import WorkbookParser
-from openpyxl.styles.stylesheet import apply_stylesheet
-
-from openpyxl.packaging.core import DocumentProperties
-from openpyxl.packaging.custom import CustomPropertyList
-from openpyxl.packaging.manifest import Manifest, Override
-
-from openpyxl.packaging.relationship import (
-    RelationshipList,
-    get_dependents,
-    get_rels_path,
-)
-
-from openpyxl.worksheet._read_only import ReadOnlyWorksheet
-from openpyxl.worksheet._reader import WorksheetReader
-from openpyxl.chartsheet import Chartsheet
-from openpyxl.worksheet.table import Table
-from openpyxl.worksheet.controls import FormControl, ActiveXControl
-from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
-from openpyxl.drawing.legacy import LegacyDrawing
-from openpyxl.drawing.image import Image
-
-from openpyxl.volatile.volatile import VolTypesList
-from openpyxl.connection.connections import ConnectionList
-from openpyxl.xml.functions import fromstring
-
-from .drawings import find_images
-
 
 SUPPORTED_FORMATS = (".xlsx", ".xlsm", ".xltx", ".xltm")
 
@@ -95,14 +83,12 @@ def _validate_archive(filename):
                 )
             else:
                 msg = (
-                    "openpyxl does not support %s file format, "
-                    "please check you can open "
-                    "it with Excel first. "
-                    "Supported formats are: %s"
-                ) % (file_format, ",".join(SUPPORTED_FORMATS))
+                    f"openpyxl does not support {file_format} file format, "
+                    "please check you can open it with Excel first. "
+                    f'Supported formats are: {",".join(SUPPORTED_FORMATS)}'
+                )
             raise InvalidFileException(msg)
-
-    archive = ZipFile(filename, "r")
+    archive = zipfile.ZipFile(filename, "r")
     return archive
 
 
@@ -112,13 +98,11 @@ def _find_workbook_part(package):
         part = package.find(ct)
         if part:
             return part
-
     # some applications reassign the default for application/xml
     defaults = {p.ContentType for p in package.Default}
     workbook_type = defaults & set(workbook_types)
     if workbook_type:
-        return Override("/" + ARC_WORKBOOK, workbook_type.pop())
-
+        return Override(f"/{ARC_WORKBOOK}", workbook_type.pop())
     raise IOError("File contains no valid workbook part")
 
 
@@ -158,15 +142,15 @@ class ExcelReader:
             reader = read_rich_text
         if ct is not None:
             strings_path = ct.PartName[1:]
-            with self.archive.open(
-                strings_path,
-            ) as src:
+            with self.archive.open(strings_path) as src:
                 self.shared_strings = reader(src)
 
     def read_workbook(self):
         wb_part = _find_workbook_part(self.package)
         self.parser = WorkbookParser(
-            self.archive, wb_part.PartName[1:], keep_links=self.keep_links
+            self.archive,
+            wb_part.PartName[1:],
+            keep_links=self.keep_links,
         )
         self.parser.parse()
         wb = self.parser.wb
@@ -174,14 +158,11 @@ class ExcelReader:
         wb._data_only = self.data_only
         wb._read_only = self.read_only
         wb.template = wb_part.ContentType in (XLTX, XLTM)
-
         if "xl/vbaProject.bin" in self.archive.namelist():
             # might also want to search the manifest by content type
             wb._vba = self.archive.read("xl/vbaProject.bin")
-
         if self.read_only:
             wb._archive = self.archive
-
         self.wb = wb
 
     def read_properties(self):
@@ -204,7 +185,6 @@ class ExcelReader:
         rels = []
         if rels_path in self.valid_files:
             rels = get_dependents(self.archive, rels_path)
-
         with self.archive.open(sheet_path, "r") as src:
             xml = src.read()
         node = fromstring(xml)
@@ -212,7 +192,6 @@ class ExcelReader:
         cs._parent = self.wb
         cs.title = sheet.name
         self.wb._add_sheet(cs)
-
         drawings = rels.find(SpreadsheetDrawing._rel_type)
         for rel in drawings:
             charts, images, shapes = find_images(self.archive, rel.target)
@@ -220,43 +199,42 @@ class ExcelReader:
                 cs.add_chart(c)
 
     def read_worksheets(self):
-
         for sheet, rel in self.parser.find_sheets():
             if rel.target not in self.valid_files:
                 continue
-
             if "chartsheet" in rel.Type:
                 self.read_chartsheet(sheet, rel)
                 continue
-
             if self.read_only:
                 ws = ReadOnlyWorksheet(
-                    self.wb, sheet.name, rel.target, self.shared_strings
+                    self.wb,
+                    sheet.name,
+                    rel.target,
+                    self.shared_strings,
                 )
                 ws.sheet_state = sheet.state
                 self.wb._sheets.append(ws)
                 continue
-
             fh = self.archive.open(rel.target)
             ws = self.wb.create_sheet(sheet.name)
-
             processor = WorksheetProcessor(ws, self.archive)
             processor.find_children((rel.target))
             ws._rels = processor.rels
-
             ws_parser = WorksheetReader(
-                ws, fh, self.shared_strings, self.data_only, self.rich_text
+                ws,
+                fh,
+                self.shared_strings,
+                self.data_only,
+                self.rich_text,
             )
             ws_parser.bind_all()
             ws.sheet_state = sheet.state
-
             processor.get_comments()
             processor.get_pivots(self.parser.pivot_caches)
             processor.get_drawings()
             processor.get_activex()
             processor.get_controls()
             processor.get_legacy()
-
             for t in ws_parser.tables:
                 src = self.archive.read(t)
                 xml = fromstring(src)
@@ -274,15 +252,12 @@ class ExcelReader:
             src = self.archive.read(ARC_CONNECTIONS)
             root = fromstring(src)
             connections = ConnectionList.from_tree(root)
-
             cached_connections = self.parser.pivot_caches.by_type()
             for source, group in cached_connections:
                 if source == "external":
                     break
-
             for cache in group:
                 connections[cache.cacheSource.connectionId]._cache = cache
-
             self.wb._connections = connections
 
     def read(self):
@@ -312,11 +287,13 @@ class ExcelReader:
             if not self.read_only:
                 self.archive.close()
         except ValueError as e:
-            raise ValueError(
-                f"Unable to read workbook: could not {action} from {self.archive.filename}.\n"
-                "This is most probably because the workbook source files contain some invalid XML.\n"
-                "Please see the exception for more details."
-            ) from e
+            msg = (
+                f"Unable to read workbook: could not {action} from "
+                f"{self.archive.filename}.\nThis is most probably "
+                "because the workbook source files contain some "
+                "invalid XML.\nPlease see the exception for more details."
+            )
+            raise ValueError(msg) from e
 
 
 class WorksheetProcessor:
@@ -334,20 +311,11 @@ class WorksheetProcessor:
         """
         rels_path = get_rels_path(path)
         rels = RelationshipList()
-
         if rels_path in self.archive.namelist():
             rels = get_dependents(self.archive, rels_path)
-
-        for attr in [
-            "comments",
-            "pivotTable",
-            "drawing",
-            "ctrlProp",
-            "control",
-            "image",
-        ]:
+        attrs = ["comments", "pivotTable", "drawing", "ctrlProp", "control", "image"]
+        for attr in attrs:
             setattr(rels, attr, [])
-
         rels.get_types()
         self.rels = rels
 
@@ -357,7 +325,6 @@ class WorksheetProcessor:
         """
         if self.ws.legacy_drawing is None:
             return
-
         rel = self.rels.get(self.ws.legacy_drawing)
         vml = self.archive.read(rel.target)
         vml = vml.replace(b"<br>", b"<br/>")
@@ -366,28 +333,24 @@ class WorksheetProcessor:
         rels_path = get_rels_path(rel.target)
         if rels_path not in self.archive.namelist():
             return
-
         rels = get_dependents(self.archive, rels_path)
-
         for rel in rels:
             rel.blob = self._get_image_for(rel.target)
-
         drawing.children = rels
 
     def _get_image_for(self, path):
         """
         Extract image from the archive and return it as a BytesIO object
         """
-        img = Image(BytesIO(self.archive.read(path)))
+        img = Image(io.BytesIO(self.archive.read(path)))
         if path.endswith(".emf"):
             img.format = "EMF"
         return img
 
     def get_comments(self):
-        """Assign comments"""
-
-        comment_warning = """Cell '{0}':{1} is part of a merged range but has a comment which will be removed because merged cells cannot contain any data."""
-
+        """
+        Assign comments
+        """
         for rel in self.rels.comments:
             src = self.archive.read(rel.target)
             comment_sheet = CommentSheet.from_tree(fromstring(src))
@@ -397,9 +360,13 @@ class WorksheetProcessor:
                 except AttributeError:
                     c = self.ws[ref]
                     if isinstance(c, MergedCell):
-                        warnings.warn(
-                            comment_warning.format(self.ws.title, c.coordinate)
+                        msg = (
+                            f"Cell '{self.ws.title}':{c.coordinate}"
+                            " is part of a merged range but has a "
+                            "comment which will be removed because "
+                            "merged cells cannot contain any data."
                         )
+                        warnings.warn(msg)
                         continue
 
     def get_drawings(self):
@@ -409,7 +376,6 @@ class WorksheetProcessor:
                 self.ws.add_chart(c, c.anchor)
             for im in images:
                 self.ws.add_image(im, im.anchor)
-
             self.ws._shapes = shapes
 
     def get_pivots(self, pivot_caches):
@@ -426,16 +392,13 @@ class WorksheetProcessor:
         Get related objects for ctrlProps
         """
         ctrlProps = {}
-
         for rel in self.rels.ctrlProp:
             src = self.archive.read(rel.target)
             tree = fromstring(src)
             ctrlProps[rel.id] = FormControl.from_tree(tree)
-
         for control in self.ws.controls.control:
             if control.id in ctrlProps:
                 control.shape = ctrlProps.get(control.id)
-
             prop = control.controlPr
             if prop.id:
                 rel = self.rels.get(prop.id)
@@ -447,7 +410,6 @@ class WorksheetProcessor:
         Get related objects for ActiveX Controls
         """
         active = {}
-
         for rel in self.rels.control:
             src = self.archive.read(rel.target)
             tree = fromstring(src)
@@ -455,11 +417,9 @@ class WorksheetProcessor:
             active[rel.id] = ctrl
             active_path = get_rels_path(rel.target)
             rels = get_dependents(self.archive, active_path)
-
             # get activeX binary
             bin_rel = rels.get(ctrl.id)
             ctrl.bin = self.archive.read(bin_rel.Target)
-
         images = set()
         for control in self.ws.controls.control:
             if control.id in active:
@@ -511,7 +471,12 @@ def load_workbook(
 
     """
     reader = ExcelReader(
-        filename, read_only, keep_vba, data_only, keep_links, rich_text
+        filename,
+        read_only,
+        keep_vba,
+        data_only,
+        keep_links,
+        rich_text,
     )
     reader.read()
     return reader.wb
