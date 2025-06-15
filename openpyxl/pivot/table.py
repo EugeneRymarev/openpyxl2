@@ -1,58 +1,41 @@
 # Copyright (c) 2010-2025 openpyxl
-from collections import defaultdict
+import collections
 
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.sequence import NestedSequence
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.packaging.relationship import get_rels_path
 from openpyxl.packaging.relationship import Relationship
 from openpyxl.packaging.relationship import RelationshipList
-from openpyxl.worksheet.filters import (
-    AutoFilter,
-)
+from openpyxl.packaging.relationship import get_rels_path
+from openpyxl.pivot.fields import Index
+from openpyxl.worksheet.filters import AutoFilter
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import tostring
 
-from .fields import Index
-
 
 class HierarchyUsage(Serialisable):
-
     tagname = "hierarchyUsage"
-
     hierarchyUsage = Integer()
 
-    def __init__(
-        self,
-        hierarchyUsage=None,
-    ):
+    def __init__(self, hierarchyUsage=None):
         self.hierarchyUsage = hierarchyUsage
 
 
 class ColHierarchiesUsage(Serialisable):
-
     tagname = "colHierarchiesUsage"
-
-    colHierarchyUsage = Sequence(
-        expected_type=HierarchyUsage,
-    )
-
+    colHierarchyUsage = Sequence(expected_type=HierarchyUsage)
     __elements__ = ("colHierarchyUsage",)
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        colHierarchyUsage=(),
-    ):
+    def __init__(self, count=None, colHierarchyUsage=()):
         self.colHierarchyUsage = colHierarchyUsage
 
     @property
@@ -61,21 +44,12 @@ class ColHierarchiesUsage(Serialisable):
 
 
 class RowHierarchiesUsage(Serialisable):
-
     tagname = "rowHierarchiesUsage"
-
-    rowHierarchyUsage = Sequence(
-        expected_type=HierarchyUsage,
-    )
-
+    rowHierarchyUsage = Sequence(expected_type=HierarchyUsage)
     __elements__ = ("rowHierarchyUsage",)
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        rowHierarchyUsage=(),
-    ):
+    def __init__(self, count=None, rowHierarchyUsage=()):
         self.rowHierarchyUsage = rowHierarchyUsage
 
     @property
@@ -84,9 +58,7 @@ class RowHierarchiesUsage(Serialisable):
 
 
 class PivotFilter(Serialisable):
-
     tagname = "filter"
-
     fld = Integer()
     mpFld = Integer(allow_none=True)
     type = Set(
@@ -169,11 +141,8 @@ class PivotFilter(Serialisable):
     description = String(allow_none=True)
     stringValue1 = String(allow_none=True)
     stringValue2 = String(allow_none=True)
-    autoFilter = Typed(
-        expected_type=AutoFilter,
-    )
+    autoFilter = Typed(expected_type=AutoFilter)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("autoFilter",)
 
     def __init__(
@@ -207,24 +176,16 @@ class PivotFilter(Serialisable):
 
 
 class PivotFilters(Serialisable):
-
     count = Integer()
     filter = Typed(expected_type=PivotFilter, allow_none=True)
-
     __elements__ = ("filter",)
 
-    def __init__(
-        self,
-        count=None,
-        filter=None,
-    ):
+    def __init__(self, count=None, filter=None):
         self.filter = filter
 
 
 class PivotTableStyle(Serialisable):
-
     tagname = "pivotTableStyleInfo"
-
     name = String(allow_none=True)
     showRowHeaders = Bool()
     showColHeaders = Bool()
@@ -250,20 +211,12 @@ class PivotTableStyle(Serialisable):
 
 
 class MemberList(Serialisable):
-
     tagname = "members"
-
     level = Integer(allow_none=True)
     member = NestedSequence(expected_type=String, attribute="name")
-
     __elements__ = ("member",)
 
-    def __init__(
-        self,
-        count=None,
-        level=None,
-        member=(),
-    ):
+    def __init__(self, count=None, level=None, member=()):
         self.level = level
         self.member = member
 
@@ -273,9 +226,7 @@ class MemberList(Serialisable):
 
 
 class MemberProperty(Serialisable):
-
     tagname = "mps"
-
     name = String(allow_none=True)
     showCell = Bool(allow_none=True)
     showTip = Bool(allow_none=True)
@@ -310,9 +261,7 @@ class MemberProperty(Serialisable):
 
 
 class PivotHierarchy(Serialisable):
-
     tagname = "pivotHierarchy"
-
     outline = Bool()
     multipleItemSelectionAllowed = Bool()
     subtotalTop = Bool()
@@ -327,11 +276,7 @@ class PivotHierarchy(Serialisable):
     mps = NestedSequence(expected_type=MemberProperty, count=True)
     members = Typed(expected_type=MemberList, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
-    __elements__ = (
-        "mps",
-        "members",
-    )
+    __elements__ = ("mps", "members")
 
     def __init__(
         self,
@@ -367,9 +312,7 @@ class PivotHierarchy(Serialisable):
 
 
 class Reference(Serialisable):
-
     tagname = "reference"
-
     field = Integer(allow_none=True)
     selected = Bool(allow_none=True)
     byPosition = Bool(allow_none=True)
@@ -388,7 +331,6 @@ class Reference(Serialisable):
     varPSubtotal = Bool(allow_none=True)
     x = Sequence(expected_type=Index)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("x",)
 
     def __init__(
@@ -437,14 +379,22 @@ class Reference(Serialisable):
 
 
 class PivotArea(Serialisable):
-
     tagname = "pivotArea"
-
     references = NestedSequence(expected_type=Reference, count=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
     field = Integer(allow_none=True)
     type = NoneSet(
-        values=(["normal", "data", "all", "origin", "button", "topEnd", "topRight"])
+        values=(
+            [
+                "normal",
+                "data",
+                "all",
+                "origin",
+                "button",
+                "topEnd",
+                "topRight",
+            ]
+        )
     )
     dataOnly = Bool(allow_none=True)
     labelOnly = Bool(allow_none=True)
@@ -456,7 +406,6 @@ class PivotArea(Serialisable):
     collapsedLevelsAreSubtotals = Bool(allow_none=True)
     axis = NoneSet(values=(["axisRow", "axisCol", "axisPage", "axisValues"]))
     fieldPosition = Integer(allow_none=True)
-
     __elements__ = ("references",)
 
     def __init__(
@@ -493,25 +442,14 @@ class PivotArea(Serialisable):
 
 
 class ChartFormat(Serialisable):
-
     tagname = "chartFormat"
-
     chart = Integer()
     format = Integer()
     series = Bool()
-    pivotArea = Typed(
-        expected_type=PivotArea,
-    )
-
+    pivotArea = Typed(expected_type=PivotArea)
     __elements__ = ("pivotArea",)
 
-    def __init__(
-        self,
-        chart=None,
-        format=None,
-        series=None,
-        pivotArea=None,
-    ):
+    def __init__(self, chart=None, format=None, series=None, pivotArea=None):
         self.chart = chart
         self.format = format
         self.series = series
@@ -519,15 +457,12 @@ class ChartFormat(Serialisable):
 
 
 class ConditionalFormat(Serialisable):
-
     tagname = "conditionalFormat"
-
     scope = Set(values=(["selection", "data", "field"]))
     type = NoneSet(values=(["all", "row", "column"]))
     priority = Integer()
     pivotAreas = NestedSequence(expected_type=PivotArea)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("pivotAreas",)
 
     def __init__(
@@ -546,11 +481,8 @@ class ConditionalFormat(Serialisable):
 
 
 class ConditionalFormatList(Serialisable):
-
     tagname = "conditionalFormats"
-
     conditionalFormat = Sequence(expected_type=ConditionalFormat)
-
     __attrs__ = ("count",)
 
     def __init__(self, conditionalFormat=(), count=None):
@@ -562,7 +494,6 @@ class ConditionalFormatList(Serialisable):
         This can be used to map the formats to field but also to dedupe to match
         worksheet definitions which are grouped by cell range
         """
-
         fmts = {}
         for fmt in self.conditionalFormat:
             for area in fmt.pivotAreas:
@@ -570,7 +501,6 @@ class ConditionalFormatList(Serialisable):
                     for field in ref.x:
                         key = (field.v, fmt.priority)
                         fmts[key] = fmt
-
         return fmts
 
     def _dedupe(self):
@@ -603,9 +533,8 @@ class ConditionalFormatList(Serialisable):
         # sort by priority in order, keeping the highest numerical priority, least when
         # actually applied
         # this is not documented but it's what Excel is happy with
-        fmts = {
-            field: fmt for (field, priority), fmt in sorted(fmts.items(), reverse=True)
-        }
+        fmts = sorted(fmts.items(), reverse=True)
+        fmts = {field: fmt for (field, priority), fmt in fmts}
         # fmts = {field:fmt for (field, priority), fmt in fmts.items()}
         if fmts:
             self.conditionalFormat = list(fmts.values())
@@ -620,25 +549,14 @@ class ConditionalFormatList(Serialisable):
 
 
 class Format(Serialisable):
-
     tagname = "format"
-
     action = NoneSet(values=(["blank", "formatting", "drill", "formula"]))
     dxfId = Integer(allow_none=True)
-    pivotArea = Typed(
-        expected_type=PivotArea,
-    )
+    pivotArea = Typed(expected_type=PivotArea)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("pivotArea",)
 
-    def __init__(
-        self,
-        action="formatting",
-        dxfId=None,
-        pivotArea=None,
-        extLst=None,
-    ):
+    def __init__(self, action="formatting", dxfId=None, pivotArea=None, extLst=None):
         self.action = action
         self.dxfId = dxfId
         self.pivotArea = pivotArea
@@ -646,9 +564,7 @@ class Format(Serialisable):
 
 
 class DataField(Serialisable):
-
     tagname = "dataField"
-
     name = String(allow_none=True)
     fld = Integer()
     subtotal = Set(
@@ -687,7 +603,6 @@ class DataField(Serialisable):
     baseItem = Integer()
     numFmtId = Integer(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
     def __init__(
@@ -712,16 +627,13 @@ class DataField(Serialisable):
 
 
 class PageField(Serialisable):
-
     tagname = "pageField"
-
     fld = Integer()
     item = Integer(allow_none=True)
     hier = Integer(allow_none=True)
     name = String(allow_none=True)
     cap = String(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
     def __init__(
@@ -742,9 +654,7 @@ class PageField(Serialisable):
 
 
 class RowColItem(Serialisable):
-
     tagname = "i"
-
     t = Set(
         values=(
             [
@@ -769,16 +679,9 @@ class RowColItem(Serialisable):
     r = Integer()
     i = Integer()
     x = Sequence(expected_type=Index, attribute="v")
-
     __elements__ = ("x",)
 
-    def __init__(
-        self,
-        t="data",
-        r=0,
-        i=0,
-        x=(),
-    ):
+    def __init__(self, t="data", r=0, i=0, x=()):
         self.t = t
         self.r = r
         self.i = i
@@ -786,37 +689,23 @@ class RowColItem(Serialisable):
 
 
 class RowColField(Serialisable):
-
     tagname = "field"
-
     x = Integer()
 
-    def __init__(
-        self,
-        x=None,
-    ):
+    def __init__(self, x=None):
         self.x = x
 
 
 class AutoSortScope(Serialisable):
-
-    pivotArea = Typed(
-        expected_type=PivotArea,
-    )
-
+    pivotArea = Typed(expected_type=PivotArea)
     __elements__ = ("pivotArea",)
 
-    def __init__(
-        self,
-        pivotArea=None,
-    ):
+    def __init__(self, pivotArea=None):
         self.pivotArea = pivotArea
 
 
 class FieldItem(Serialisable):
-
     tagname = "item"
-
     n = String(allow_none=True)
     t = Set(
         values=(
@@ -877,9 +766,7 @@ class FieldItem(Serialisable):
 
 
 class PivotField(Serialisable):
-
     tagname = "pivotField"
-
     items = NestedSequence(expected_type=FieldItem, count=True)
     autoSortScope = Typed(expected_type=AutoSortScope, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
@@ -931,11 +818,7 @@ class PivotField(Serialisable):
     showPropTip = Bool(allow_none=True)
     showPropAsCaption = Bool(allow_none=True)
     defaultAttributeDrillState = Bool(allow_none=True)
-
-    __elements__ = (
-        "items",
-        "autoSortScope",
-    )
+    __elements__ = ("items", "autoSortScope")
 
     def __init__(
         self,
@@ -1044,9 +927,7 @@ class PivotField(Serialisable):
 
 
 class Location(Serialisable):
-
     tagname = "location"
-
     ref = String()
     firstHeaderRow = Integer()
     firstDataRow = Integer()
@@ -1072,7 +953,7 @@ class Location(Serialisable):
 
 
 class TableDefinition(Serialisable):
-
+    tagname = "pivotTableDefinition"
     mime_type = (
         "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml"
     )
@@ -1081,10 +962,7 @@ class TableDefinition(Serialisable):
     )
     _id = 1
     _path = "/xl/pivotTables/pivotTable{0}.xml"
-
-    tagname = "pivotTableDefinition"
     cache = None
-
     name = String()
     cacheId = Integer()
     dataOnRows = Bool()
@@ -1153,9 +1031,7 @@ class TableDefinition(Serialisable):
     applyPatternFormats = Bool()
     applyAlignmentFormats = Bool()
     applyWidthHeightFormats = Bool()
-    location = Typed(
-        expected_type=Location,
-    )
+    location = Typed(expected_type=Location)
     pivotFields = NestedSequence(expected_type=PivotField, count=True)
     rowFields = NestedSequence(expected_type=RowColField, count=True)
     rowItems = NestedSequence(expected_type=RowColItem, count=True)
@@ -1173,7 +1049,6 @@ class TableDefinition(Serialisable):
     colHierarchiesUsage = Typed(expected_type=ColHierarchiesUsage, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
     id = Relation()
-
     __elements__ = (
         "location",
         "pivotFields",
@@ -1394,14 +1269,12 @@ class TableDefinition(Serialisable):
         """
         if self.cache is None:
             return
-
         rels = RelationshipList()
         r = Relationship(Type=self.cache.rel_type, Target=self.cache.path)
         rels.append(r)
         self.id = r.id
         if self.cache.path[1:] not in archive.namelist():
             self.cache._write(archive, manifest)
-
         path = get_rels_path(self.path)
         xml = tostring(rels.to_tree())
         archive.writestr(path[1:], xml)
@@ -1409,8 +1282,8 @@ class TableDefinition(Serialisable):
     def formatted_fields(self):
         """Map fields to associated conditional formats by priority"""
         if not self.conditionalFormats:
-            return {}
-        fields = defaultdict(list)
+            return set()
+        fields = collections.defaultdict(list)
         for idx, prio in self.conditionalFormats.by_priority():
             name = self.dataFields[idx].name
             fields[name].append(prio)
@@ -1421,5 +1294,4 @@ class TableDefinition(Serialisable):
         """
         Provide a simplified summary of the table
         """
-
         return f"{self.name} {dict(self.location)}"

@@ -1,30 +1,23 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.nested import NestedBool
-from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.sequence import MultiSequence
 from openpyxl.descriptors.sequence import MultiSequencePart
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.pivot.fields import Boolean
+from openpyxl.pivot.fields import DateTimeField
+from openpyxl.pivot.fields import Error
+from openpyxl.pivot.fields import Index
+from openpyxl.pivot.fields import Missing
+from openpyxl.pivot.fields import Number
+from openpyxl.pivot.fields import Text
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import tostring
 
-from .fields import Boolean
-from .fields import DateTimeField
-from .fields import Error
-from .fields import Index
-from .fields import Missing
-from .fields import Number
-from .fields import Text
-from .fields import TupleList
-
 
 class Record(Serialisable):
-
     tagname = "r"
-
     _fields = MultiSequence()
     m = MultiSequencePart(expected_type=Missing, store="_fields")
     n = MultiSequencePart(expected_type=Number, store="_fields")
@@ -49,26 +42,17 @@ class Record(Serialisable):
 
 
 class RecordList(Serialisable):
-
+    tagname = "pivotCacheRecords"
     mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheRecords+xml"
     rel_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords"
     _id = 1
     _path = "/xl/pivotCache/pivotCacheRecords{0}.xml"
-
-    tagname = "pivotCacheRecords"
-
     r = Sequence(expected_type=Record, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("r",)
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        r=(),
-        extLst=None,
-    ):
+    def __init__(self, count=None, r=(), extLst=None):
         self.r = r
         self.extLst = extLst
 

@@ -1,71 +1,48 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import DateTime
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import DateTime
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import HexBinary
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class Index(Serialisable):
-
     tagname = "x"
-
     v = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        v=0,
-    ):
+    def __init__(self, v=0):
         self.v = v
 
 
 class Tuple(Serialisable):
-
     tagname = "tpl"
-
     fld = Integer(allow_none=True)
     hier = Integer(allow_none=True)
     item = Integer()
 
-    def __init__(
-        self,
-        fld=None,
-        hier=None,
-        item=None,
-    ):
+    def __init__(self, fld=None, hier=None, item=None):
         self.fld = fld
         self.hier = hier
         self.item = item
 
 
 class TupleList(Serialisable):
-
     tagname = "tpls"
-
     c = Integer(allow_none=True)
-    tpl = Typed(
-        expected_type=Tuple,
-    )
-
+    tpl = Typed(expected_type=Tuple)
     __elements__ = ("tpl",)
 
-    def __init__(
-        self,
-        c=None,
-        tpl=None,
-    ):
+    def __init__(self, c=None, tpl=None):
         self.c = c
         self.tpl = tpl
 
 
 class Missing(Serialisable):
-
     tagname = "m"
-
     tpls = Sequence(expected_type=TupleList)
     x = Sequence(expected_type=Index)
     u = Bool(allow_none=True)
@@ -79,7 +56,6 @@ class Missing(Serialisable):
     un = Bool(allow_none=True)
     st = Bool(allow_none=True)
     b = Bool(allow_none=True)
-
     __elements__ = ("tpls", "x")
 
     def __init__(
@@ -114,9 +90,7 @@ class Missing(Serialisable):
 
 
 class Number(Serialisable):
-
     tagname = "n"
-
     tpls = Sequence(expected_type=TupleList)
     x = Sequence(expected_type=Index)
     v = Float()
@@ -131,7 +105,6 @@ class Number(Serialisable):
     un = Bool(allow_none=True)
     st = Bool(allow_none=True)
     b = Bool(allow_none=True)
-
     __elements__ = ("tpls", "x")
 
     def __init__(
@@ -168,9 +141,7 @@ class Number(Serialisable):
 
 
 class Error(Serialisable):
-
     tagname = "e"
-
     tpls = Typed(expected_type=TupleList, allow_none=True)
     x = Sequence(expected_type=Index)
     v = String()
@@ -185,7 +156,6 @@ class Error(Serialisable):
     un = Bool(allow_none=True)
     st = Bool(allow_none=True)
     b = Bool(allow_none=True)
-
     __elements__ = ("tpls", "x")
 
     def __init__(
@@ -222,27 +192,16 @@ class Error(Serialisable):
 
 
 class Boolean(Serialisable):
-
     tagname = "b"
-
     x = Sequence(expected_type=Index)
     v = Bool()
     u = Bool(allow_none=True)
     f = Bool(allow_none=True)
     c = String(allow_none=True)
     cp = Integer(allow_none=True)
-
     __elements__ = ("x",)
 
-    def __init__(
-        self,
-        x=(),
-        v=None,
-        u=None,
-        f=None,
-        c=None,
-        cp=None,
-    ):
+    def __init__(self, x=(), v=None, u=None, f=None, c=None, cp=None):
         self.x = x
         self.v = v
         self.u = u
@@ -252,9 +211,7 @@ class Boolean(Serialisable):
 
 
 class Text(Serialisable):
-
     tagname = "s"
-
     tpls = Sequence(expected_type=TupleList)
     x = Sequence(expected_type=Index)
     v = String()
@@ -269,7 +226,6 @@ class Text(Serialisable):
     un = Bool(allow_none=True)
     st = Bool(allow_none=True)
     b = Bool(allow_none=True)
-
     __elements__ = ("tpls", "x")
 
     def __init__(
@@ -306,27 +262,16 @@ class Text(Serialisable):
 
 
 class DateTimeField(Serialisable):
-
     tagname = "d"
-
     x = Sequence(expected_type=Index)
     v = DateTime()
     u = Bool(allow_none=True)
     f = Bool(allow_none=True)
     c = String(allow_none=True)
     cp = Integer(allow_none=True)
-
     __elements__ = ("x",)
 
-    def __init__(
-        self,
-        x=(),
-        v=None,
-        u=None,
-        f=None,
-        c=None,
-        cp=None,
-    ):
+    def __init__(self, x=(), v=None, u=None, f=None, c=None, cp=None):
         self.x = x
         self.v = v
         self.u = u

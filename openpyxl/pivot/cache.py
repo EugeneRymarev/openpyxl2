@@ -1,86 +1,65 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import DateTime
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+import itertools
+
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import DateTime
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.sequence import MultiSequence
 from openpyxl.descriptors.sequence import MultiSequencePart
 from openpyxl.descriptors.sequence import NestedSequence
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.packaging.relationship import get_rels_path
 from openpyxl.packaging.relationship import Relationship
 from openpyxl.packaging.relationship import RelationshipList
+from openpyxl.packaging.relationship import get_rels_path
+from openpyxl.pivot.fields import Boolean
+from openpyxl.pivot.fields import DateTimeField
+from openpyxl.pivot.fields import Error
+from openpyxl.pivot.fields import Missing
+from openpyxl.pivot.fields import Number
+from openpyxl.pivot.fields import Text
+from openpyxl.pivot.fields import TupleList
+from openpyxl.pivot.table import PivotArea
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import tostring
 
-from .fields import Boolean
-from .fields import DateTimeField
-from .fields import Error
-from .fields import Missing
-from .fields import Number
-from .fields import Text
-from .fields import TupleList
-from .table import (
-    PivotArea,
-)
-
 
 class MeasureDimensionMap(Serialisable):
-
     tagname = "map"
-
     measureGroup = Integer(allow_none=True)
     dimension = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        measureGroup=None,
-        dimension=None,
-    ):
+    def __init__(self, measureGroup=None, dimension=None):
         self.measureGroup = measureGroup
         self.dimension = dimension
 
 
 class MeasureGroup(Serialisable):
-
     tagname = "measureGroup"
-
     name = String()
     caption = String()
 
-    def __init__(
-        self,
-        name=None,
-        caption=None,
-    ):
+    def __init__(self, name=None, caption=None):
         self.name = name
         self.caption = caption
 
 
 class PivotDimension(Serialisable):
-
     tagname = "dimension"
-
     measure = Bool()
     name = String()
     uniqueName = String()
     caption = String()
 
-    def __init__(
-        self,
-        measure=None,
-        name=None,
-        uniqueName=None,
-        caption=None,
-    ):
+    def __init__(self, measure=None, name=None, uniqueName=None, caption=None):
         self.measure = measure
         self.name = name
         self.uniqueName = uniqueName
@@ -88,9 +67,7 @@ class PivotDimension(Serialisable):
 
 
 class CalculatedMember(Serialisable):
-
     tagname = "calculatedMember"
-
     name = String()
     mdx = String()
     memberName = String(allow_none=True)
@@ -99,7 +76,6 @@ class CalculatedMember(Serialisable):
     solveOrder = Integer(allow_none=True)
     set = Bool()
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
     def __init__(
@@ -124,25 +100,14 @@ class CalculatedMember(Serialisable):
 
 
 class CalculatedItem(Serialisable):
-
     tagname = "calculatedItem"
-
     field = Integer(allow_none=True)
     formula = String()
-    pivotArea = Typed(
-        expected_type=PivotArea,
-    )
+    pivotArea = Typed(expected_type=PivotArea)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("pivotArea", "extLst")
 
-    def __init__(
-        self,
-        field=None,
-        formula=None,
-        pivotArea=None,
-        extLst=None,
-    ):
+    def __init__(self, field=None, formula=None, pivotArea=None, extLst=None):
         self.field = field
         self.formula = formula
         self.pivotArea = pivotArea
@@ -150,43 +115,28 @@ class CalculatedItem(Serialisable):
 
 
 class ServerFormat(Serialisable):
-
     tagname = "serverFormat"
-
     culture = String(allow_none=True)
     format = String(allow_none=True)
 
-    def __init__(
-        self,
-        culture=None,
-        format=None,
-    ):
+    def __init__(self, culture=None, format=None):
         self.culture = culture
         self.format = format
 
 
 class Query(Serialisable):
-
     tagname = "query"
-
     mdx = String()
     tpls = Typed(expected_type=TupleList, allow_none=True)
-
     __elements__ = ("tpls",)
 
-    def __init__(
-        self,
-        mdx=None,
-        tpls=None,
-    ):
+    def __init__(self, mdx=None, tpls=None):
         self.mdx = mdx
         self.tpls = tpls
 
 
 class OLAPSet(Serialisable):
-
     tagname = "set"
-
     count = Integer()
     maxRank = Integer()
     setDefinition = String()
@@ -205,7 +155,6 @@ class OLAPSet(Serialisable):
     queryFailed = Bool()
     tpls = Typed(expected_type=TupleList, allow_none=True)
     sortByTuple = Typed(expected_type=TupleList, allow_none=True)
-
     __elements__ = ("tpls", "sortByTuple")
 
     def __init__(
@@ -229,26 +178,16 @@ class OLAPSet(Serialisable):
 
 class PCDSDTCEntries(Serialisable):
     # Implements CT_PCDSDTCEntries
-
     tagname = "entries"
-
     count = Integer(allow_none=True)
     # elements are choice
     m = Typed(expected_type=Missing, allow_none=True)
     n = Typed(expected_type=Number, allow_none=True)
     e = Typed(expected_type=Error, allow_none=True)
     s = Typed(expected_type=Text, allow_none=True)
-
     __elements__ = ("m", "n", "e", "s")
 
-    def __init__(
-        self,
-        count=None,
-        m=None,
-        n=None,
-        e=None,
-        s=None,
-    ):
+    def __init__(self, count=None, m=None, n=None, e=None, s=None):
         self.count = count
         self.m = m
         self.n = n
@@ -257,15 +196,12 @@ class PCDSDTCEntries(Serialisable):
 
 
 class TupleCache(Serialisable):
-
     tagname = "tupleCache"
-
     entries = Typed(expected_type=PCDSDTCEntries, allow_none=True)
     sets = NestedSequence(expected_type=OLAPSet, count=True)
     queryCache = NestedSequence(expected_type=Query, count=True)
     serverFormats = NestedSequence(expected_type=ServerFormat, count=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("entries", "sets", "queryCache", "serverFormats", "extLst")
 
     def __init__(
@@ -284,9 +220,7 @@ class TupleCache(Serialisable):
 
 
 class OLAPKPI(Serialisable):
-
     tagname = "kpi"
-
     uniqueName = String()
     caption = String(allow_none=True)
     displayFolder = String(allow_none=True)
@@ -327,32 +261,23 @@ class OLAPKPI(Serialisable):
 
 
 class GroupMember(Serialisable):
-
     tagname = "groupMember"
-
     uniqueName = String()
     group = Bool()
 
-    def __init__(
-        self,
-        uniqueName=None,
-        group=None,
-    ):
+    def __init__(self, uniqueName=None, group=None):
         self.uniqueName = uniqueName
         self.group = group
 
 
 class LevelGroup(Serialisable):
-
     tagname = "group"
-
     name = String()
     uniqueName = String()
     caption = String()
     uniqueParent = String()
     id = Integer()
     groupMembers = NestedSequence(expected_type=GroupMember, count=True)
-
     __elements__ = ("groupMembers",)
 
     def __init__(
@@ -373,16 +298,13 @@ class LevelGroup(Serialisable):
 
 
 class GroupLevel(Serialisable):
-
     tagname = "groupLevel"
-
     uniqueName = String()
     caption = String()
     user = Bool()
     customRollUp = Bool()
     groups = NestedSequence(expected_type=LevelGroup, count=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("groups", "extLst")
 
     def __init__(
@@ -403,22 +325,15 @@ class GroupLevel(Serialisable):
 
 
 class FieldUsage(Serialisable):
-
     tagname = "fieldUsage"
-
     x = Integer()
 
-    def __init__(
-        self,
-        x=None,
-    ):
+    def __init__(self, x=None):
         self.x = x
 
 
 class CacheHierarchy(Serialisable):
-
     tagname = "cacheHierarchy"
-
     uniqueName = String()
     caption = String(allow_none=True)
     measure = Bool()
@@ -444,7 +359,6 @@ class CacheHierarchy(Serialisable):
     fieldsUsage = NestedSequence(expected_type=FieldUsage, count=True)
     groupLevels = NestedSequence(expected_type=GroupLevel, count=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("fieldsUsage", "groupLevels")
 
     def __init__(
@@ -503,31 +417,17 @@ class CacheHierarchy(Serialisable):
 
 
 class GroupItems(Serialisable):
-
     tagname = "groupItems"
-
     m = Sequence(expected_type=Missing)
     n = Sequence(expected_type=Number)
     b = Sequence(expected_type=Boolean)
     e = Sequence(expected_type=Error)
     s = Sequence(expected_type=Text)
-    d = Sequence(
-        expected_type=DateTimeField,
-    )
-
+    d = Sequence(expected_type=DateTimeField)
     __elements__ = ("m", "n", "b", "e", "s", "d")
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        m=(),
-        n=(),
-        b=(),
-        e=(),
-        s=(),
-        d=(),
-    ):
+    def __init__(self, count=None, m=(), n=(), b=(), e=(), s=(), d=()):
         self.m = m
         self.n = n
         self.b = b
@@ -541,9 +441,7 @@ class GroupItems(Serialisable):
 
 
 class RangePr(Serialisable):
-
     tagname = "rangePr"
-
     autoStart = Bool(allow_none=True)
     autoEnd = Bool(allow_none=True)
     groupBy = NoneSet(
@@ -588,15 +486,12 @@ class RangePr(Serialisable):
 
 
 class FieldGroup(Serialisable):
-
     tagname = "fieldGroup"
-
     par = Integer(allow_none=True)
     base = Integer(allow_none=True)
     rangePr = Typed(expected_type=RangePr, allow_none=True)
     discretePr = NestedSequence(expected_type=NestedInteger, count=True)
     groupItems = Typed(expected_type=GroupItems, allow_none=True)
-
     __elements__ = ("rangePr", "discretePr", "groupItems")
 
     def __init__(
@@ -615,9 +510,7 @@ class FieldGroup(Serialisable):
 
 
 class SharedItems(Serialisable):
-
     tagname = "sharedItems"
-
     _fields = MultiSequence()
     m = MultiSequencePart(expected_type=Missing, store="_fields")
     n = MultiSequencePart(expected_type=Number, store="_fields")
@@ -639,7 +532,6 @@ class SharedItems(Serialisable):
     minDate = DateTime(allow_none=True)
     maxDate = DateTime(allow_none=True)
     longText = Bool(allow_none=True)
-
     __attrs__ = (
         "count",
         "containsBlank",
@@ -696,9 +588,7 @@ class SharedItems(Serialisable):
 
 
 class CacheField(Serialisable):
-
     tagname = "cacheField"
-
     sharedItems = Typed(expected_type=SharedItems, allow_none=True)
     fieldGroup = Typed(expected_type=FieldGroup, allow_none=True)
     mpMap = NestedInteger(allow_none=True, attribute="v")
@@ -716,7 +606,6 @@ class CacheField(Serialisable):
     databaseField = Bool(allow_none=True)
     mappingCount = Integer(allow_none=True)
     memberPropertyField = Bool(allow_none=True)
-
     __elements__ = ("sharedItems", "fieldGroup", "mpMap")
 
     def __init__(
@@ -759,11 +648,8 @@ class CacheField(Serialisable):
 
 
 class CacheFieldList(Serialisable):
-
     tagname = "cacheFields"
-
     cacheField = Sequence(expected_type=CacheField)
-
     __elements__ = ("cacheField",)
     __attrs__ = ("count",)
 
@@ -776,9 +662,7 @@ class CacheFieldList(Serialisable):
 
 
 class RangeSet(Serialisable):
-
     tagname = "rangeSet"
-
     i1 = Integer(allow_none=True)
     i2 = Integer(allow_none=True)
     i3 = Integer(allow_none=True)
@@ -807,73 +691,47 @@ class RangeSet(Serialisable):
 
 
 class PageItem(Serialisable):
-
     tagname = "pageItem"
-
     name = String()
 
-    def __init__(
-        self,
-        name=None,
-    ):
+    def __init__(self, name=None):
         self.name = name
 
 
 class Consolidation(Serialisable):
-
     tagname = "consolidation"
-
     autoPage = Bool(allow_none=True)
     pages = NestedSequence(expected_type=PageItem, count=True)
     rangeSets = NestedSequence(expected_type=RangeSet, count=True)
-
     __elements__ = ("pages", "rangeSets")
 
-    def __init__(
-        self,
-        autoPage=None,
-        pages=(),
-        rangeSets=(),
-    ):
+    def __init__(self, autoPage=None, pages=(), rangeSets=()):
         self.autoPage = autoPage
         self.pages = pages
         self.rangeSets = rangeSets
 
 
 class WorksheetSource(Serialisable):
-
     tagname = "worksheetSource"
-
     ref = String(allow_none=True)
     name = String(allow_none=True)
     sheet = String(allow_none=True)
 
-    def __init__(
-        self,
-        ref=None,
-        name=None,
-        sheet=None,
-    ):
+    def __init__(self, ref=None, name=None, sheet=None):
         self.ref = ref
         self.name = name
         self.sheet = sheet
 
 
 class CacheSource(Serialisable):
-
     tagname = "cacheSource"
-
     type = Set(values=(["worksheet", "external", "consolidation", "scenario"]))
     connectionId = Integer(allow_none=True)
     # some elements are choice
     worksheetSource = Typed(expected_type=WorksheetSource, allow_none=True)
     consolidation = Typed(expected_type=Consolidation, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
-    __elements__ = (
-        "worksheetSource",
-        "consolidation",
-    )
+    __elements__ = ("worksheetSource", "consolidation")
 
     def __init__(
         self,
@@ -890,15 +748,12 @@ class CacheSource(Serialisable):
 
 
 class CacheDefinition(Serialisable):
-
+    tagname = "pivotCacheDefinition"
     mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml"
     rel_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition"
     _id = 1
     _path = "/xl/pivotCache/pivotCacheDefinition{0}.xml"
     records = None
-
-    tagname = "pivotCacheDefinition"
-
     invalid = Bool(allow_none=True)
     saveData = Bool(allow_none=True)
     refreshOnLoad = Bool(allow_none=True)
@@ -928,7 +783,6 @@ class CacheDefinition(Serialisable):
     maps = NestedSequence(expected_type=MeasureDimensionMap, count=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
     id = Relation()
-
     __elements__ = (
         "cacheSource",
         "cacheFields",
@@ -1037,20 +891,15 @@ class CacheDefinition(Serialisable):
         """
         if self.records is None:
             return
-
         rels = RelationshipList()
         r = Relationship(Type=self.records.rel_type, Target=self.records.path)
         rels.append(r)
         self.id = r.id
         self.records._id = self._id
         self.records._write(archive, manifest)
-
         path = get_rels_path(self.path)
         xml = tostring(rels.to_tree())
         archive.writestr(path[1:], xml)
-
-
-from itertools import groupby
 
 
 class CacheDefinitionCollection(list):
@@ -1068,4 +917,4 @@ class CacheDefinitionCollection(list):
             return cache.cacheSource.type
 
         caches = sorted(self, key=sort)
-        return groupby(caches, key=sort)
+        return itertools.groupby(caches, key=sort)
