@@ -1,21 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .colors import Color
 
 
 class TableStyleElement(Serialisable):
-
     tagname = "tableStyleElement"
-
     type = Set(
         values=(
             [
@@ -53,27 +46,19 @@ class TableStyleElement(Serialisable):
     size = Integer(allow_none=True)
     dxfId = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        type=None,
-        size=None,
-        dxfId=None,
-    ):
+    def __init__(self, type=None, size=None, dxfId=None):
         self.type = type
         self.size = size
         self.dxfId = dxfId
 
 
 class TableStyle(Serialisable):
-
     tagname = "tableStyle"
-
     name = String()
     pivot = Bool(allow_none=True)
     table = Bool(allow_none=True)
     count = Integer(allow_none=True)
     tableStyleElement = Sequence(expected_type=TableStyleElement, allow_none=True)
-
     __elements__ = ("tableStyleElement",)
 
     def __init__(
@@ -92,13 +77,10 @@ class TableStyle(Serialisable):
 
 
 class TableStyleList(Serialisable):
-
     tagname = "tableStyles"
-
     defaultTableStyle = String(allow_none=True)
     defaultPivotStyle = String(allow_none=True)
     tableStyle = Sequence(expected_type=TableStyle, allow_none=True)
-
     __elements__ = ("tableStyle",)
     __attrs__ = ("count", "defaultTableStyle", "defaultPivotStyle")
 

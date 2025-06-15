@@ -1,15 +1,11 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.compat import safe_string
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .colors import ColorDescriptor
-
+from openpyxl.styles.colors import ColorDescriptor
 
 BORDER_NONE = None
 BORDER_DASHDOT = "dashDot"
@@ -63,7 +59,6 @@ class Border(Serialisable):
     """Border positioning for use in styles."""
 
     tagname = "border"
-
     __elements__ = (
         "start",
         "end",
@@ -75,7 +70,6 @@ class Border(Serialisable):
         "vertical",
         "horizontal",
     )
-
     # child elements
     start = Typed(expected_type=Side, allow_none=True)
     end = Typed(expected_type=Side, allow_none=True)
@@ -131,5 +125,9 @@ class Border(Serialisable):
 
 
 DEFAULT_BORDER = Border(
-    left=Side(), right=Side(), top=Side(), bottom=Side(), diagonal=Side()
+    left=Side(),
+    right=Side(),
+    top=Side(),
+    bottom=Side(),
+    diagonal=Side(),
 )

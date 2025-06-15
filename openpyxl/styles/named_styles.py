@@ -1,24 +1,23 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.compat import safe_string
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .alignment import Alignment
-from .borders import Border
-from .cell_style import CellStyle
-from .cell_style import StyleArray
-from .fills import Fill
-from .fills import PatternFill
-from .fonts import Font
-from .numbers import BUILTIN_FORMATS_MAX_SIZE
-from .numbers import BUILTIN_FORMATS_REVERSE
-from .numbers import NumberFormatDescriptor
-from .protection import Protection
+from openpyxl.styles.alignment import Alignment
+from openpyxl.styles.borders import Border
+from openpyxl.styles.cell_style import CellStyle
+from openpyxl.styles.cell_style import StyleArray
+from openpyxl.styles.fills import Fill
+from openpyxl.styles.fills import PatternFill
+from openpyxl.styles.fonts import Font
+from openpyxl.styles.numbers import BUILTIN_FORMATS_MAX_SIZE
+from openpyxl.styles.numbers import BUILTIN_FORMATS_REVERSE
+from openpyxl.styles.numbers import NumberFormatDescriptor
+from openpyxl.styles.protection import Protection
 
 
 class NamedStyle(Serialisable):
@@ -64,14 +63,8 @@ class NamedStyle(Serialisable):
 
     def __setattr__(self, attr, value):
         super().__setattr__(attr, value)
-        if getattr(self, "_wb", None) and attr in (
-            "font",
-            "fill",
-            "border",
-            "alignment",
-            "number_format",
-            "protection",
-        ):
+        attrs = ("font", "fill", "border", "alignment", "number_format", "protection")
+        if getattr(self, "_wb", None) and attr in attrs:
             self._recalculate()
 
     def __iter__(self):
@@ -97,13 +90,14 @@ class NamedStyle(Serialisable):
         if fmt in BUILTIN_FORMATS_REVERSE:
             fmt = BUILTIN_FORMATS_REVERSE[fmt]
         else:
-            fmt = self._wb._number_formats.add(self.number_format) + (
-                BUILTIN_FORMATS_MAX_SIZE
-            )
+            fmt = self._wb._number_formats.add(self.number_format)
+            fmt += BUILTIN_FORMATS_MAX_SIZE
         self._style.numFmtId = fmt
 
     def as_tuple(self):
-        """Return a style array representing the current style"""
+        """
+        Return a style array representing the current style
+        """
         return self._style
 
     def as_xf(self):
@@ -123,7 +117,6 @@ class NamedStyle(Serialisable):
     def as_name(self):
         """
         Return relevant named style
-
         """
         named = _NamedCellStyle(
             name=self.name,
@@ -148,7 +141,6 @@ class NamedStyleList(list):
         """
         Allow a list of named styles to be passed in and index them.
         """
-
         for idx, s in enumerate(iterable, len(self)):
             s._style.xfId = idx
         super().__init__(iterable)
@@ -160,18 +152,16 @@ class NamedStyleList(list):
     def __getitem__(self, key):
         if isinstance(key, int):
             return super().__getitem__(key)
-
         for idx, name in enumerate(self.names):
             if name == key:
                 return self[idx]
-
-        raise KeyError("No named style with the name{0} exists".format(key))
+        raise KeyError(f"No named style with the name{key} exists")
 
     def append(self, style):
         if not isinstance(style, NamedStyle):
             raise TypeError("""Only NamedStyle instances can be added""")
         elif style.name in self.names:  # hotspot
-            raise ValueError("""Style {0} exists already""".format(style.name))
+            raise ValueError(f"Style {style.name} exists already")
         style._style.xfId = len(self)
         super().append(style)
 
@@ -185,7 +175,6 @@ class _NamedCellStyle(Serialisable):
     """
 
     tagname = "cellStyle"
-
     name = String()
     xfId = Integer()
     builtinId = Integer(allow_none=True)
@@ -193,7 +182,6 @@ class _NamedCellStyle(Serialisable):
     hidden = Bool(allow_none=True)
     customBuiltin = Bool(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
     def __init__(
@@ -222,17 +210,11 @@ class _NamedCellStyleList(Serialisable):
     """
 
     tagname = "cellStyles"
-
     count = Integer(allow_none=True)
     cellStyle = Sequence(expected_type=_NamedCellStyle)
-
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        cellStyle=(),
-    ):
+    def __init__(self, count=None, cellStyle=()):
         self.cellStyle = cellStyle
 
     @property
@@ -256,13 +238,10 @@ class _NamedCellStyleList(Serialisable):
         styles = []
         names = set()
         ids = set()
-
         for ns in sorted(self.cellStyle, key=sort_fn):
             if ns.xfId in ids or ns.name in names:  # skip duplicates
                 continue
             ids.add(ns.xfId)
             names.add(ns.name)
-
             styles.append(ns)
-
         return styles

@@ -1,12 +1,12 @@
 # Copyright (c) 2010-2025 openpyxl
 import re
 
-from openpyxl.compat import safe_string
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.sequence import NestedSequence
 from openpyxl.descriptors.serialisable import Serialisable
 
@@ -78,7 +78,6 @@ COLOR_INDEX = (
     "00333333",  # 60-63
 )
 # indices 64 and 65 are reserved for the system foreground and background colours respectively
-
 # Will remove these definitions in a future release
 BLACK = COLOR_INDEX[0]
 WHITE = COLOR_INDEX[1]
@@ -90,8 +89,6 @@ BLUE = COLOR_INDEX[4]
 # DARKGREEN = COLOR_INDEX[9]
 # YELLOW = COLOR_INDEX[5]
 # DARKYELLOW = COLOR_INDEX[19]
-
-
 aRGB_REGEX = re.compile("^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6})$")
 
 
@@ -114,10 +111,11 @@ class RGB(Typed):
 
 
 class Color(Serialisable):
-    """Named colors for use in styles."""
+    """
+    Named colors for use in styles.
+    """
 
     tagname = "color"
-
     rgb = RGB()
     indexed = Integer()
     auto = Bool()
@@ -181,7 +179,6 @@ class Color(Serialisable):
 
 
 class ColorDescriptor(Typed):
-
     expected_type = Color
 
     def __set__(self, instance, value):
@@ -191,32 +188,20 @@ class ColorDescriptor(Typed):
 
 
 class RgbColor(Serialisable):
-
     tagname = "rgbColor"
-
     rgb = RGB()
 
-    def __init__(
-        self,
-        rgb=None,
-    ):
+    def __init__(self, rgb=None):
         self.rgb = rgb
 
 
 class ColorList(Serialisable):
-
     tagname = "colors"
-
     indexedColors = NestedSequence(expected_type=RgbColor)
     mruColors = NestedSequence(expected_type=Color)
-
     __elements__ = ("indexedColors", "mruColors")
 
-    def __init__(
-        self,
-        indexedColors=(),
-        mruColors=(),
-    ):
+    def __init__(self, indexedColors=(), mruColors=()):
         self.indexedColors = indexedColors
         self.mruColors = mruColors
 

@@ -1,21 +1,18 @@
 # Copyright (c) 2010-2025 openpyxl
-from array import array
+import array
 
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.styles.alignment import Alignment
+from openpyxl.styles.protection import Protection
 from openpyxl.utils.indexed_list import IndexedList
-
-from .alignment import Alignment
-from .protection import Protection
 
 
 class ArrayDescriptor:
-
     def __init__(self, key):
         self.key = key
 
@@ -26,14 +23,13 @@ class ArrayDescriptor:
         instance[self.key] = value
 
 
-class StyleArray(array):
+class StyleArray(array.array):
     """
     Simplified named tuple with an array
     """
 
     __slots__ = ()
     tagname = "xf"
-
     fontId = ArrayDescriptor(0)
     fillId = ArrayDescriptor(1)
     borderId = ArrayDescriptor(2)
@@ -45,7 +41,7 @@ class StyleArray(array):
     xfId = ArrayDescriptor(8)
 
     def __new__(cls, args=[0] * 9):
-        return array.__new__(cls, "i", args)
+        return array.array.__new__(cls, "i", args)
 
     def __hash__(self):
         return hash(tuple(self))
@@ -58,9 +54,7 @@ class StyleArray(array):
 
 
 class CellStyle(Serialisable):
-
     tagname = "xf"
-
     numFmtId = Integer()
     fontId = Integer()
     fillId = Integer()
@@ -77,7 +71,6 @@ class CellStyle(Serialisable):
     alignment = Typed(expected_type=Alignment, allow_none=True)
     protection = Typed(expected_type=Protection, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("alignment", "protection")
     __attrs__ = (
         "numFmtId",
@@ -129,7 +122,7 @@ class CellStyle(Serialisable):
         Convert to StyleArray
         """
         style = StyleArray()
-        for k in (
+        keys = (
             "fontId",
             "fillId",
             "borderId",
@@ -137,7 +130,8 @@ class CellStyle(Serialisable):
             "pivotButton",
             "quotePrefix",
             "xfId",
-        ):
+        )
+        for k in keys:
             v = getattr(self, k, 0)
             if v is not None:
                 setattr(style, k, v)
@@ -168,23 +162,15 @@ class CellStyle(Serialisable):
 
 
 class CellStyleList(Serialisable):
-
     tagname = "cellXfs"
-
     __attrs__ = ("count",)
-
     count = Integer(allow_none=True)
     xf = Sequence(expected_type=CellStyle)
     alignment = Sequence(expected_type=Alignment)
     protection = Sequence(expected_type=Protection)
-
     __elements__ = ("xf",)
 
-    def __init__(
-        self,
-        count=None,
-        xf=(),
-    ):
+    def __init__(self, count=None, xf=()):
         self.xf = xf
 
     @property

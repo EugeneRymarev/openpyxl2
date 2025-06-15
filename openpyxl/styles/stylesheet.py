@@ -1,42 +1,38 @@
 # Copyright (c) 2010-2025 openpyxl
-from warnings import warn
+import warnings
 
-from openpyxl.descriptors import (
-    Typed,
-)
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.sequence import NestedSequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.styles.borders import Border
+from openpyxl.styles.builtins import styles
+from openpyxl.styles.cell_style import CellStyle
+from openpyxl.styles.cell_style import CellStyleList
+from openpyxl.styles.colors import ColorList
+from openpyxl.styles.differential import DifferentialStyle
+from openpyxl.styles.fills import Fill
+from openpyxl.styles.fonts import Font
+from openpyxl.styles.named_styles import NamedStyle
+from openpyxl.styles.named_styles import NamedStyleList
+from openpyxl.styles.named_styles import _NamedCellStyleList
+from openpyxl.styles.numbers import BUILTIN_FORMATS
+from openpyxl.styles.numbers import BUILTIN_FORMATS_MAX_SIZE
+from openpyxl.styles.numbers import BUILTIN_FORMATS_REVERSE
+from openpyxl.styles.numbers import NumberFormat
+from openpyxl.styles.numbers import NumberFormatList
+from openpyxl.styles.numbers import builtin_format_code
+from openpyxl.styles.numbers import is_date_format
+from openpyxl.styles.numbers import is_timedelta_format
+from openpyxl.styles.table import TableStyleList
 from openpyxl.utils.indexed_list import IndexedList
 from openpyxl.xml.constants import ARC_STYLE
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import fromstring
 
-from .borders import Border
-from .builtins import styles
-from .cell_style import CellStyle
-from .cell_style import CellStyleList
-from .colors import ColorList
-from .differential import DifferentialStyle
-from .fills import Fill
-from .fonts import Font
-from .named_styles import _NamedCellStyleList
-from .named_styles import NamedStyle
-from .named_styles import NamedStyleList
-from .numbers import builtin_format_code
-from .numbers import BUILTIN_FORMATS
-from .numbers import BUILTIN_FORMATS_MAX_SIZE
-from .numbers import BUILTIN_FORMATS_REVERSE
-from .numbers import is_date_format
-from .numbers import is_timedelta_format
-from .numbers import NumberFormatList
-from .table import TableStyleList
-
 
 class Stylesheet(Serialisable):
-
     tagname = "styleSheet"
-
     numFmts = Typed(expected_type=NumberFormatList)
     fonts = NestedSequence(expected_type=Font, count=True)
     fills = NestedSequence(expected_type=Fill, count=True)
@@ -48,7 +44,6 @@ class Stylesheet(Serialisable):
     tableStyles = Typed(expected_type=TableStyleList, allow_none=True)
     colors = Typed(expected_type=ColorList, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "numFmts",
         "fonts",
@@ -92,11 +87,9 @@ class Stylesheet(Serialisable):
         if cellStyles is None:
             cellStyles = _NamedCellStyleList()
         self.cellStyles = cellStyles
-
         self.dxfs = dxfs
         self.tableStyles = tableStyles
         self.colors = colors
-
         self.cell_styles = self.cellXfs._to_array()
         self.alignments = self.cellXfs.alignments
         self.protections = self.cellXfs.prots
@@ -118,7 +111,6 @@ class Stylesheet(Serialisable):
         """
         style_refs = self.cellStyles.remove_duplicates()
         from_ref = [self._expand_named_style(style_ref) for style_ref in style_refs]
-
         return NamedStyleList(from_ref)
 
     def _expand_named_style(self, style_ref):
@@ -133,7 +125,6 @@ class Stylesheet(Serialisable):
             hidden=style_ref.hidden,
             builtinId=style_ref.builtinId,
         )
-
         named_style.font = self.fonts[xf.fontId]
         named_style.fill = self.fills[xf.fillId]
         named_style.border = self.borders[xf.borderId]
@@ -141,20 +132,17 @@ class Stylesheet(Serialisable):
             formats = BUILTIN_FORMATS
         else:
             formats = self.custom_formats
-
         if xf.numFmtId in formats:
             named_style.number_format = formats[xf.numFmtId]
         if xf.alignment:
             named_style.alignment = xf.alignment
         if xf.protection:
             named_style.protection = xf.protection
-
         return named_style
 
     def _split_named_styles(self, wb):
         """
         Convert NamedStyle into separate CellStyle and Xf objects
-
         """
         for style in wb._named_styles:
             self.cellStyles.cellStyle.append(style.as_name())
@@ -205,12 +193,9 @@ def apply_stylesheet(archive, wb):
         src = archive.read(ARC_STYLE)
     except KeyError:
         return wb
-
     node = fromstring(src)
     stylesheet = Stylesheet.from_tree(node)
-
     if stylesheet.cell_styles:
-
         wb._borders = IndexedList(stylesheet.borders)
         wb._fonts = IndexedList(stylesheet.fonts)
         wb._fills = IndexedList(stylesheet.fills)
@@ -219,24 +204,19 @@ def apply_stylesheet(archive, wb):
         wb._protections = stylesheet.protections
         wb._alignments = stylesheet.alignments
         wb._table_styles = stylesheet.tableStyles
-
         # need to overwrite openpyxl defaults in case workbook has different ones
         wb._cell_styles = stylesheet.cell_styles
         wb._named_styles = stylesheet.named_styles
         wb._date_formats = stylesheet.date_formats
         wb._timedelta_formats = stylesheet.timedelta_formats
-
         for ns in wb._named_styles:
             ns.bind(wb)
-
     else:
-        warn("Workbook contains no stylesheet, using openpyxl's defaults")
-
+        warnings.warn("Workbook contains no stylesheet, using openpyxl's defaults")
     if not wb._named_styles:
         normal = styles["Normal"]
         wb.add_named_style(normal)
-        warn("Workbook contains no default style, apply openpyxl's default")
-
+        warnings.warn("Workbook contains no default style, apply openpyxl's default")
     if stylesheet.colors is not None:
         wb._colors = stylesheet.colors.index
 
@@ -248,29 +228,20 @@ def write_stylesheet(wb):
     stylesheet.borders = wb._borders
     stylesheet.dxfs = wb._differential_styles.styles
     stylesheet.colors = ColorList(indexedColors=wb._colors)
-
-    from .numbers import NumberFormat
-
     fmts = []
     for idx, code in enumerate(wb._number_formats, BUILTIN_FORMATS_MAX_SIZE):
         fmt = NumberFormat(idx, code)
         fmts.append(fmt)
-
     stylesheet.numFmts.numFmt = fmts
-
     xfs = []
     for style in wb._cell_styles:
         xf = CellStyle.from_array(style)
-
         if style.alignmentId:
             xf.alignment = wb._alignments[style.alignmentId]
-
         if style.protectionId:
             xf.protection = wb._protections[style.protectionId]
         xfs.append(xf)
     stylesheet.cellXfs = CellStyleList(xf=xfs)
-
     stylesheet._split_named_styles(wb)
     stylesheet.tableStyles = wb._table_styles
-
     return stylesheet.to_tree()

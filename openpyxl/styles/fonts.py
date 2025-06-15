@@ -1,38 +1,35 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.compat import safe_string
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Alias
 from openpyxl.descriptors.nested import NestedBool
 from openpyxl.descriptors.nested import NestedFloat
 from openpyxl.descriptors.nested import NestedInteger
 from openpyxl.descriptors.nested import NestedMinMax
 from openpyxl.descriptors.nested import NestedNoneSet
 from openpyxl.descriptors.nested import NestedString
-from openpyxl.descriptors.nested import NestedValue
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.styles.colors import Color
+from openpyxl.styles.colors import ColorDescriptor
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import Element
-from openpyxl.xml.functions import SubElement
-
-from .colors import BLACK
-from .colors import Color
-from .colors import ColorDescriptor
 
 
 def _no_value(tagname, value, namespace=None):
     if value:
         return Element(tagname, val=safe_string(value))
+    return None
 
 
 class Font(Serialisable):
-    """Font options used in styles."""
+    """
+    Font options used in styles.
+    """
 
+    tagname = "font"
     UNDERLINE_DOUBLE = "double"
     UNDERLINE_DOUBLE_ACCOUNTING = "doubleAccounting"
     UNDERLINE_SINGLE = "single"
     UNDERLINE_SINGLE_ACCOUNTING = "singleAccounting"
-
     name = NestedString(allow_none=True)
     charset = NestedInteger(allow_none=True)
     family = NestedMinMax(min=0, max=14, allow_none=True)
@@ -49,15 +46,17 @@ class Font(Serialisable):
     condense = NestedBool(allow_none=True)
     extend = NestedBool(allow_none=True)
     u = NestedNoneSet(
-        values=("single", "double", "singleAccounting", "doubleAccounting")
+        values=(
+            "single",
+            "double",
+            "singleAccounting",
+            "doubleAccounting",
+        )
     )
     underline = Alias("u")
     vertAlign = NestedNoneSet(values=("superscript", "subscript", "baseline"))
     color = ColorDescriptor(allow_none=True)
     scheme = NestedNoneSet(values=("major", "minor"))
-
-    tagname = "font"
-
     __elements__ = (
         "name",
         "charset",
@@ -130,7 +129,7 @@ class Font(Serialisable):
         """
         Set default value for underline if child element is present
         """
-        underline = node.find("{%s}u" % SHEET_MAIN_NS)
+        underline = node.find(f"{{{SHEET_MAIN_NS}}}u")
         if underline is not None and underline.get("val") is None:
             underline.set("val", "single")
         return super().from_tree(node)

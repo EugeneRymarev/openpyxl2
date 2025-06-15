@@ -1,20 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.compat import safe_string
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.xml.constants import SHEET_MAIN_NS
+from openpyxl.styles.colors import Color
+from openpyxl.styles.colors import ColorDescriptor
 from openpyxl.xml.functions import Element
 from openpyxl.xml.functions import localname
-
-from .colors import Color
-from .colors import ColorDescriptor
-
 
 FILL_NONE = "none"
 FILL_SOLID = "solid"
@@ -35,7 +31,6 @@ FILL_PATTERN_LIGHTTRELLIS = "lightTrellis"
 FILL_PATTERN_LIGHTUP = "lightUp"
 FILL_PATTERN_LIGHTVERTICAL = "lightVertical"
 FILL_PATTERN_MEDIUMGRAY = "mediumGray"
-
 fills = (
     FILL_SOLID,
     FILL_PATTERN_DARKDOWN,
@@ -67,7 +62,7 @@ class Fill(Serialisable):
     def from_tree(cls, el):
         children = [c for c in el]
         if not children:
-            return
+            return None
         child = children[0]
         if "patternFill" in child.tag:
             return PatternFill._from_tree(child)
@@ -80,9 +75,7 @@ class PatternFill(Fill):
     no effect !"""
 
     tagname = "patternFill"
-
     __elements__ = ("fgColor", "bgColor")
-
     patternType = NoneSet(values=fills)
     fill_type = Alias("patternType")
     fgColor = ColorDescriptor()
@@ -135,9 +128,7 @@ DEFAULT_GRAY_FILL = PatternFill(patternType="gray125")
 
 
 class Stop(Serialisable):
-
     tagname = "stop"
-
     position = MinMax(min=0, max=1)
     color = ColorDescriptor()
 
@@ -154,27 +145,22 @@ def _assign_position(values):
     """
     n_values = len(values)
     n_stops = sum(isinstance(value, Stop) for value in values)
-
     if n_stops == 0:
         interval = 1
         if n_values > 2:
             interval = 1 / (n_values - 1)
         values = [Stop(value, i * interval) for i, value in enumerate(values)]
-
     elif n_stops < n_values:
         raise ValueError("Cannot interpret mix of Stops and Colors in GradientFill")
-
     pos = set()
     for stop in values:
         if stop.position in pos:
-            raise ValueError("Duplicate position {0}".format(stop.position))
+            raise ValueError(f"Duplicate position {stop.position}")
         pos.add(stop.position)
-
     return values
 
 
 class StopList(Sequence):
-
     expected_type = Stop
 
     def __set__(self, obj, values):
@@ -202,7 +188,6 @@ class GradientFill(Fill):
     """
 
     tagname = "gradientFill"
-
     type = Set(values=("linear", "path"))
     fill_type = Alias("type")
     degree = Float()
@@ -213,7 +198,14 @@ class GradientFill(Fill):
     stop = StopList()
 
     def __init__(
-        self, type="linear", degree=0, left=0, right=0, top=0, bottom=0, stop=()
+        self,
+        type="linear",
+        degree=0,
+        left=0,
+        right=0,
+        top=0,
+        bottom=0,
+        stop=(),
     ):
         self.degree = degree
         self.left = left

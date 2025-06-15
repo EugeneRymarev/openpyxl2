@@ -1,12 +1,11 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.compat import safe_string
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Min
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
+from openpyxl.compat.strings import safe_string
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Min
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import NoneSet
 from openpyxl.descriptors.serialisable import Serialisable
-
 
 horizontal_alignments = (
     "general",
@@ -18,22 +17,15 @@ horizontal_alignments = (
     "centerContinuous",
     "distributed",
 )
-vertical_aligments = (
-    "top",
-    "center",
-    "bottom",
-    "justify",
-    "distributed",
-)
+vertical_alignments = ("top", "center", "bottom", "justify", "distributed")
 
 
 class Alignment(Serialisable):
     """Alignment options for use in styles."""
 
     tagname = "alignment"
-
     horizontal = NoneSet(values=horizontal_alignments)
-    vertical = NoneSet(values=vertical_aligments)
+    vertical = NoneSet(values=vertical_alignments)
     textRotation = NoneSet(values=range(181))
     textRotation.values.add(255)
     text_rotation = Alias("textRotation")

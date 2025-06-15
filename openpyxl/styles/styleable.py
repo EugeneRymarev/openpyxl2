@@ -1,17 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-from copy import copy
+import copy
 
-from .builtins import styles
-from .cell_style import StyleArray
-from .named_styles import NamedStyle
-from .numbers import BUILTIN_FORMATS
-from .numbers import BUILTIN_FORMATS_MAX_SIZE
-from .numbers import BUILTIN_FORMATS_REVERSE
-from .proxy import StyleProxy
+from openpyxl.styles.builtins import styles
+from openpyxl.styles.cell_style import StyleArray
+from openpyxl.styles.named_styles import NamedStyle
+from openpyxl.styles.numbers import BUILTIN_FORMATS
+from openpyxl.styles.numbers import BUILTIN_FORMATS_MAX_SIZE
+from openpyxl.styles.numbers import BUILTIN_FORMATS_REVERSE
+from openpyxl.styles.proxy import StyleProxy
 
 
 class StyleDescriptor:
-
     def __init__(self, collection, key):
         self.collection = collection
         self.key = key
@@ -31,7 +30,6 @@ class StyleDescriptor:
 
 
 class NumberFormatDescriptor:
-
     key = "numFmtId"
     collection = "_number_formats"
 
@@ -41,7 +39,6 @@ class NumberFormatDescriptor:
             idx = BUILTIN_FORMATS_REVERSE[value]
         else:
             idx = coll.add(value) + BUILTIN_FORMATS_MAX_SIZE
-
         if not getattr(instance, "_style"):
             instance._style = StyleArray()
         setattr(instance._style, self.key, idx)
@@ -57,7 +54,6 @@ class NumberFormatDescriptor:
 
 
 class NamedStyleDescriptor:
-
     key = "xfId"
     collection = "_named_styles"
 
@@ -75,10 +71,10 @@ class NamedStyleDescriptor:
                 if style not in coll:
                     instance.parent.parent.add_named_style(style)
             else:
-                raise ValueError("{0} is not a known style".format(value))
+                raise ValueError(f"{value} is not a known style")
         else:
             style = coll[value]
-        instance._style = copy(style.as_tuple())
+        instance._style = copy.copy(style.as_tuple())
 
     def __get__(self, instance, cls):
         if not getattr(instance, "_style"):
@@ -89,7 +85,6 @@ class NamedStyleDescriptor:
 
 
 class StyleArrayDescriptor:
-
     def __init__(self, key):
         self.key = key
 
@@ -118,7 +113,6 @@ class StyleableObject:
     style = NamedStyleDescriptor()
     quotePrefix = StyleArrayDescriptor("quotePrefix")
     pivotButton = StyleArrayDescriptor("pivotButton")
-
     __slots__ = ("parent", "_style")
 
     def __init__(self, sheet, style_array=None):

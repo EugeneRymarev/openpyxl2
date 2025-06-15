@@ -1,5 +1,5 @@
 # Copyright (c) 2010-2025 openpyxl
-from copy import copy
+import copy
 
 from openpyxl.compat import deprecated
 
@@ -22,17 +22,18 @@ class StyleProxy:
 
     def __setattr__(self, attr, value):
         if attr != "_StyleProxy__target":
-            raise AttributeError(
-                "Style objects are immutable and cannot be changed."
-                "Reassign the style with a copy"
+            msg = (
+                "Style objects are immutable and cannot be "
+                "changed. Reassign the style with a copy"
             )
+            raise AttributeError(msg)
         super().__setattr__(attr, value)
 
     def __copy__(self):
         """
         Return a copy of the proxied object.
         """
-        return copy(self.__target)
+        return copy.copy(self.__target)
 
     def __add__(self, other):
         """
@@ -43,7 +44,7 @@ class StyleProxy:
     @deprecated("Use copy(obj) or cell.obj = cell.obj + other")
     def copy(self, **kw):
         """Return a copy of the proxied object. Keyword args will be passed through"""
-        cp = copy(self.__target)
+        cp = copy.copy(self.__target)
         for k, v in kw.items():
             setattr(cp, k, v)
         return cp

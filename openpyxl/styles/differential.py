@@ -1,23 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Typed
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.styles import Alignment
-from openpyxl.styles import Border
-from openpyxl.styles import Fill
-from openpyxl.styles import Font
-from openpyxl.styles import Protection
-
-from .numbers import NumberFormat
+from openpyxl.styles.alignment import Alignment
+from openpyxl.styles.borders import Border
+from openpyxl.styles.fills import Fill
+from openpyxl.styles.fonts import Font
+from openpyxl.styles.numbers import NumberFormat
+from openpyxl.styles.protection import Protection
 
 
 class DifferentialStyle(Serialisable):
-
     tagname = "dxf"
-
     __elements__ = ("font", "numFmt", "fill", "alignment", "border", "protection")
-
     font = Typed(expected_type=Font, allow_none=True)
     numFmt = Typed(expected_type=NumberFormat, allow_none=True)
     fill = Typed(expected_type=Fill, allow_none=True)
@@ -50,7 +46,6 @@ class DifferentialStyleList(Serialisable):
     """
 
     tagname = "dxfs"
-
     dxf = Sequence(expected_type=DifferentialStyle)
     styles = Alias("dxf")
     __attrs__ = ("count",)

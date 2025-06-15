@@ -1,11 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
 import re
 
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-
 
 BUILTIN_FORMATS = {
     0: "General",
@@ -45,10 +44,8 @@ BUILTIN_FORMATS = {
     48: "##0.0E+0",
     49: "@",
 }
-
 BUILTIN_FORMATS_MAX_SIZE = 164
 BUILTIN_FORMATS_REVERSE = dict([(value, key) for key, value in BUILTIN_FORMATS.items()])
-
 FORMAT_GENERAL = BUILTIN_FORMATS[0]
 FORMAT_TEXT = BUILTIN_FORMATS[49]
 FORMAT_NUMBER = BUILTIN_FORMATS[1]
@@ -83,17 +80,15 @@ FORMAT_DATE_YYMMDDSLASH = "yy/mm/dd@"
 FORMAT_CURRENCY_USD_SIMPLE = '"$"#,##0.00_-'
 FORMAT_CURRENCY_USD = "$#,##0_-"
 FORMAT_CURRENCY_EUR_SIMPLE = "[$EUR ]#,##0.00_-"
-
-
 COLORS = r"\[(BLACK|BLUE|CYAN|GREEN|MAGENTA|RED|WHITE|YELLOW)\]"
 LITERAL_GROUP = r'".*?"'  # anything in quotes
-LOCALE_GROUP = r"\[(?!hh?\]|mm?\]|ss?\])[^\]]*\]"  # anything in square brackets, except hours or minutes or seconds
+# anything in square brackets, except hours or minutes or seconds
+LOCALE_GROUP = r"\[(?!hh?\]|mm?\]|ss?\])[^\]]*\]"
 STRIP_RE = re.compile(f"{LITERAL_GROUP}|{LOCALE_GROUP}")
 TIMEDELTA_RE = re.compile(
-    r"\[hh?\](:mm(:ss(\.0*)?)?)?|\[mm?\](:ss(\.0*)?)?|\[ss?\](\.0*)?", re.I
+    r"\[hh?\](:mm(:ss(\.0*)?)?)?|\[mm?\](:ss(\.0*)?)?|\[ss?\](\.0*)?",
+    re.I,
 )
-
-
 # Spec 18.8.31 numFmts
 # +ve;-ve;zero;text
 
@@ -118,18 +113,15 @@ def is_datetime(fmt):
     Return date, time or datetime
     """
     if not is_date_format(fmt):
-        return
-
-    DATE = TIME = False
-
+        return None
+    date = time = False
     if any((x in fmt for x in "dy")):
-        DATE = True
+        date = True
     if any((x in fmt for x in "hs")):
-        TIME = True
-
-    if DATE and TIME:
+        time = True
+    if date and time:
         return "datetime"
-    if DATE:
+    if date:
         return "date"
     return "time"
 
@@ -139,7 +131,9 @@ def is_builtin(fmt):
 
 
 def builtin_format_code(index):
-    """Return one of the standard format codes by index."""
+    """
+    Return one of the standard format codes by index.
+    """
     try:
         fmt = BUILTIN_FORMATS[index]
     except KeyError:
@@ -148,12 +142,13 @@ def builtin_format_code(index):
 
 
 def builtin_format_id(fmt):
-    """Return the id of a standard style."""
+    """
+    Return the id of a standard style.
+    """
     return BUILTIN_FORMATS_REVERSE.get(fmt)
 
 
 class NumberFormatDescriptor(String):
-
     def __set__(self, instance, value):
         if value is None:
             value = FORMAT_GENERAL
@@ -161,32 +156,21 @@ class NumberFormatDescriptor(String):
 
 
 class NumberFormat(Serialisable):
-
     numFmtId = Integer()
     formatCode = String()
 
-    def __init__(
-        self,
-        numFmtId=None,
-        formatCode=None,
-    ):
+    def __init__(self, numFmtId=None, formatCode=None):
         self.numFmtId = numFmtId
         self.formatCode = formatCode
 
 
 class NumberFormatList(Serialisable):
-
     count = Integer(allow_none=True)
     numFmt = Sequence(expected_type=NumberFormat)
-
     __elements__ = ("numFmt",)
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        numFmt=(),
-    ):
+    def __init__(self, count=None, numFmt=()):
         self.numFmt = numFmt
 
     @property

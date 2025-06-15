@@ -1,13 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
+from openpyxl.descriptors.base import Bool
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class Protection(Serialisable):
-    """Protection options for use in styles."""
+    """
+    Protection options for use in styles.
+    """
 
     tagname = "protection"
-
     locked = Bool()
     hidden = Bool()
 
