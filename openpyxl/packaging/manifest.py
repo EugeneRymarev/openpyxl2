@@ -2,18 +2,16 @@
 """
 File manifest
 """
-import os.path
-from mimetypes import MimeTypes
+import mimetypes as mt
+import os
 
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.xml.constants import ACTIVEX
 from openpyxl.xml.constants import ARC_CONTENT_TYPES
 from openpyxl.xml.constants import ARC_STYLE
 from openpyxl.xml.constants import ARC_THEME
 from openpyxl.xml.constants import CONTYPES_NS
-from openpyxl.xml.constants import CTRL
 from openpyxl.xml.constants import STYLES_TYPE
 from openpyxl.xml.constants import THEME_TYPE
 from openpyxl.xml.constants import VBA
@@ -21,7 +19,7 @@ from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
 # initialise mime-types
-mimetypes = MimeTypes()
+mimetypes = mt.MimeTypes()
 mimetypes.add_type("application/xml", ".xml")
 mimetypes.add_type("application/vnd.openxmlformats-package.relationships+xml", ".rels")
 mimetypes.add_type("application/vnd.ms-office.vbaProject", ".bin")
@@ -31,9 +29,7 @@ mimetypes.add_type("image/x-wmf", ".wmf")
 
 
 class FileExtension(Serialisable):
-
     tagname = "Default"
-
     Extension = String()
     ContentType = String()
 
@@ -43,9 +39,7 @@ class FileExtension(Serialisable):
 
 
 class Override(Serialisable):
-
     tagname = "Override"
-
     PartName = String()
     ContentType = String()
 
@@ -74,20 +68,13 @@ DEFAULT_OVERRIDE = [
 
 
 class Manifest(Serialisable):
-
     tagname = "Types"
-
     Default = Sequence(expected_type=FileExtension, unique=True)
     Override = Sequence(expected_type=Override, unique=True)
     path = "[Content_Types].xml"
-
     __elements__ = ("Default", "Override")
 
-    def __init__(
-        self,
-        Default=(),
-        Override=(),
-    ):
+    def __init__(self, Default=(), Override=()):
         if not Default:
             Default = DEFAULT_TYPES
         self.Default = Default
@@ -130,6 +117,7 @@ class Manifest(Serialisable):
         for t in self.Override:
             if t.ContentType == content_type:
                 return True
+        return False
 
     def find(self, content_type):
         """
@@ -138,7 +126,7 @@ class Manifest(Serialisable):
         try:
             return next(self.findall(content_type))
         except StopIteration:
-            return
+            return None
 
     def findall(self, content_type):
         """

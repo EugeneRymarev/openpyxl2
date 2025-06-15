@@ -1,27 +1,20 @@
 # Copyright (c) 2010-2025 openpyxl
 from openpyxl import __version__
-from openpyxl.descriptors import (
-    Typed,
-)
-from openpyxl.descriptors.nested import (
-    NestedText,
-)
+from openpyxl.descriptors import Typed
+from openpyxl.descriptors.nested import NestedText
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.xml.constants import XPROPS_NS
 
 
 class DigSigBlob(Serialisable):
-
     __elements__ = __attrs__ = ()
 
 
 class VectorLpstr(Serialisable):
-
     __elements__ = __attrs__ = ()
 
 
 class VectorVariant(Serialisable):
-
     __elements__ = __attrs__ = ()
 
 
@@ -37,7 +30,6 @@ class ExtendedProperties(Serialisable):
     """
 
     tagname = "Properties"
-
     Template = NestedText(expected_type=str, allow_none=True)
     Manager = NestedText(expected_type=str, allow_none=True)
     Company = NestedText(expected_type=str, allow_none=True)
@@ -65,7 +57,6 @@ class ExtendedProperties(Serialisable):
     Application = NestedText(expected_type=str, allow_none=True)
     AppVersion = NestedText(expected_type=str, allow_none=True)
     DocSecurity = NestedText(expected_type=int, allow_none=True)
-
     __elements__ = (
         "Application",
         "AppVersion",

@@ -1,8 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
 import datetime
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import DateTime
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import DateTime
 from openpyxl.descriptors.nested import NestedText
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.xml.constants import COREPROPS_NS
@@ -14,18 +14,18 @@ from openpyxl.xml.functions import QName
 
 
 class NestedDateTime(DateTime, NestedText):
-
     expected_type = datetime.datetime
 
     def to_tree(self, tagname=None, value=None, namespace=None):
         namespace = getattr(self, "namespace", namespace)
         if namespace is not None:
-            tagname = "{%s}%s" % (namespace, tagname)
+            tagname = f"{{{namespace}}}{tagname}"
         el = Element(tagname)
         if value is not None:
             value = value.replace(tzinfo=None)
             el.text = value.isoformat(timespec="seconds") + "Z"
             return el
+        return None
 
 
 class QualifiedDateTime(NestedDateTime):
@@ -34,18 +34,18 @@ class QualifiedDateTime(NestedDateTime):
 
     def to_tree(self, tagname=None, value=None, namespace=None):
         el = super().to_tree(tagname, value, namespace)
-        el.set("{%s}type" % XSI_NS, QName(DCTERMS_NS, "W3CDTF"))
+        el.set(f"{{{XSI_NS}}}type", QName(DCTERMS_NS, "W3CDTF"))
         return el
 
 
 class DocumentProperties(Serialisable):
-    """High-level properties of the document.
+    """
+    High-level properties of the document.
     Defined in ECMA-376 Par2 Annex D
     """
 
     tagname = "coreProperties"
     namespace = COREPROPS_NS
-
     category = NestedText(expected_type=str, allow_none=True)
     contentStatus = NestedText(expected_type=str, allow_none=True)
     keywords = NestedText(expected_type=str, allow_none=True)
@@ -54,7 +54,6 @@ class DocumentProperties(Serialisable):
     revision = NestedText(expected_type=str, allow_none=True)
     version = NestedText(expected_type=str, allow_none=True)
     last_modified_by = Alias("lastModifiedBy")
-
     # Dublin Core Properties
     subject = NestedText(expected_type=str, allow_none=True, namespace=DCORE_NS)
     title = NestedText(expected_type=str, allow_none=True, namespace=DCORE_NS)
@@ -63,13 +62,10 @@ class DocumentProperties(Serialisable):
     identifier = NestedText(expected_type=str, allow_none=True, namespace=DCORE_NS)
     language = NestedText(expected_type=str, allow_none=True, namespace=DCORE_NS)
     # Dublin Core Terms
-    created = QualifiedDateTime(
-        allow_none=True, namespace=DCTERMS_NS
-    )  # assumed to be UTC
-    modified = QualifiedDateTime(
-        allow_none=True, namespace=DCTERMS_NS
-    )  # assumed to be UTC
-
+    # assumed to be UTC
+    created = QualifiedDateTime(allow_none=True, namespace=DCTERMS_NS)
+    # assumed to be UTC
+    modified = QualifiedDateTime(allow_none=True, namespace=DCTERMS_NS)
     __elements__ = (
         "creator",
         "title",

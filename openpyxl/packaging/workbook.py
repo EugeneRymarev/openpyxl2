@@ -1,10 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.nested import NestedString
@@ -28,9 +28,7 @@ from openpyxl.xml.constants import SHEET_MAIN_NS
 
 
 class FileRecoveryProperties(Serialisable):
-
     tagname = "fileRecoveryPr"
-
     autoRecover = Bool(allow_none=True)
     crashSave = Bool(allow_none=True)
     dataExtractLoad = Bool(allow_none=True)
@@ -58,19 +56,12 @@ class ChildSheet(Serialisable):
     """
 
     tagname = "sheet"
-
     name = String()
     sheetId = Integer()
     state = NoneSet(values=(["visible", "hidden", "veryHidden"]))
     id = Relation()
 
-    def __init__(
-        self,
-        name=None,
-        sheetId=None,
-        state="visible",
-        id=None,
-    ):
+    def __init__(self, name=None, sheetId=None, state="visible", id=None):
         self.name = name
         self.sheetId = sheetId
         self.state = state
@@ -78,9 +69,7 @@ class ChildSheet(Serialisable):
 
 
 class PivotCache(Serialisable):
-
     tagname = "pivotCache"
-
     cacheId = Integer()
     id = Relation()
 
@@ -95,7 +84,6 @@ class WorkbookPackage(Serialisable):
     """
 
     tagname = "workbook"
-
     conformance = NoneSet(values=["strict", "transitional"])
     fileVersion = Typed(expected_type=FileVersion, allow_none=True)
     fileSharing = Typed(expected_type=FileSharing, allow_none=True)
@@ -121,7 +109,6 @@ class WorkbookPackage(Serialisable):
         namespace="http://schemas.openxmlformats.org/markup-compatibility/2006",
         allow_none=True,
     )
-
     __elements__ = (
         "fileVersion",
         "fileSharing",

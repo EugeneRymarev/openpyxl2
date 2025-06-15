@@ -1,24 +1,21 @@
 # Copyright (c) 2010-2025 openpyxl
 """Implementation of custom properties see § 22.3 in the specification"""
-from warnings import warn
+import warnings
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import DateTime
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
 from openpyxl.descriptors import Strict
-from openpyxl.descriptors import String
-from openpyxl.descriptors.nested import (
-    NestedText,
-)
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import DateTime
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.nested import NestedText
 from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
+from openpyxl.packaging.core import NestedDateTime
 from openpyxl.xml.constants import CPROPS_FMTID
 from openpyxl.xml.constants import CUSTPROPS_NS
 from openpyxl.xml.constants import VTYPES_NS
-
-from .core import NestedDateTime
 
 
 class NestedBoolText(Bool, NestedText):
@@ -38,7 +35,6 @@ class _CustomDocumentProperty(Serialisable):
 
     tagname = "property"
     _typ = None
-
     name = String(allow_none=True)
     lpwstr = NestedText(expected_type=str, allow_none=True, namespace=VTYPES_NS)
     i4 = NestedText(expected_type=int, allow_none=True, namespace=VTYPES_NS)
@@ -55,7 +51,6 @@ class _CustomDocumentProperty(Serialisable):
         self.name = name
         self._typ = None
         self.linkTarget = linkTarget
-
         for k, v in kw.items():
             setattr(self, k, v)
             setattr(self, "_typ", k)  # ugh!
@@ -72,12 +67,12 @@ class _CustomDocumentProperty(Serialisable):
                 return a
         if self.linkTarget is not None:
             return "linkTarget"
+        return None
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
         child = getattr(self, self._typ, None)
         if child is None:
             setattr(self, self._typ, "")
-
         return super().to_tree(tagname=None, idx=None, namespace=None)
 
 
@@ -87,7 +82,6 @@ class _CustomDocumentPropertyList(Serialisable):
     """
 
     tagname = "Properties"
-
     property = Sequence(expected_type=_CustomDocumentProperty, namespace=CUSTPROPS_NS)
     customProps = Alias("property")
 
@@ -102,12 +96,10 @@ class _CustomDocumentPropertyList(Serialisable):
             p.pid = idx
         tree = super().to_tree(tagname, idx, namespace)
         tree.set("xmlns", CUSTPROPS_NS)
-
         return tree
 
 
 class _TypedProperty(Strict):
-
     name = String()
 
     def __init__(self, name, value):
@@ -122,32 +114,26 @@ class _TypedProperty(Strict):
 
 
 class IntProperty(_TypedProperty):
-
     value = Integer()
 
 
 class FloatProperty(_TypedProperty):
-
     value = Float()
 
 
 class StringProperty(_TypedProperty):
-
     value = String(allow_none=True)
 
 
 class DateTimeProperty(_TypedProperty):
-
     value = DateTime()
 
 
 class BoolProperty(_TypedProperty):
-
     value = Bool()
 
 
 class LinkProperty(_TypedProperty):
-
     value = String()
 
 
@@ -165,7 +151,6 @@ XML_MAPPING = {v: k for k, v in CLASS_MAPPING.items()}
 
 
 class CustomPropertyList(Strict):
-
     props = Sequence(expected_type=_TypedProperty)
 
     def __init__(self):
@@ -181,20 +166,17 @@ class CustomPropertyList(Strict):
 
         for prop in prop_list.property:
             attr = prop.type
-
             typ = XML_MAPPING.get(attr, None)
             if not typ:
-                warn(f"Unknown type for {prop.name}")
+                warnings.warn(f"Unknown type for {prop.name}")
                 continue
             value = getattr(prop, attr)
             link = prop.linkTarget
             if link is not None:
                 typ = LinkProperty
                 value = prop.linkTarget
-
             new_prop = typ(name=prop.name, value=value)
             props.append(new_prop)
-
         new_prop_list = cls()
         new_prop_list.props = props
         return new_prop_list
@@ -202,12 +184,10 @@ class CustomPropertyList(Strict):
     def append(self, prop):
         if prop.name in self.names:
             raise ValueError(f"Property with name {prop.name} already exists")
-
         self.props.append(prop)
 
     def to_tree(self):
         props = []
-
         for p in self.props:
             attr = CLASS_MAPPING.get(p.__class__, None)
             if not attr:
@@ -217,7 +197,6 @@ class CustomPropertyList(Strict):
                 np._typ = "lpwstr"
                 # np.lpwstr = ""
             props.append(np)
-
         prop_list = _CustomDocumentPropertyList(property=props)
         return prop_list.to_tree()
 
@@ -226,7 +205,9 @@ class CustomPropertyList(Strict):
 
     @property
     def names(self):
-        """List of property names"""
+        """
+        List of property names
+        """
         return [p.name for p in self.props]
 
     def __getitem__(self, name):

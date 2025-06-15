@@ -1,5 +1,5 @@
 # Copyright (c) 2010-2025 openpyxl
-from abc import abstractproperty
+import abc
 
 from openpyxl.compat.abc import ABC
 
@@ -9,40 +9,40 @@ class ISerialisableFile(ABC):
     Interface for Serialisable classes that represent files in the archive
     """
 
-    @abstractproperty
+    @abc.abstractproperty
     def id(self):
         """
         Object id making it unique
         """
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def _path(self):
         """
         File path in the archive
         """
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def _namespace(self):
         """
         Qualified namespace when serialised
         """
         pass
 
-    @abstractproperty
+    @abc.abstractproperty
     def _type(self):
         """
         The content type for the manifest
         """
 
-    @abstractproperty
+    @abc.abstractproperty
     def _rel_type(self):
         """
         The content type for relationships
         """
 
-    @abstractproperty
+    @abc.abstractproperty
     def _rel_id(self):
         """
         Links object with parent

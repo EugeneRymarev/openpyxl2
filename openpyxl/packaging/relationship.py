@@ -1,15 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
 import posixpath
-from warnings import warn
+import warnings
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.container import ElementList
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.xml.constants import PKG_REL_NS
 from openpyxl.xml.constants import REL_NS
-from openpyxl.xml.functions import Element
 from openpyxl.xml.functions import fromstring
 
 
@@ -17,7 +15,6 @@ class Relationship(Serialisable):
     """Represents many kinds of relationships."""
 
     tagname = "Relationship"
-
     Type = String()
     Target = String()
     target = Alias("Target")
@@ -31,7 +28,7 @@ class Relationship(Serialisable):
         otherwise the `Type` must be a fully qualified URL
         """
         if type is not None:
-            Type = "{0}/{1}".format(REL_NS, type)
+            Type = f"{REL_NS}/{type}"
         self.Type = Type
         self.Target = Target
         self.TargetMode = TargetMode
@@ -39,7 +36,6 @@ class Relationship(Serialisable):
 
 
 class RelationshipList(ElementList):
-
     tagname = "Relationships"
     expected_type = Relationship
 
@@ -62,7 +58,7 @@ class RelationshipList(ElementList):
         for r in self:
             if r.Id == key:
                 return r
-        raise KeyError("Unknown relationship: {0}".format(key))
+        raise KeyError(f"Unknown relationship: {key}")
 
     def to_dict(self):
         """Return a dictionary of relations keyed by id"""
@@ -95,7 +91,7 @@ def get_rels_path(path):
     worksheet, etc.)
     """
     folder, obj = posixpath.split(path)
-    filename = posixpath.join(folder, "_rels", "{0}.rels".format(obj))
+    filename = posixpath.join(folder, "_rels", f"{obj}.rels")
     return filename
 
 
@@ -112,8 +108,7 @@ def get_dependents(archive, filename):
     try:
         rels = RelationshipList.from_tree(node)
     except TypeError:
-        msg = "{0} contains invalid dependency definitions".format(filename)
-        warn(msg)
+        warnings.warn(f"{filename} contains invalid dependency definitions")
         rels = RelationshipList()
     folder = posixpath.dirname(filename)
     parent = posixpath.split(folder)[0]
@@ -140,17 +135,14 @@ def get_rel(archive, deps, id=None, cls=None):
         try:
             rel = next(deps.find(cls.rel_type))
         except StopIteration:  # no known dependency
-            return
-
+            return None
     path = rel.target
     src = archive.read(path)
     tree = fromstring(src)
     obj = cls.from_tree(tree)
-
     rels_path = get_rels_path(path)
     try:
         obj.deps = get_dependents(archive, rels_path)
     except KeyError:
         obj.deps = []
-
     return obj
