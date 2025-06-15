@@ -1,5 +1,5 @@
 # Copyright (c) 2010-2025 openpyxl
-from copy import copy
+import copy
 
 import pytest
 
@@ -7,7 +7,6 @@ import pytest
 @pytest.fixture
 def dummy_object():
     class Dummy:
-
         def __init__(self, a, b, c):
             self.a = a
             self.b = b
@@ -26,7 +25,7 @@ def dummy_object():
 
 @pytest.fixture
 def proxy(dummy_object):
-    from ..proxy import StyleProxy
+    from openpyxl.styles.proxy import StyleProxy
 
     return StyleProxy(dummy_object)
 
@@ -47,7 +46,7 @@ def test_repr(proxy):
 
 
 def test_copy(proxy):
-    cp = copy(proxy)
+    cp = copy.copy(proxy)
     assert cp is not proxy
     assert cp.a == 1
     assert cp.b == 2
@@ -55,12 +54,11 @@ def test_copy(proxy):
 
 
 def test_add(dummy_object):
-    from ..proxy import StyleProxy
+    from openpyxl.styles.proxy import StyleProxy
 
     o1 = dummy_object
-    o2 = copy(dummy_object)
+    o2 = copy.copy(dummy_object)
     o1.a = None
     o1 = StyleProxy(dummy_object)
-
     combined = o1 + o2
     assert combined.a == 1

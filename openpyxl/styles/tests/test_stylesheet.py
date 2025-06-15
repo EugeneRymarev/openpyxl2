@@ -1,63 +1,64 @@
 # Copyright (c) 2010-2025 openpyxl
-from io import BytesIO
-from zipfile import ZipFile
+import copy
+import datetime
+import io
+import zipfile
 
 import pytest
-from openpyxl import Workbook
+from openpyxl.styles.cell_style import StyleArray
 from openpyxl.tests.helper import compare_xml
+from openpyxl.workbook.workbook import Workbook
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
-from ..cell_style import StyleArray
-
 
 @pytest.fixture
-def Stylesheet():
-    from ..stylesheet import Stylesheet
+def stylesheet():
+    from openpyxl.styles.stylesheet import Stylesheet
 
     return Stylesheet
 
 
 class TestStylesheet:
-
-    def test_ctor(self, Stylesheet):
-        parser = Stylesheet()
+    def test_ctor(self, stylesheet):
+        parser = stylesheet()
         xml = tostring(parser.to_tree())
         expected = """
-        <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-          <numFmts count="0"></numFmts>
-          <cellStyleXfs count="0"></cellStyleXfs>
-          <cellXfs count="0"></cellXfs>
-          <cellStyles count="0"></cellStyles>
+        <styleSheet
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <numFmts count="0"></numFmts>
+            <cellStyleXfs count="0"></cellStyleXfs>
+            <cellXfs count="0"></cellXfs>
+            <cellStyles count="0"></cellStyles>
         </styleSheet>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_simple(self, Stylesheet, datadir):
+    def test_from_simple(self, stylesheet, datadir):
         datadir.chdir()
         with open("simple-styles.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-        assert stylesheet.numFmts.count == 1
+        ss = stylesheet.from_tree(node)
+        assert ss.numFmts.count == 1
 
-    def test_from_complex(self, Stylesheet, datadir):
+    def test_from_complex(self, stylesheet, datadir):
         datadir.chdir()
         with open("complex-styles.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-        assert stylesheet.numFmts.numFmt == []
+        ss = stylesheet.from_tree(node)
+        assert ss.numFmts.numFmt == []
 
-    def test_merge_named_styles(self, Stylesheet, datadir):
+    def test_merge_named_styles(self, stylesheet, datadir):
         datadir.chdir()
         with open("complex-styles.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-        named_styles = stylesheet._merge_named_styles()
-        assert [s.name for s in named_styles] == [
+        ss = stylesheet.from_tree(node)
+        named_styles = ss._merge_named_styles()
+        expected = [
             "Normal",
             "Hyperlink",
             "Followed Hyperlink",
@@ -71,167 +72,158 @@ class TestStylesheet:
             "Followed Hyperlink5",
             "Style With NumFmt",
         ]
+        assert [s.name for s in named_styles] == expected
 
-    def test_unprotected_cell(self, Stylesheet, datadir):
+    def test_unprotected_cell(self, stylesheet, datadir):
         datadir.chdir()
         with open("worksheet_unprotected_style.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-
-        styles = stylesheet.cell_styles
+        ss = stylesheet.from_tree(node)
+        styles = ss.cell_styles
         assert len(styles) == 3
         # default is cells are locked
         assert styles[1] == StyleArray([4, 0, 0, 0, 0, 0, 0, 0, 0])
         assert styles[2] == StyleArray([3, 0, 0, 0, 1, 0, 0, 0, 0])
 
-    def test_read_cell_style(self, datadir, Stylesheet):
+    def test_read_cell_style(self, datadir, stylesheet):
         datadir.chdir()
         with open("empty-workbook-styles.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-
-        styles = stylesheet.cell_styles
+        ss = stylesheet.from_tree(node)
+        styles = ss.cell_styles
         assert len(styles) == 2
         assert styles[1] == StyleArray([0, 0, 0, 9, 0, 0, 0, 0, 1])
 
-    def test_read_xf_no_number_format(self, datadir, Stylesheet):
+    def test_read_xf_no_number_format(self, datadir, stylesheet):
         datadir.chdir()
         with open("no_number_format.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-
-        styles = stylesheet.cell_styles
+        ss = stylesheet.from_tree(node)
+        styles = ss.cell_styles
         assert len(styles) == 3
         assert styles[1] == StyleArray([1, 0, 1, 0, 0, 0, 0, 0, 0])
         assert styles[2] == StyleArray([0, 0, 0, 14, 0, 0, 0, 0, 0])
 
-    def test_none_values(self, datadir, Stylesheet):
+    def test_none_values(self, datadir, stylesheet):
         datadir.chdir()
         with open("none_value_styles.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-
-        fonts = stylesheet.fonts
+        ss = stylesheet.from_tree(node)
+        fonts = ss.fonts
         assert fonts[0].scheme is None
         assert fonts[0].vertAlign is None
         assert fonts[1].u is None
 
-    def test_alignment(self, datadir, Stylesheet):
+    def test_alignment(self, datadir, stylesheet):
+        from openpyxl.styles.alignment import Alignment
+
         datadir.chdir()
         with open("alignment_styles.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-
-        styles = stylesheet.cell_styles
+        ss = stylesheet.from_tree(node)
+        styles = ss.cell_styles
         assert len(styles) == 3
         assert styles[2] == StyleArray([0, 0, 0, 0, 0, 2, 0, 0, 0])
-
-        from ..alignment import Alignment
-
-        assert stylesheet.alignments == [
+        expected = [
             Alignment(),
             Alignment(textRotation=180),
             Alignment(vertical="top", textRotation=255),
         ]
+        assert ss.alignments == expected
 
-    def test_rgb_colors(self, Stylesheet, datadir):
+    def test_rgb_colors(self, stylesheet, datadir):
         datadir.chdir()
         with open("rgb_colors.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
+        ss = stylesheet.from_tree(node)
+        assert len(ss.colors.index) == 64
+        assert ss.colors.index[0] == "00000000"
+        assert ss.colors.index[-1] == "00333333"
 
-        assert len(stylesheet.colors.index) == 64
-        assert stylesheet.colors.index[0] == "00000000"
-        assert stylesheet.colors.index[-1] == "00333333"
-
-    def test_custom_number_formats(self, Stylesheet, datadir):
+    def test_custom_number_formats(self, stylesheet, datadir):
         datadir.chdir()
         with open("styles_number_formats.xml", "rb") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
+        ss = stylesheet.from_tree(node)
+        expected = {
+            r'_ * #,##0.00_ ;_ * \-#,##0.00_ ;_ * "-"??_ ;_ @_ ',
+            "#,##0.00_ ",
+            "yyyy/m/d;@",
+            "0.00000_ ",
+        }
+        assert set(ss.number_formats) == expected
+        assert ss.date_formats == {3}
 
-        assert set(stylesheet.number_formats) == set(
-            [
-                r'_ * #,##0.00_ ;_ * \-#,##0.00_ ;_ * "-"??_ ;_ @_ ',
-                "#,##0.00_ ",
-                "yyyy/m/d;@",
-                "0.00000_ ",
-            ]
-        )
-
-        assert stylesheet.date_formats == set([3])
-
-    def test_remove_duplicate_number_formats(self, Stylesheet, datadir):
+    def test_remove_duplicate_number_formats(self, stylesheet, datadir):
         datadir.chdir()
-
         with open("builtins_as_custom_number_formats.xml", "rb") as src:
             xml = src.read()
             node = fromstring(xml)
+        ss = stylesheet.from_tree(node)
+        assert ss.number_formats == ["dd\\/mm"]
 
-        stylesheet = Stylesheet.from_tree(node)
-
-        assert stylesheet.number_formats == ["dd\\/mm"]
-
-    def test_assign_number_formats(self, Stylesheet):
-
-        node = fromstring(
-            r"""
-        <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <numFmts count="1">
-          <numFmt numFmtId="43" formatCode='_ * #,##0.00_ ;_ * \-#,##0.00_ ;_ * "-"??_ ;_ @_ ' />
-        </numFmts>
-        <cellXfs count="0">
-        <xf numFmtId="43" fontId="2" fillId="0" borderId="0"
-             applyFont="0" applyFill="0" applyBorder="0" applyAlignment="0" applyProtection="0">
-            <alignment vertical="center"/>
-        </xf>
-        </cellXfs>
+    def test_assign_number_formats(self, stylesheet):
+        src = r"""
+        <styleSheet
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <numFmts count="1">
+                <numFmt numFmtId="43"
+                        formatCode='_ * #,##0.00_ ;_ * \-#,##0.00_ ;_ * "-"??_ ;_ @_ '/>
+            </numFmts>
+            <cellXfs count="0">
+                <xf numFmtId="43"
+                    fontId="2"
+                    fillId="0"
+                    borderId="0"
+                    applyFont="0"
+                    applyFill="0"
+                    applyBorder="0"
+                    applyAlignment="0"
+                    applyProtection="0">
+                    <alignment vertical="center"/>
+                </xf>
+            </cellXfs>
         </styleSheet>
         """
-        )
-        stylesheet = Stylesheet.from_tree(node)
-        styles = stylesheet.cell_styles
-
+        node = fromstring(src)
+        ss = stylesheet.from_tree(node)
+        styles = ss.cell_styles
         assert styles[0] == StyleArray([2, 0, 0, 164, 0, 1, 0, 0, 0])
 
-    def test_named_styles(self, datadir, Stylesheet):
-        from openpyxl.styles.fills import DEFAULT_EMPTY_FILL
+    def test_named_styles(self, datadir, stylesheet):
         from openpyxl.styles.borders import DEFAULT_BORDER
+        from openpyxl.styles.fills import DEFAULT_EMPTY_FILL
 
         datadir.chdir()
         with open("complex-styles.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        stylesheet = Stylesheet.from_tree(node)
-
-        followed = stylesheet.named_styles["Followed Hyperlink"]
+        ss = stylesheet.from_tree(node)
+        followed = ss.named_styles["Followed Hyperlink"]
         assert followed.name == "Followed Hyperlink"
-        assert followed.font == stylesheet.fonts[2]
+        assert followed.font == ss.fonts[2]
         assert followed.fill == DEFAULT_EMPTY_FILL
         assert followed.border == DEFAULT_BORDER
-
-        link = stylesheet.named_styles["Hyperlink"]
+        link = ss.named_styles["Hyperlink"]
         assert link.name == "Hyperlink"
-        assert link.font == stylesheet.fonts[1]
+        assert link.font == ss.fonts[1]
         assert link.fill == DEFAULT_EMPTY_FILL
         assert link.border == DEFAULT_BORDER
-
-        normal = stylesheet.named_styles["Normal"]
+        normal = ss.named_styles["Normal"]
         assert normal.name == "Normal"
-        assert normal.font == stylesheet.fonts[0]
+        assert normal.font == ss.fonts[0]
         assert normal.fill == DEFAULT_EMPTY_FILL
         assert normal.border == DEFAULT_BORDER
 
-    def test_split_named_styles(self, Stylesheet):
-        from openpyxl.workbook import Workbook
-        import copy
+    def test_split_named_styles(self, stylesheet):
+        from openpyxl.workbook.workbook import Workbook
 
         wb = Workbook()
         new_style = copy.copy(wb._named_styles[0])
@@ -239,94 +231,101 @@ class TestStylesheet:
         # worksheet with unused styles. The unused styles never make it to the
         # workbook, so the xfIds will be off by the trimmed number.
         new_style.name = "Regression647"
-
         wb._named_styles.append(new_style)
-
-        stylesheet = Stylesheet()
-        stylesheet._split_named_styles(wb)
-
-        assert stylesheet.cellStyles.cellStyle[-1].name == "Regression647"
-        assert stylesheet.cellStyles.cellStyle[-1].xfId == 1
+        ss = stylesheet()
+        ss._split_named_styles(wb)
+        assert ss.cellStyles.cellStyle[-1].name == "Regression647"
+        assert ss.cellStyles.cellStyle[-1].xfId == 1
 
 
 def test_no_stylesheet():
-    from ..stylesheet import apply_stylesheet
+    from openpyxl.styles.stylesheet import apply_stylesheet
 
     wb1 = wb2 = Workbook()
-    archive = ZipFile(BytesIO(), "a")
+    archive = zipfile.ZipFile(io.BytesIO(), "a")
     apply_stylesheet(archive, wb1)
     assert wb1._cell_styles == wb2._cell_styles
     assert wb2._named_styles == wb2._named_styles
 
 
 def test_no_styles(recwarn):
-    from ..stylesheet import apply_stylesheet
+    from openpyxl.styles.stylesheet import apply_stylesheet
 
     wb = Workbook()
-    archive = ZipFile(BytesIO(), "a")
-    xml = b"""<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" />"""
+    archive = zipfile.ZipFile(io.BytesIO(), "a")
+    xml = b"""
+    <styleSheet
+            xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"/>
+    """
     archive.writestr("xl/styles.xml", xml)
     apply_stylesheet(archive, wb)
     w = recwarn.pop()
-
     assert w.category == UserWarning
 
 
-def test_write_worksheet(Stylesheet):
-    wb = Workbook()
-    wb._colors = (
-        "00000000",
-        "00FFFFFF",
-    )
-    from ..stylesheet import write_stylesheet
+def test_write_worksheet(stylesheet):
+    from openpyxl.styles.stylesheet import write_stylesheet
 
+    wb = Workbook()
+    wb._colors = ("00000000", "00FFFFFF")
     node = write_stylesheet(wb)
     xml = tostring(node)
     expected = """
-    <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-      <numFmts count="0" />
-      <fonts count="1">
-        <font>
-          <name val="Calibri"></name>
-          <family val="2"></family>
-          <color theme="1"></color>
-          <sz val="11"></sz>
-          <scheme val="minor"></scheme>
-        </font>
-      </fonts>
-      <fills count="2">
-        <fill>
-          <patternFill></patternFill>
-        </fill>
-        <fill>
-          <patternFill patternType="gray125"></patternFill>
-        </fill>
-      </fills>
-      <borders count="1">
-        <border>
-          <left></left>
-          <right></right>
-          <top></top>
-          <bottom></bottom>
-          <diagonal></diagonal>
-        </border>
-      </borders>
-      <cellStyleXfs count="1">
-        <xf borderId="0" fillId="0" fontId="0" numFmtId="0"></xf>
-      </cellStyleXfs>
-      <cellXfs count="1">
-        <xf borderId="0" fillId="0" fontId="0" numFmtId="0" pivotButton="0" quotePrefix="0" xfId="0"></xf>
-      </cellXfs>
-      <cellStyles count="1">
-        <cellStyle builtinId="0" hidden="0" name="Normal" xfId="0"></cellStyle>
-      </cellStyles>
-    <tableStyles count="0" defaultTableStyle="TableStyleMedium9" defaultPivotStyle="PivotStyleLight16"/>
-    <colors>
-      <indexedColors>
-        <rgbColor rgb="00000000"></rgbColor>
-        <rgbColor rgb="00FFFFFF"></rgbColor>
-      </indexedColors>
-    </colors>
+    <styleSheet
+            xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+        <numFmts count="0"/>
+        <fonts count="1">
+            <font>
+                <name val="Calibri"></name>
+                <family val="2"></family>
+                <color theme="1"></color>
+                <sz val="11"></sz>
+                <scheme val="minor"></scheme>
+            </font>
+        </fonts>
+        <fills count="2">
+            <fill>
+                <patternFill></patternFill>
+            </fill>
+            <fill>
+                <patternFill patternType="gray125"></patternFill>
+            </fill>
+        </fills>
+        <borders count="1">
+            <border>
+                <left></left>
+                <right></right>
+                <top></top>
+                <bottom></bottom>
+                <diagonal></diagonal>
+            </border>
+        </borders>
+        <cellStyleXfs count="1">
+            <xf borderId="0" fillId="0" fontId="0" numFmtId="0"></xf>
+        </cellStyleXfs>
+        <cellXfs count="1">
+            <xf borderId="0"
+                fillId="0"
+                fontId="0"
+                numFmtId="0"
+                pivotButton="0"
+                quotePrefix="0"
+                xfId="0">
+            </xf>
+        </cellXfs>
+        <cellStyles count="1">
+            <cellStyle builtinId="0" hidden="0" name="Normal" xfId="0"></cellStyle>
+        </cellStyles>
+        <tableStyles
+                count="0"
+                defaultTableStyle="TableStyleMedium9"
+                defaultPivotStyle="PivotStyleLight16"/>
+        <colors>
+            <indexedColors>
+                <rgbColor rgb="00000000"></rgbColor>
+                <rgbColor rgb="00FFFFFF"></rgbColor>
+            </indexedColors>
+        </colors>
     </styleSheet>
     """
     diff = compare_xml(xml, expected)
@@ -334,10 +333,9 @@ def test_write_worksheet(Stylesheet):
 
 
 def test_simple_styles(datadir):
-    import datetime
-    from ..protection import Protection
-    from .. import numbers
-    from ..stylesheet import write_stylesheet
+    from openpyxl.styles.numbers import FORMAT_NUMBER_00
+    from openpyxl.styles.protection import Protection
+    from openpyxl.styles.stylesheet import write_stylesheet
 
     wb = Workbook()
     wb._colors = ()
@@ -346,39 +344,33 @@ def test_simple_styles(datadir):
     for idx, v in enumerate(["12.34%", now, "This is a test", "31.31415", None], 1):
         ws.append([v])
         _ = ws.cell(column=1, row=idx).style_id
-
     # set explicit formats
-    ws["D9"].number_format = numbers.FORMAT_NUMBER_00
+    ws["D9"].number_format = FORMAT_NUMBER_00
     ws["D9"].protection = Protection(locked=True)
     ws["D9"].style_id
     ws["E1"].protection = Protection(hidden=True)
     ws["E1"].style_id
-
     assert len(wb._cell_styles) == 4
-    stylesheet = write_stylesheet(wb)
-
+    ss = write_stylesheet(wb)
     datadir.chdir()
     with open("simple-styles.xml") as reference_file:
         expected = reference_file.read()
-    xml = tostring(stylesheet)
+    xml = tostring(ss)
     diff = compare_xml(xml, expected)
     assert diff is None, diff
 
 
 def test_no_default_style(datadir):
-    from ..stylesheet import apply_stylesheet
+    from openpyxl.styles.stylesheet import apply_stylesheet
 
     datadir.chdir()
-    out = BytesIO()
-    archive = ZipFile(out, "w")
+    out = io.BytesIO()
+    archive = zipfile.ZipFile(out, "w")
     archive.write("no_default_styles.xml", "xl/styles.xml")
     archive.close()
-
     out.seek(0)
-    archive = ZipFile(out)
-
+    archive = zipfile.ZipFile(out)
     wb = Workbook()
     wb._named_styles = []
     apply_stylesheet(archive, wb)
-
     assert wb._named_styles != []

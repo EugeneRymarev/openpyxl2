@@ -3,18 +3,18 @@ import pytest
 
 
 @pytest.fixture
-def Protection():
-    from ..protection import Protection
+def protection():
+    from openpyxl.styles.protection import Protection
 
     return Protection
 
 
-def test_default(Protection):
-    pt = Protection()
+def test_default(protection):
+    pt = protection()
     assert dict(pt) == {"hidden": "0", "locked": "1"}
 
 
-def test_round_trip(Protection):
+def test_round_trip(protection):
     args = {"hidden": "1", "locked": "1"}
-    pt = Protection(**args)
+    pt = protection(**args)
     assert dict(pt) == args

@@ -6,16 +6,15 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def Font():
-    from ..fonts import Font
+def font():
+    from openpyxl.styles.fonts import Font
 
     return Font
 
 
 class TestFont:
-
-    def test_ctor(self, Font):
-        f = Font()
+    def test_ctor(self, font):
+        f = font()
         assert f.name is None
         assert f.size is None
         assert not f.bold
@@ -27,37 +26,37 @@ class TestFont:
         assert f.charset is None
 
     def test_serialise(self):
-        from ..fonts import DEFAULT_FONT
+        from openpyxl.styles.fonts import DEFAULT_FONT
 
         ft = DEFAULT_FONT
         xml = tostring(ft.to_tree())
         expected = """
         <font>
-          <name val="Calibri" />
-          <family val="2" />
-          <color theme="1" />
-          <sz val="11" />
-          <scheme val="minor" />
-         </font>
+            <name val="Calibri"/>
+            <family val="2"/>
+            <color theme="1"/>
+            <sz val="11"/>
+            <scheme val="minor"/>
+        </font>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_create(self, Font):
+    def test_create(self, font):
         src = """
-        <font >
-          <charset val="204"></charset>
-          <family val="2"></family>
-          <name val="Calibri"></name>
-          <sz val="11"></sz>
-          <u val="single"/>
-          <vertAlign val="superscript"></vertAlign>
-          <color rgb="FF3300FF"></color>
-         </font>
-         """
+        <font>
+            <charset val="204"></charset>
+            <family val="2"></family>
+            <name val="Calibri"></name>
+            <sz val="11"></sz>
+            <u val="single"/>
+            <vertAlign val="superscript"></vertAlign>
+            <color rgb="FF3300FF"></color>
+        </font>
+        """
         xml = fromstring(src)
-        ft = Font.from_tree(xml)
-        assert ft == Font(
+        ft = font.from_tree(xml)
+        expected = font(
             name="Calibri",
             charset=204,
             family=2,
@@ -66,15 +65,16 @@ class TestFont:
             underline="single",
             color="FF3300FF",
         )
+        assert ft == expected
 
-    def test_nested_empty(self, Font):
+    def test_nested_empty(self, font):
         src = """
         <font xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-          <b />
-          <u />
-          <vertAlign />
+            <b/>
+            <u/>
+            <vertAlign/>
         </font>
         """
         xml = fromstring(src)
-        ft = Font.from_tree(xml)
-        assert ft == Font(bold=True, underline="single")
+        ft = font.from_tree(xml)
+        assert ft == font(bold=True, underline="single")

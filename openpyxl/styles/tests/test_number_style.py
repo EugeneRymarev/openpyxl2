@@ -1,42 +1,39 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-from openpyxl.styles import numbers
-
-from ..numbers import FORMAT_DATE_DATETIME
-from ..numbers import FORMAT_DATE_DDMMYY
-from ..numbers import FORMAT_DATE_DMMINUS
-from ..numbers import FORMAT_DATE_DMYSLASH
-from ..numbers import FORMAT_DATE_MYMINUS
-from ..numbers import FORMAT_DATE_TIME1
-from ..numbers import FORMAT_DATE_TIME2
-from ..numbers import FORMAT_DATE_TIME3
-from ..numbers import FORMAT_DATE_TIME4
-from ..numbers import FORMAT_DATE_TIME5
-from ..numbers import FORMAT_DATE_TIME6
-from ..numbers import FORMAT_DATE_TIME7
-from ..numbers import FORMAT_DATE_TIME8
-from ..numbers import FORMAT_DATE_TIMEDELTA
-from ..numbers import FORMAT_DATE_XLSX14
-from ..numbers import FORMAT_DATE_XLSX15
-from ..numbers import FORMAT_DATE_XLSX16
-from ..numbers import FORMAT_DATE_XLSX17
-from ..numbers import FORMAT_DATE_XLSX22
-from ..numbers import FORMAT_DATE_YYMMDD
-from ..numbers import FORMAT_DATE_YYMMDDSLASH
-from ..numbers import FORMAT_DATE_YYYYMMDD2
+from openpyxl.styles.numbers import FORMAT_DATE_DATETIME
+from openpyxl.styles.numbers import FORMAT_DATE_DDMMYY
+from openpyxl.styles.numbers import FORMAT_DATE_DMMINUS
+from openpyxl.styles.numbers import FORMAT_DATE_DMYSLASH
+from openpyxl.styles.numbers import FORMAT_DATE_MYMINUS
+from openpyxl.styles.numbers import FORMAT_DATE_TIME1
+from openpyxl.styles.numbers import FORMAT_DATE_TIME2
+from openpyxl.styles.numbers import FORMAT_DATE_TIME3
+from openpyxl.styles.numbers import FORMAT_DATE_TIME4
+from openpyxl.styles.numbers import FORMAT_DATE_TIME5
+from openpyxl.styles.numbers import FORMAT_DATE_TIME6
+from openpyxl.styles.numbers import FORMAT_DATE_TIME7
+from openpyxl.styles.numbers import FORMAT_DATE_TIME8
+from openpyxl.styles.numbers import FORMAT_DATE_TIMEDELTA
+from openpyxl.styles.numbers import FORMAT_DATE_XLSX14
+from openpyxl.styles.numbers import FORMAT_DATE_XLSX15
+from openpyxl.styles.numbers import FORMAT_DATE_XLSX16
+from openpyxl.styles.numbers import FORMAT_DATE_XLSX17
+from openpyxl.styles.numbers import FORMAT_DATE_XLSX22
+from openpyxl.styles.numbers import FORMAT_DATE_YYMMDD
+from openpyxl.styles.numbers import FORMAT_DATE_YYMMDDSLASH
+from openpyxl.styles.numbers import FORMAT_DATE_YYYYMMDD2
+from openpyxl.styles.numbers import builtin_format_code
 
 
 def test_builtin_format():
-    fmt = "0.00"
-    assert numbers.builtin_format_code(2) == fmt
+    assert builtin_format_code(2) == "0.00"
 
 
 def test_number_descriptor():
     from openpyxl.descriptors import Strict
-    from ..numbers import NumberFormatDescriptor
+    from openpyxl.styles.numbers import NumberFormatDescriptor
 
     class Dummy(Strict):
-
         value = NumberFormatDescriptor()
 
         def __init__(self, value=None):
@@ -56,13 +53,13 @@ def test_number_descriptor():
     ],
 )
 def test_strip_quotes(fmt, stripped):
-    from ..numbers import STRIP_RE
+    from openpyxl.styles.numbers import STRIP_RE
 
     assert STRIP_RE.sub("", fmt) == stripped
 
 
 @pytest.mark.parametrize(
-    "format, result",
+    "fmt, result",
     [
         ("DD/MM/YY", True),
         ("H:MM:SS;@", True),
@@ -90,14 +87,14 @@ def test_strip_quotes(fmt, stripped):
         (r'#,##0.00\ _M"H"_);[Red]#,##0.00\ _M"S"_)', False),
     ],
 )
-def test_is_date_format(format, result):
-    from ..numbers import is_date_format
+def test_is_date_format(fmt, result):
+    from openpyxl.styles.numbers import is_date_format
 
-    assert is_date_format(format) is result
+    assert is_date_format(fmt) is result
 
 
 @pytest.mark.parametrize(
-    "format, result",
+    "fmt, result",
     [
         ("m:ss", False),
         ("[h]", True),
@@ -127,10 +124,10 @@ def test_is_date_format(format, result):
         ("[>=100][Magenta]General", False),
     ],
 )
-def test_is_timedelta_format(format, result):
-    from ..numbers import is_timedelta_format
+def test_is_timedelta_format(fmt, result):
+    from openpyxl.styles.numbers import is_timedelta_format
 
-    assert is_timedelta_format(format) is result
+    assert is_timedelta_format(fmt) is result
 
 
 @pytest.mark.parametrize(
@@ -162,6 +159,6 @@ def test_is_timedelta_format(format, result):
     ],
 )
 def test_datetime(fmt, typ):
-    from ..numbers import is_datetime
+    from openpyxl.styles.numbers import is_datetime
 
     assert is_datetime(fmt) == typ

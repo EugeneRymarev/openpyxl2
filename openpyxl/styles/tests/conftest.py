@@ -1,24 +1,24 @@
 # Copyright (c) 2010-2025 openpyxl
+import os
+
 import pytest
+from py.path import LocalPath
 
 
 @pytest.fixture
 def datadir():
     """DATADIR as a LocalPath"""
-    import os
-    from py.path import local as LocalPath
-
     here = os.path.split(__file__)[0]
-    DATADIR = os.path.join(here, "data")
-    return LocalPath(DATADIR)
+    data_dir = os.path.join(here, "data")
+    return LocalPath(data_dir)
 
 
 # objects under test
 
 
-@pytest.fixture
-def FormatRule():
-    """Formatting rule class"""
-    from openpyxl.formatting.rules import FormatRule
-
-    return FormatRule
+# @pytest.fixture
+# def FormatRule():
+#     """Formatting rule class"""
+#     from openpyxl.formatting.rules import FormatRule
+#
+#     return FormatRule

@@ -3,28 +3,28 @@ import pytest
 
 
 @pytest.fixture
-def Alignment():
-    from ..alignment import Alignment
+def alignment():
+    from openpyxl.styles.alignment import Alignment
 
     return Alignment
 
 
-def test_default(Alignment):
-    al = Alignment()
+def test_default(alignment):
+    al = alignment()
     assert dict(al) == {}
 
 
-def test_round_trip(Alignment):
+def test_round_trip(alignment):
     args = {
         "horizontal": "center",
         "vertical": "top",
         "textRotation": "45",
         "indent": "4",
     }
-    al = Alignment(**args)
+    al = alignment(**args)
     assert dict(al) == args
 
 
-def test_alias(Alignment):
-    al = Alignment(text_rotation=90, shrink_to_fit=True, wrap_text=True)
+def test_alias(alignment):
+    al = alignment(text_rotation=90, shrink_to_fit=True, wrap_text=True)
     assert dict(al) == {"textRotation": "90", "shrinkToFit": "1", "wrapText": "1"}
