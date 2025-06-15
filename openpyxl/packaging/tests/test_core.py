@@ -11,8 +11,8 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture()
-def SampleProperties():
-    from ..core import DocumentProperties
+def sample_properties():
+    from openpyxl.packaging.core import DocumentProperties
 
     props = DocumentProperties()
     props.keywords = "one, two, three"
@@ -33,13 +33,13 @@ def SampleProperties():
     return props
 
 
-def test_ctor(SampleProperties):
+def test_ctor(sample_properties):
     expected = """
     <coreProperties
-        xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
-        xmlns:dc="http://purl.org/dc/elements/1.1/"
-        xmlns:dcterms="http://purl.org/dc/terms/"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:dcterms="http://purl.org/dc/terms/"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <dc:creator>TEST_USER</dc:creator>
         <dc:title>The title</dc:title>
         <dc:description>The description</dc:description>
@@ -57,38 +57,38 @@ def test_ctor(SampleProperties):
         <lastPrinted>2014-10-14T10:30:00Z</lastPrinted>
     </coreProperties>
     """
-    xml = tostring(SampleProperties.to_tree())
+    xml = tostring(sample_properties.to_tree())
     diff = compare_xml(xml, expected)
     assert diff is None, diff
 
 
-def test_from_tree(datadir, SampleProperties):
+def test_from_tree(datadir, sample_properties):
     datadir.chdir()
     with open("core.xml") as src:
         content = src.read()
-
     content = fromstring(content)
-    props = SampleProperties.from_tree(content)
-    assert props == SampleProperties
+    props = sample_properties.from_tree(content)
+    assert props == sample_properties
 
 
 def test_qualified_datetime():
-    from ..core import QualifiedDateTime
+    from openpyxl.packaging.core import QualifiedDateTime
 
     dt = QualifiedDateTime()
     tree = dt.to_tree("time", datetime.datetime(2015, 7, 20, 12, 30, 00, 123456))
     xml = tostring(tree)
     expected = """
-    <time xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dcterms:W3CDTF">
-      2015-07-20T12:30:00Z
-    </time>"""
-
+    <time xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:type="dcterms:W3CDTF">
+        2015-07-20T12:30:00Z
+    </time>
+    """
     diff = compare_xml(xml, expected)
     assert diff is None, diff
 
 
 def test_settable_times():
-    from ..core import DocumentProperties
+    from openpyxl.packaging.core import DocumentProperties
 
     created = datetime.datetime(1066, 8, 25, 12, 3, 36)
     modified = datetime.datetime(1666, 11, 17, 23, 45, 2)
@@ -106,12 +106,12 @@ def dcterms_prefix(request):
 
 @pytest.mark.no_pypy
 def test_qualified_datetime_ns(dcterms_prefix):
-    from ..core import QualifiedDateTime
+    from openpyxl.packaging.core import QualifiedDateTime
 
     dt = QualifiedDateTime()
     tree = dt.to_tree("time", datetime.datetime(2015, 7, 20, 12, 30, 00, 987654))
     xml = tostring(tree)  # serialise to make remove QName
     tree = fromstring(xml)
-    xsi = tree.attrib["{%s}type" % XSI_NS]
+    xsi = tree.attrib[f"{{{XSI_NS}}}type"]
     prefix = xsi.split(":")[0]
     assert prefix == dcterms_prefix

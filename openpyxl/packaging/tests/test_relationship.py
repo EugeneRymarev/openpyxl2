@@ -1,6 +1,5 @@
 # Copyright (c) 2010-2025 openpyxl
-from io import BytesIO
-from zipfile import ZipFile
+import zipfile
 
 import pytest
 from openpyxl.tests.helper import compare_xml
@@ -9,121 +8,144 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def Relationship():
-    from ..relationship import Relationship
+def relationship():
+    from openpyxl.packaging.relationship import Relationship
 
     return Relationship
 
 
-def test_ctor(Relationship):
-    rel = Relationship(
-        type="drawing", Target="drawings.xml", TargetMode="external", Id="4"
-    )
+@pytest.fixture
+def relationship_list():
+    from openpyxl.packaging.relationship import RelationshipList
 
-    assert dict(rel) == {
+    return RelationshipList
+
+
+def test_ctor(relationship):
+    rel = relationship(
+        type="drawing",
+        Target="drawings.xml",
+        TargetMode="external",
+        Id="4",
+    )
+    expected = {
         "Id": "4",
         "Target": "drawings.xml",
         "TargetMode": "external",
         "Type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
     }
-
-    expected = """<Relationship Id="4" Target="drawings.xml" TargetMode="external" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" />
+    assert dict(rel) == expected
+    expected = """
+    <Relationship
+            Id="4"
+            Target="drawings.xml"
+            TargetMode="external"
+            Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"/>
     """
     xml = tostring(rel.to_tree())
-
     diff = compare_xml(xml, expected)
     assert diff is None, diff
 
 
-def test_sequence(Relationship):
-    from ..relationship import RelationshipList
+def test_sequence(relationship):
+    from openpyxl.packaging.relationship import RelationshipList
 
     rels = RelationshipList()
     rels.append(
-        Relationship(
-            type="drawing", Target="drawings.xml", TargetMode="external", Id=""
+        relationship(
+            type="drawing",
+            Target="drawings.xml",
+            TargetMode="external",
+            Id="",
         )
     )
     rels.append(
-        Relationship(type="chart", Target="chart1.xml", TargetMode="", Id="chart")
+        relationship(
+            type="chart",
+            Target="chart1.xml",
+            TargetMode="",
+            Id="chart",
+        )
     )
     xml = tostring(rels.to_tree())
     expected = """
-    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-      <Relationship Id="rId1" Target="drawings.xml" TargetMode="external" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"/>
-      <Relationship Id="chart" Target="chart1.xml" TargetMode="" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"/>
+    <Relationships
+            xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        <Relationship
+                Id="rId1"
+                Target="drawings.xml"
+                TargetMode="external"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"/>
+        <Relationship
+                Id="chart"
+                Target="chart1.xml"
+                TargetMode=""
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart"/>
     </Relationships>
     """
     diff = compare_xml(xml, expected)
     assert diff is None, diff
 
 
-@pytest.fixture
-def RelationshipList():
-    from ..relationship import RelationshipList
-
-    return RelationshipList
-
-
 class TestRelationshipList:
-
-    def test_read(self, RelationshipList):
-
+    def test_read(self, relationship_list):
         xml = """
         <Relationships>
-          <Relationship Id="rId3"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"
-          Target="theme/theme1.xml"/>
-          <Relationship Id="rId2"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
-          Target="worksheets/sheet1.xml"/>
-          <Relationship Id="rId1"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet"
-          Target="chartsheets/sheet1.xml"/>
-          <Relationship Id="rId5"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
-          Target="sharedStrings.xml"/>
-          <Relationship Id="rId4"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
-          Target="styles.xml"/>
+            <Relationship
+                    Id="rId3"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"
+                    Target="theme/theme1.xml"/>
+            <Relationship
+                    Id="rId2"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                    Target="worksheets/sheet1.xml"/>
+            <Relationship
+                    Id="rId1"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet"
+                    Target="chartsheets/sheet1.xml"/>
+            <Relationship
+                    Id="rId5"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
+                    Target="sharedStrings.xml"/>
+            <Relationship
+                    Id="rId4"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
+                    Target="styles.xml"/>
         </Relationships>
         """
         node = fromstring(xml)
-        rels = RelationshipList.from_tree(node)
+        rels = relationship_list.from_tree(node)
         assert len(rels) == 5
 
-    def test_types(self, RelationshipList):
-
+    def test_types(self, relationship_list):
         xml = """
         <Relationships>
-          <Relationship Id="rId3"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"
-          Target="theme/theme1.xml"/>
-          <Relationship Id="rId2"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
-          Target="worksheets/sheet1.xml"/>
-          <Relationship Id="rId1"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet"
-          Target="chartsheets/sheet1.xml"/>
-          <Relationship Id="rId5"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
-          Target="sharedStrings.xml"/>
-          <Relationship Id="rId4"
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
-          Target="styles.xml"/>
+            <Relationship
+                    Id="rId3"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"
+                    Target="theme/theme1.xml"/>
+            <Relationship
+                    Id="rId2"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                    Target="worksheets/sheet1.xml"/>
+            <Relationship
+                    Id="rId1"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet"
+                    Target="chartsheets/sheet1.xml"/>
+            <Relationship
+                    Id="rId5"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
+                    Target="sharedStrings.xml"/>
+            <Relationship
+                    Id="rId4"
+                    Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"
+                    Target="styles.xml"/>
         </Relationships>
         """
         node = fromstring(xml)
-        rels = RelationshipList.from_tree(node)
+        rels = relationship_list.from_tree(node)
         rels.get_types()
         assert len(rels.worksheet) == 1
-
-
-@pytest.fixture
-def get_dependents():
-    from ..relationship import get_dependents
-
-    return get_dependents
 
 
 @pytest.mark.parametrize(
@@ -148,21 +170,18 @@ def get_dependents():
     ],
 )
 def test_get_dependents(datadir, filename, expected):
+    from openpyxl.packaging.relationship import get_dependents
+
     datadir.chdir()
-    archive = ZipFile("bug137.xlsx")
-
-    from ..relationship import get_dependents
-
+    archive = zipfile.ZipFile("bug137.xlsx")
     rels = get_dependents(archive, filename)
     assert [r.Target for r in rels] == expected
 
 
 def test_get_external_link(datadir):
+    from openpyxl.packaging.relationship import get_dependents
+
     datadir.chdir()
-    archive = ZipFile("hyperlink.xlsx")
-
-    from ..relationship import get_dependents
-
+    archive = zipfile.ZipFile("hyperlink.xlsx")
     rels = get_dependents(archive, "xl/worksheets/_rels/sheet1.xml.rels")
-
     assert [r.Target for r in rels] == ["http://www.readthedocs.org"]

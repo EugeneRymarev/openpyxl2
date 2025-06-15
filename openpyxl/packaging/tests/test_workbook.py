@@ -6,44 +6,36 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def WorkbookPackage():
-    from ..workbook import WorkbookPackage
+def workbook_package():
+    from openpyxl.packaging.workbook import WorkbookPackage
 
     return WorkbookPackage
 
 
 class TestWorkbookPackage:
-
-    def test_ctor(self, WorkbookPackage):
-        parser = WorkbookPackage()
+    def test_ctor(self, workbook_package):
+        parser = workbook_package()
         xml = tostring(parser.to_tree())
         expected = """
-        <workbook
-          xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-          <workbookPr />
+        <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <workbookPr/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, WorkbookPackage):
-        src = """
-        <workbook />
-        """
+    def test_from_xml(self, workbook_package):
+        src = "<workbook/>"
         node = fromstring(src)
-        parser = WorkbookPackage.from_tree(node)
-        assert parser == WorkbookPackage()
+        parser = workbook_package.from_tree(node)
+        assert parser == workbook_package()
 
 
-def test_read_workbook_code_name(datadir, WorkbookPackage):
+def test_read_workbook_code_name(datadir, workbook_package):
     datadir.chdir()
-
     with open("workbook_russian_code_name.xml", "rb") as src:
         xml = src.read()
-
     node = fromstring(xml)
-    parser = WorkbookPackage.from_tree(node)
-
-    assert (
-        parser.properties.codeName == "\u042d\u0442\u0430\u041a\u043d\u0438\u0433\u0430"
-    )
+    parser = workbook_package.from_tree(node)
+    expected = "\u042d\u0442\u0430\u041a\u043d\u0438\u0433\u0430"
+    assert parser.properties.codeName == expected
