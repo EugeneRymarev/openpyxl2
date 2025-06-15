@@ -1,19 +1,17 @@
 # Copyright (c) 2010-2025 openpyxl
 import datetime
 import gc
+import io
 import os
-from io import BytesIO
-from zipfile import ZipFile
+import zipfile
 
 import pytest
-from openpyxl.cell.read_only import EMPTY_CELL
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles.styleable import StyleArray
-from openpyxl.xml.functions import fromstring
 
 
 @pytest.fixture
-def DummyWorkbook():
+def dummy_workbook():
     class Workbook:
         epoch = None
         _cell_styles = [StyleArray([0, 0, 0, 0, 0, 0, 0, 0, 0])]
@@ -21,7 +19,7 @@ def DummyWorkbook():
 
         def __init__(self):
             self.sheetnames = []
-            self._archive = ZipFile(BytesIO(), "w")
+            self._archive = zipfile.ZipFile(io.BytesIO(), "w")
             self._date_formats = set()
             self._timedelta_formats = set()
 
@@ -29,7 +27,7 @@ def DummyWorkbook():
 
 
 @pytest.fixture
-def ReadOnlyWorksheet():
+def read_only_worksheet():
     from openpyxl.worksheet._read_only import ReadOnlyWorksheet
 
     return ReadOnlyWorksheet
@@ -48,23 +46,21 @@ def test_open_many_sheets(datadir):
         ("sheet2_no_dimension.xml", (1, 1, None, None)),
     ],
 )
-def test_ctor(datadir, DummyWorkbook, ReadOnlyWorksheet, filename, expected):
+def test_ctor(datadir, dummy_workbook, read_only_worksheet, filename, expected):
     datadir.join("reader").chdir()
-    wb = DummyWorkbook
+    wb = dummy_workbook
     wb._archive.write(filename, "sheet1.xml")
     with open(filename) as src:
-        ws = ReadOnlyWorksheet(DummyWorkbook, "Sheet", "sheet1.xml", [])
+        ws = read_only_worksheet(dummy_workbook, "Sheet", "sheet1.xml", [])
     assert (ws.min_row, ws.min_column, ws.max_row, ws.max_column) == expected
 
 
-def test_force_dimension(datadir, DummyWorkbook, ReadOnlyWorksheet):
+def test_force_dimension(datadir, dummy_workbook, read_only_worksheet):
     datadir.join("reader").chdir()
-    wb = DummyWorkbook
+    wb = dummy_workbook
     wb._archive.write("sheet2_no_dimension.xml", "sheet1.xml")
-
-    ws = ReadOnlyWorksheet(DummyWorkbook, "Sheet", "sheet1.xml", [])
+    ws = read_only_worksheet(dummy_workbook, "Sheet", "sheet1.xml", [])
     ws._shared_strings = ["A", "B"]
-
     dims = ws.calculate_dimension(True)
     assert dims == "A1:AA30"
 
@@ -80,7 +76,8 @@ def test_calculate_dimension(datadir):
 
 
 def count_open_fds():
-    """Return the number of open file descriptors for this process
+    """
+    Return the number of open file descriptors for this process
 
     The implementation assumes that all FDs are smaller than 10,000 and that
     nobody (other threads, garbage collection) modifies the file descriptors
@@ -99,38 +96,32 @@ def count_open_fds():
 
 def test_file_descriptor_leak(datadir):
     datadir.join("genuine").chdir()
-
     try:
         gc.disable()
         gc.collect()
         num_fds_before = count_open_fds()
-
         wb = load_workbook(filename="sample.xlsx", read_only=True)
         ws = wb.active
         ws.cell(1, 1)
         wb.close()
         assert wb._archive.fp is None
-
         num_fds_after = count_open_fds()
     finally:
         gc.enable()
-
     assert num_fds_after == num_fds_before
 
 
 def test_nonstandard_name(datadir):
     datadir.join("reader").chdir()
-
     wb = load_workbook(filename="nonstandard_workbook_name.xlsx", read_only=True)
     assert wb.sheetnames == ["Sheet1"]
 
 
 @pytest.mark.parametrize("filename", ["sheet2.xml", "sheet2_no_dimension.xml"])
-def test_get_max_cell(datadir, DummyWorkbook, ReadOnlyWorksheet, filename):
+def test_get_max_cell(datadir, dummy_workbook, read_only_worksheet, filename):
     datadir.join("reader").chdir()
-    DummyWorkbook._archive.write(filename, "sheet1.xml")
-
-    ws = ReadOnlyWorksheet(DummyWorkbook, "Sheet", "sheet1.xml", [])
+    dummy_workbook._archive.write(filename, "sheet1.xml")
+    ws = read_only_worksheet(dummy_workbook, "Sheet", "sheet1.xml", [])
     ws._shared_strings = ["A", "B"]
     rows = tuple(ws.rows)
     assert rows[-1][-1].coordinate == "AA30"
@@ -138,16 +129,16 @@ def test_get_max_cell(datadir, DummyWorkbook, ReadOnlyWorksheet, filename):
 
 @pytest.fixture(params=[False, True])
 def sample_workbook(request, datadir):
-    """Standard and read-only workbook"""
+    """
+    Standard and read-only workbook
+    """
     datadir.join("genuine").chdir()
     wb = load_workbook(filename="sample.xlsx", read_only=request.param, data_only=True)
     return wb
 
 
 class TestRead:
-
     # test API across implementations
-
     def test_get_missing_cell(self, sample_workbook):
         wb = sample_workbook
         ws = wb["Sheet2 - Numbers"]
@@ -165,14 +156,15 @@ class TestRead:
         sheet2 = wb["Sheet2 - Numbers"]
         assert sheet2.max_row == 30
 
-    expected = [
-        ("Sheet1 - Text", 7),
-        ("Sheet2 - Numbers", 27),
-        ("Sheet3 - Formulas", 4),
-        ("Sheet4 - Dates", 3),
-    ]
-
-    @pytest.mark.parametrize("sheetname, col", expected)
+    @pytest.mark.parametrize(
+        "sheetname, col",
+        [
+            ("Sheet1 - Text", 7),
+            ("Sheet2 - Numbers", 27),
+            ("Sheet3 - Formulas", 4),
+            ("Sheet4 - Dates", 3),
+        ],
+    )
     def test_max_column(self, sample_workbook, sheetname, col):
         wb = sample_workbook
         ws = wb[sheetname]
@@ -186,7 +178,6 @@ class TestRead:
             (None, None, None, None, None, None, None),
             (None, None, None, None, None, None, "This is cell G5"),
         ]
-
         wb = sample_workbook
         ws = wb["Sheet1 - Text"]
         for row, expected_row in zip(ws.values, expected):
@@ -215,8 +206,7 @@ class TestRead:
 
     def test_read_fast_integrated_numbers_2(self, sample_workbook):
         wb = sample_workbook
-        query_range = "K1:K30"
-        expected = expected = [[(x + 1) / 100.0] for x in range(30)]
+        expected = [[(x + 1) / 100.0] for x in range(30)]
         ws = wb["Sheet2 - Numbers"]
         for row, expected_row in zip(ws["K1:K30"], expected):
             row_values = [x.value for x in row]
@@ -246,7 +236,8 @@ class TestRead:
 
 
 @pytest.mark.parametrize(
-    "data_only, expected", [(True, 5), (False, "='Sheet2 - Numbers'!D5")]
+    "data_only, expected",
+    [(True, 5), (False, "='Sheet2 - Numbers'!D5")],
 )
 def test_read_single_cell_formula(datadir, data_only, expected):
     datadir.join("genuine").chdir()
@@ -261,50 +252,42 @@ def test_read_style_iter(tmpdir):
     """
     Test if cell styles are read properly in iter mode.
     """
-    tmpdir.chdir()
-    from openpyxl import Workbook
-    from openpyxl.styles import Font
+    from openpyxl.styles.fonts import Font
+    from openpyxl.workbook.workbook import Workbook
 
+    tmpdir.chdir()
     FONT_NAME = "Times New Roman"
     FONT_SIZE = 15
     ft = Font(name=FONT_NAME, size=FONT_SIZE)
-
     wb = Workbook()
     ws = wb.worksheets[0]
     cell = ws["A1"]
     cell.font = ft
-
     xlsx_file = "read_only_styles.xlsx"
     wb.save(xlsx_file)
-
     wb_iter = load_workbook(xlsx_file, read_only=True)
     ws_iter = wb_iter.worksheets[0]
     cell = ws_iter["A1"]
-
     assert cell.font == ft
 
 
-def test_read_hyperlinks_read_only(datadir, DummyWorkbook, ReadOnlyWorksheet):
+def test_read_hyperlinks_read_only(datadir, dummy_workbook, read_only_worksheet):
     datadir.join("reader").chdir()
-    wb = DummyWorkbook
+    wb = dummy_workbook
     wb._archive.write("bug393-worksheet.xml", "sheet1.xml")
-
-    ws = ReadOnlyWorksheet(wb, "Sheet", "sheet1.xml", ["SOMETEXT"])
+    ws = read_only_worksheet(wb, "Sheet", "sheet1.xml", ["SOMETEXT"])
     assert ws["F2"].value is None
 
 
-def test_read_with_missing_cells(datadir, DummyWorkbook, ReadOnlyWorksheet):
+def test_read_with_missing_cells(datadir, dummy_workbook, read_only_worksheet):
     datadir.join("reader").chdir()
-    wb = DummyWorkbook
+    wb = dummy_workbook
     wb._archive.write("bug393-worksheet.xml", "sheet1.xml")
-
-    ws = ReadOnlyWorksheet(wb, "Sheet", "sheet1.xml", [])
+    ws = read_only_worksheet(wb, "Sheet", "sheet1.xml", [])
     rows = tuple(ws.rows)
-
     row = rows[1]  # second row
     values = [c.value for c in row]
     assert values == [None, None, 1, 2, 3]
-
     row = rows[3]  # fourth row
     values = [c.value for c in row]
     assert values == [1, 2, None, None, 3]
@@ -326,11 +309,10 @@ def test_read_mac_date(datadir, read_only):
     assert ws["A1"].value == datetime.datetime(2016, 10, 3, 0, 0)
 
 
-def test_read_empty_rows(datadir, DummyWorkbook, ReadOnlyWorksheet):
+def test_read_empty_rows(datadir, dummy_workbook, read_only_worksheet):
     datadir.join("reader").chdir()
-    wb = DummyWorkbook
+    wb = dummy_workbook
     wb._archive.write("empty_rows.xml", "sheet1.xml")
-
-    ws = ReadOnlyWorksheet(wb, "Sheet", "sheet1.xml", [])
+    ws = read_only_worksheet(wb, "Sheet", "sheet1.xml", [])
     rows = tuple(ws.rows)
     assert len(rows) == 7

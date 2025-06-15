@@ -13,19 +13,18 @@ from openpyxl.xml.constants import ARC_CUSTOM
 from openpyxl.xml.constants import CPROPS_TYPE
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
-# compatibility imports
-# package imports
 
 
 def test_read_custom_doc_props(datadir):
     datadir.join("reader").chdir()
     wb = load_workbook(
-        "example_vba_and_custom_doc_props.xlsm", read_only=False, keep_vba=True
+        "example_vba_and_custom_doc_props.xlsm",
+        read_only=False,
+        keep_vba=True,
     )
+    dt = datetime.datetime(2020, 8, 24, hour=20, minute=19, second=22)
     custom_doc_props_dict = {
-        "PropName1": {
-            "value": datetime.datetime(2020, 8, 24, hour=20, minute=19, second=22)
-        },
+        "PropName1": {"value": dt},
         "PropName2": {"value": "ExampleName"},
         "PropName3": {"value": "Foo"},
     }
@@ -34,30 +33,24 @@ def test_read_custom_doc_props(datadir):
 
 
 def test_write_custom_doc_props(datadir):
+    class CustomOverride:
+        path = f"/{ARC_CUSTOM}"  # PartName
+        mime_type = CPROPS_TYPE  # ContentType
+
     datadir.join("reader").chdir()
     wb = load_workbook("example_vba_and_no_custom_doc_props.xlsm")
     assert len(wb.custom_doc_props) == 0
-
-    wb.custom_doc_props.append(
-        DateTimeProperty(name="PropName1", value="2020-08-24T20:19:22Z")
-    )
+    dts = "2020-08-24T20:19:22Z"
+    wb.custom_doc_props.append(DateTimeProperty(name="PropName1", value=dts))
     wb.custom_doc_props.append(IntProperty(name="PropName2", value=2))
-
     writer = WorkbookWriter(wb)
     root_rels = writer.write_root_rels()
-
     custom_doc_props = tostring(wb.custom_doc_props.to_tree())
-
-    class CustomOverride:
-        path = "/" + ARC_CUSTOM  # PartName
-        mime_type = CPROPS_TYPE  # ContentType
-
     custom_override = CustomOverride()
     # custom_override = Override(PartName="/docProps/custom.xml", ContentType="application/vnd.openxmlformats-officedocument.custom-properties+xml")
     manifest = Manifest()
     manifest.append(custom_override)
     root_manifest = tostring(manifest.to_tree())
-
     datadir.join("writer").chdir()
     with open("workbook_custom_doc_props.xml", "r") as infile:
         file_xml = tostring(fromstring(infile.read()))
@@ -97,5 +90,4 @@ def test_append_repeated_prop():
     props_list.append(IntProperty(name="foo", value=0))
     with pytest.raises(ValueError) as err:
         props_list.append(IntProperty(name="foo", value=1))
-
     assert "already exists" in str(err).lower()

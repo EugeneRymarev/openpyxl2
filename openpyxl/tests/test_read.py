@@ -1,19 +1,21 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
 from openpyxl.reader.excel import load_workbook
-from openpyxl.styles import numbers
-# compatibility imports
-# package imports
+from openpyxl.styles.numbers import FORMAT_DATE_TIME3
+from openpyxl.styles.numbers import FORMAT_DATE_XLSX14
+from openpyxl.styles.numbers import FORMAT_GENERAL
+from openpyxl.styles.numbers import FORMAT_NUMBER_00
+from openpyxl.styles.numbers import FORMAT_PERCENTAGE_00
 
 
 @pytest.mark.parametrize(
     "cell, number_format",
     [
-        ("A1", numbers.FORMAT_GENERAL),
-        ("A2", numbers.FORMAT_DATE_XLSX14),
-        ("A3", numbers.FORMAT_NUMBER_00),
-        ("A4", numbers.FORMAT_DATE_TIME3),
-        ("A5", numbers.FORMAT_PERCENTAGE_00),
+        ("A1", FORMAT_GENERAL),
+        ("A2", FORMAT_DATE_XLSX14),
+        ("A3", FORMAT_NUMBER_00),
+        ("A4", FORMAT_DATE_TIME3),
+        ("A5", FORMAT_PERCENTAGE_00),
     ],
 )
 def test_read_general_style(datadir, cell, number_format):

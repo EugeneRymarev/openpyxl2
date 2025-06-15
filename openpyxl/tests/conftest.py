@@ -1,35 +1,31 @@
 # Fixtures (pre-configured objects) for tests
+import os
+
 import pytest
-
-# objects under test
-
-
-@pytest.fixture
-def Image():
-    """Image class"""
-    from openpyxl.drawing import Image
-
-    return Image
-
-
-# utility fixtures
-
-
-@pytest.fixture
-def ws(Workbook):
-    """Empty worksheet titled 'data'"""
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "data"
-    return ws
+from py.path import LocalPath
 
 
 @pytest.fixture
 def datadir():
     """DATADIR as a LocalPath"""
-    import os
-    from py.path import local as LocalPath
-
     here = os.path.split(__file__)[0]
-    DATADIR = os.path.join(here, "data")
-    return LocalPath(DATADIR)
+    data_dir = os.path.join(here, "data")
+    return LocalPath(data_dir)
+
+
+# @pytest.fixture
+# def ws(Workbook):
+#     """Empty worksheet titled 'data'"""
+#     wb = Workbook()
+#     ws = wb.active
+#     ws.title = "data"
+#     return ws
+
+
+# objects under test
+# @pytest.fixture
+# def Image():
+#     """Image class"""
+#     from openpyxl.drawing import Image
+#
+#     return Image
