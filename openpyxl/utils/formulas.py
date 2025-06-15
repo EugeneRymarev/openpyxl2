@@ -2,6 +2,7 @@
 """
 List of builtin formulae
 """
+from openpyxl.formula import Tokenizer
 
 FORMULAE = (
     "CUBEKPIMEMBER",
@@ -360,11 +361,7 @@ FORMULAE = (
     "UPPER",
     "VALUE",
 )
-
 FORMULAE = frozenset(FORMULAE)
-
-
-from openpyxl.formula import Tokenizer
 
 
 def validate(formula):
@@ -376,6 +373,8 @@ def validate(formula):
     for t in formula.items:
         if t.type == "FUNC" and t.subtype == "OPEN":
             if not t.value.startswith("_xlfn.") and t.value[:-1] not in FORMULAE:
-                raise ValueError(
-                    f"Unknown function {t.value} in {formula.formula}. The function may need a prefix"
+                msg = (
+                    f"Unknown function {t.value} in {formula.formula}. "
+                    "The function may need a prefix"
                 )
+                raise ValueError(msg)

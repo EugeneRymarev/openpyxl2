@@ -1,19 +1,15 @@
 # Copyright (c) 2010-2025 openpyxl
 """Manage Excel date weirdness."""
-# Python stdlib imports
 import datetime
+import math
 import re
-from math import isnan
 
-
-# constants
 MAC_EPOCH = datetime.datetime(1904, 1, 1)
 WINDOWS_EPOCH = datetime.datetime(1899, 12, 30)
 STRICT_EPOCH = datetime.datetime(1899, 12, 30)
 CALENDAR_WINDOWS_1900 = WINDOWS_EPOCH
 CALENDAR_MAC_1904 = MAC_EPOCH
 SECS_PER_DAY = 86400
-
 ISO_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 ISO_REGEX = re.compile(
     r"""
@@ -27,14 +23,17 @@ ISO_DURATION = re.compile(
 
 
 def to_ISO8601(dt):
-    """Convert from a datetime to a timestamp string."""
+    """
+    Convert from a datetime to a timestamp string.
+    """
     if hasattr(dt, "microsecond") and dt.microsecond:
         return dt.isoformat(timespec="milliseconds")
     return dt.isoformat()
 
 
 def from_ISO8601(formatted_string):
-    """Convert from a timestamp string to a datetime object. According to
+    """
+    Convert from a timestamp string to a datetime object. According to
     18.17.4 in the specification the following ISO 8601 formats are
     supported.
 
@@ -47,20 +46,20 @@ def from_ISO8601(formatted_string):
     """
     if not formatted_string:
         return None
-
     match = ISO_REGEX.match(formatted_string)
     if match and any(match.groups()):
         parts = match.groupdict(0)
         for key in ["year", "month", "day", "hour", "minute", "second"]:
             if parts[key]:
                 parts[key] = int(parts[key])
-
         if parts["microsecond"]:
             parts["microsecond"] = int(float(parts["microsecond"]) * 1_000_000)
-
         if not parts["date"]:
             dt = datetime.time(
-                parts["hour"], parts["minute"], parts["second"], parts["microsecond"]
+                parts["hour"],
+                parts["minute"],
+                parts["second"],
+                parts["microsecond"],
             )
         elif not parts["time"]:
             dt = datetime.date(parts["year"], parts["month"], parts["day"])
@@ -69,7 +68,6 @@ def from_ISO8601(formatted_string):
             del parts["date"]
             dt = datetime.datetime(**parts)
         return dt
-
     match = ISO_DURATION.match(formatted_string)
     if match and any(match.groups()):
         parts = match.groupdict(0)
@@ -77,8 +75,7 @@ def from_ISO8601(formatted_string):
             if val:
                 parts[key] = float(val)
         return datetime.timedelta(**parts)
-
-    raise ValueError("Invalid datetime value {}".format(formatted_string))
+    raise ValueError(f"Invalid datetime value {formatted_string}")
 
 
 def to_excel(dt, epoch=WINDOWS_EPOCH):
@@ -87,12 +84,10 @@ def to_excel(dt, epoch=WINDOWS_EPOCH):
         return time_to_days(dt)
     if isinstance(dt, datetime.timedelta):
         return timedelta_to_days(dt)
-    if isnan(dt.year):  # Pandas supports Not a Date
-        return
-
+    if math.isnan(dt.year):  # Pandas supports Not a Date
+        return None
     if not hasattr(dt, "date"):
         dt = datetime.datetime.combine(dt, datetime.time())
-
     # rebase on epoch and adjust for < 1900-03-01
     days = (dt - epoch).days
     if 0 < days <= 60 and epoch == WINDOWS_EPOCH:
@@ -106,20 +101,19 @@ def from_excel(value, epoch=WINDOWS_EPOCH, timedelta=False):
     This will raise an exception as an it is an invalid date
     """
     if value is None:
-        return
-
+        return None
     if timedelta:
         td = datetime.timedelta(days=value)
         if td.microseconds:
             # round to millisecond precision
             td = datetime.timedelta(
-                seconds=td.total_seconds() // 1, microseconds=round(td.microseconds, -3)
+                seconds=td.total_seconds() // 1,
+                microseconds=round(td.microseconds, -3),
             )
         return td
-
     day, fraction = divmod(value, 1)
     diff = datetime.timedelta(milliseconds=round(fraction * SECS_PER_DAY * 1000))
-    if 0 <= value < 1 and diff.days == 0:
+    if diff.days == 0 <= value < 1:
         return days_to_time(diff)
     if 0 < value < 60 and epoch == WINDOWS_EPOCH:
         day += 1
@@ -129,7 +123,9 @@ def from_excel(value, epoch=WINDOWS_EPOCH, timedelta=False):
 
 
 def time_to_days(value):
-    """Convert a time value to fractions of day"""
+    """
+    Convert a time value to fractions of day
+    """
     return (
         (value.hour * 3600)
         + (value.minute * 60)
@@ -139,7 +135,9 @@ def time_to_days(value):
 
 
 def timedelta_to_days(value):
-    """Convert a timedelta value to fractions of a day"""
+    """
+    Convert a timedelta value to fractions of a day
+    """
     return value.total_seconds() / SECS_PER_DAY
 
 

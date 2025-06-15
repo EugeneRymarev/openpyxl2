@@ -2,16 +2,12 @@
 """
 Collection of utilities used within the package and also available for client code
 """
+import functools
 import re
-from functools import lru_cache
-from itertools import chain
-from itertools import product
-from string import ascii_uppercase
-from string import digits
+import string
 
-from .exceptions import CellCoordinatesException
+from openpyxl.utils.exceptions import CellCoordinatesException
 
-# constants
 COORD_RE = re.compile(r"^[$]?([A-Za-z]{1,3})[$]?(\d+)$")
 COL_RANGE = """[A-Z]{1,3}:[A-Z]{1,3}:"""
 ROW_RANGE = r"""\d+:\d+:"""
@@ -21,12 +17,9 @@ RANGE_EXPR = r"""
 (:[$]?(?P<max_col>[A-Za-z]{1,3})?
 [$]?(?P<max_row>\d+)?)?
 """
-ABSOLUTE_RE = re.compile("^" + RANGE_EXPR + "$", re.VERBOSE)
-SHEET_TITLE = r"""
-(('(?P<quoted>([^']|'')*)')|(?P<notquoted>[^'^ ^!]*))!"""
-SHEETRANGE_RE = re.compile(
-    """{0}(?P<cells>{1})(?=,?)""".format(SHEET_TITLE, RANGE_EXPR), re.VERBOSE
-)
+ABSOLUTE_RE = re.compile(rf"^{RANGE_EXPR}$", re.VERBOSE)
+SHEET_TITLE = r"(('(?P<quoted>([^']|'')*)')|(?P<notquoted>[^'^ ^!]*))!"
+SHEETRANGE_RE = re.compile(f"{SHEET_TITLE}(?P<cells>{RANGE_EXPR})(?=,?)", re.VERBOSE)
 
 
 def get_column_interval(start, end):
@@ -62,23 +55,23 @@ def absolute_coordinate(coord_string):
     m = ABSOLUTE_RE.match(coord_string)
     if not m:
         raise ValueError(f"{coord_string} is not a valid coordinate range")
-
     d = m.groupdict("")
     for k, v in d.items():
         if v:
             d[k] = f"${v}"
-
-    if d["max_col"] or d["max_row"]:
-        fmt = "{min_col}{min_row}:{max_col}{max_row}"
-    else:
-        fmt = "{min_col}{min_row}"
-    return fmt.format(**d)
-
-
-__decimal_to_alpha = [""] + list(ascii_uppercase)
+    min_col = d["min_col"]
+    min_row = d["min_row"]
+    max_col = d["max_col"]
+    max_row = d["max_row"]
+    if max_col or max_row:
+        return f"{min_col}{min_row}:{max_col}{max_row}"
+    return f"{min_col}{min_row}"
 
 
-@lru_cache(maxsize=None)
+__decimal_to_alpha = [""] + list(string.ascii_uppercase)
+
+
+@functools.lru_cache(maxsize=None)
 def get_column_letter(col_idx):
     """
     Convert decimal column position to its ASCII (base 26) form.
@@ -94,28 +87,26 @@ def get_column_letter(col_idx):
     """
 
     if not 1 <= col_idx <= 18278:
-        raise ValueError("Invalid column index {0}".format(col_idx))
-
+        raise ValueError(f"Invalid column index {col_idx}")
     result = []
-
     if col_idx < 26:
         return __decimal_to_alpha[col_idx]
-
     while col_idx:
         col_idx, remainder = divmod(col_idx, 26)
         result.insert(0, __decimal_to_alpha[remainder])
         if not remainder:
             col_idx -= 1
             result.insert(0, "Z")
-
     return "".join(result)
 
 
-__alpha_to_decimal = {letter: pos for pos, letter in enumerate(ascii_uppercase, 1)}
+__alpha_to_decimal = {
+    letter: pos for pos, letter in enumerate(string.ascii_uppercase, 1)
+}
 __powers = (1, 26, 676)
 
 
-@lru_cache(maxsize=None)
+@functools.lru_cache(maxsize=None)
 def column_index_from_string(col):
     """
     Convert ASCII column name (base 26) to decimal with 1-based index
@@ -146,17 +137,14 @@ def range_boundaries(range_string):
     (min_col, min_row, max_col, max_row)
     Cell coordinates will be converted into a range with the cell at both end
     """
-    msg = "{0} is not a valid coordinate or range".format(range_string)
+    msg = f"{range_string} is not a valid coordinate or range"
     m = ABSOLUTE_RE.match(range_string)
     if not m:
         raise ValueError(msg)
-
     min_col, min_row, sep, max_col, max_row = m.groups()
-
     if sep:
         cols = min_col, max_col
         rows = min_row, max_row
-
         if not (
             all(cols + rows)
             or all(cols)
@@ -165,23 +153,18 @@ def range_boundaries(range_string):
             and not any(cols)
         ):
             raise ValueError(msg)
-
     if min_col is not None:
         min_col = column_index_from_string(min_col)
-
     if min_row is not None:
         min_row = int(min_row)
-
     if max_col is not None:
         max_col = column_index_from_string(max_col)
     else:
         max_col = min_col
-
     if max_row is not None:
         max_row = int(max_row)
     else:
         max_row = min_row
-
     return min_col, min_row, max_col, max_row
 
 
@@ -194,7 +177,7 @@ def rows_from_range(range_string):
     rows = range(min_row, max_row + 1)
     cols = [get_column_letter(col) for col in range(min_col, max_col + 1)]
     for row in rows:
-        yield tuple("{0}{1}".format(col, row) for col in cols)
+        yield tuple(f"{col}{row}" for col in cols)
 
 
 def cols_from_range(range_string):
@@ -206,7 +189,7 @@ def cols_from_range(range_string):
     rows = range(min_row, max_row + 1)
     cols = (get_column_letter(col) for col in range(min_col, max_col + 1))
     for col in cols:
-        yield tuple("{0}{1}".format(col, row) for row in rows)
+        yield tuple(f"{col}{row}" for row in rows)
 
 
 def coordinate_to_tuple(coordinate):
@@ -214,7 +197,7 @@ def coordinate_to_tuple(coordinate):
     Convert an Excel style coordinate to (row, column) tuple
     """
     for idx, c in enumerate(coordinate):
-        if c in digits:
+        if c in string.digits:
             break
     col = coordinate[:idx]
     row = coordinate[idx:]
@@ -241,6 +224,5 @@ def quote_sheetname(sheetname):
     """
     if "'" in sheetname:
         sheetname = sheetname.replace("'", "''")
-
-    sheetname = "'{0}'".format(sheetname)
+    sheetname = f"'{sheetname}'"
     return sheetname

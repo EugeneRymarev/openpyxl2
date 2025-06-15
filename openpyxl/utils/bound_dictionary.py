@@ -1,8 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
-from collections import defaultdict
+import collections
 
 
-class BoundDictionary(defaultdict):
+class BoundDictionary(collections.defaultdict):
     """
     A default dictionary where elements are tightly coupled.
 

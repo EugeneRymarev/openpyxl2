@@ -5,8 +5,6 @@ Type inference functions
 import datetime
 import re
 
-from openpyxl.styles import numbers
-
 PERCENT_REGEX = re.compile(r"^(?P<number>\-?[0-9]*\.?[0-9]*\s?)\%$")
 TIME_REGEX = re.compile(
     r"""
@@ -34,19 +32,23 @@ def cast_numeric(value):
             return int(value)
         except ValueError:
             return float(value)
+    return None
 
 
 def cast_percentage(value):
-    """Explicitly convert a string to numeric value and format as a
-    percentage"""
+    """
+    Explicitly convert a string to numeric value and format as a percentage
+    """
     match = PERCENT_REGEX.match(value)
     if match:
         return float(match.group("number")) / 100
+    return None
 
 
 def cast_time(value):
-    """Explicitly convert a string to a number and format as datetime or
-    time"""
+    """
+    Explicitly convert a string to a number and format as datetime or time
+    """
     match = TIME_REGEX.match(value)
     if match:
         if match.group("microsecond") is not None:
@@ -61,3 +63,4 @@ def cast_time(value):
             # fmt = numbers.FORMAT_DATE_TIME6
         value = datetime.datetime.strptime(value, pattern)
         return value.time()
+    return None

@@ -1,21 +1,4 @@
 # Copyright (c) 2010-2025 openpyxl
-import math
-
-
-# constants
-
-DEFAULT_ROW_HEIGHT = 15.0  # Default row height measured in point size.
-BASE_COL_WIDTH = 8  # in characters
-DEFAULT_COLUMN_WIDTH = BASE_COL_WIDTH + 5
-#  = baseColumnWidth + {margin padding (2 pixels on each side, totalling 4 pixels)} + {gridline (1pixel)}
-
-
-DEFAULT_LEFT_MARGIN = 0.7  # in inches, = right margin
-DEFAULT_TOP_MARGIN = 0.7874  # in inches = bottom margin
-DEFAULT_HEADER = 0.3  # in inches
-
-
-# Conversion functions
 """
 From the ECMA Spec (4th Edition part 1)
 Page setup: "Left Page Margin in inches" p. 1647
@@ -37,10 +20,21 @@ PixelsPerInch in Excel). Spec p. 1122
 
 For radial geometry Excel uses integer units of 1/60000th of a degree.
 """
+import math
+
+DEFAULT_ROW_HEIGHT = 15.0  # Default row height measured in point size.
+BASE_COL_WIDTH = 8  # in characters
+DEFAULT_COLUMN_WIDTH = BASE_COL_WIDTH + 5
+#  = baseColumnWidth + {margin padding (2 pixels on each side, totalling 4 pixels)} + {gridline (1pixel)}
+DEFAULT_LEFT_MARGIN = 0.7  # in inches, = right margin
+DEFAULT_TOP_MARGIN = 0.7874  # in inches = bottom margin
+DEFAULT_HEADER = 0.3  # in inches
 
 
 def inch_to_dxa(value):
-    """1 inch = 72 * 20 dxa"""
+    """
+    1 inch = 72 * 20 dxa
+    """
     return int(value * 20 * 72)
 
 
@@ -59,7 +53,9 @@ def cm_to_dxa(value):
 
 
 def pixels_to_EMU(value):
-    """1 pixel = 9525 EMUs"""
+    """
+    1 pixel = 9525 EMUs
+    """
     return int(value * 9525)
 
 
@@ -68,7 +64,9 @@ def EMU_to_pixels(value):
 
 
 def cm_to_EMU(value):
-    """1 cm = 360000 EMUs"""
+    """
+    1 cm = 360000 EMUs
+    """
     return int(value * 360000)
 
 
@@ -77,7 +75,9 @@ def EMU_to_cm(value):
 
 
 def inch_to_EMU(value):
-    """1 inch = 914400 EMUs"""
+    """
+    1 inch = 914400 EMUs
+    """
     return int(value * 914400)
 
 
@@ -86,7 +86,9 @@ def EMU_to_inch(value):
 
 
 def pixels_to_points(value, dpi=96):
-    """96 dpi, 72i"""
+    """
+    96 dpi, 72i
+    """
     return value * 72 / dpi
 
 
@@ -95,7 +97,9 @@ def points_to_pixels(value, dpi=96):
 
 
 def degrees_to_angle(value):
-    """1 degree = 60000 angles"""
+    """
+    1 degree = 60000 angles
+    """
     return int(round(value * 60000))
 
 
@@ -104,7 +108,9 @@ def angle_to_degrees(value):
 
 
 def short_color(color):
-    """format a color to its short size"""
+    """
+    format a color to its short size
+    """
     if len(color) > 6:
         return color[2:]
     return color
