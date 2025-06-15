@@ -6,10 +6,24 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def DefinedName():
-    from ..defined_name import DefinedName
+def defined_name():
+    from openpyxl.workbook.defined_name import DefinedName
 
     return DefinedName
+
+
+@pytest.fixture
+def defined_name_list():
+    from openpyxl.workbook.defined_name import DefinedNameList
+
+    return DefinedNameList
+
+
+@pytest.fixture
+def defined_name_dict():
+    from openpyxl.workbook.defined_name import DefinedNameDict
+
+    return DefinedNameDict
 
 
 @pytest.mark.parametrize(
@@ -27,23 +41,18 @@ def DefinedName():
     ],
 )
 def test_reserved(value, reserved):
-    from ..defined_name import RESERVED_REGEX
+    from openpyxl.workbook.defined_name import RESERVED_REGEX
 
     match = RESERVED_REGEX.match(value) is not None
     assert match == reserved
 
 
 class TestDefinition:
-
-    def test_write(self, DefinedName):
-        defn = DefinedName(
-            name="pi",
-        )
+    def test_write(self, defined_name):
+        defn = defined_name(name="pi")
         defn.value = 3.14
         xml = tostring(defn.to_tree())
-        expected = """
-        <definedName name="pi">3.14</definedName>
-        """
+        expected = '<definedName name="pi">3.14</definedName>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
@@ -51,32 +60,32 @@ class TestDefinition:
         "src, name, value, value_type",
         [
             (
-                """<definedName name="B1namedrange">Sheet1!$A$1</definedName>""",
+                '<definedName name="B1namedrange">Sheet1!$A$1</definedName>',
                 "B1namedrange",
                 "Sheet1!$A$1",
                 "RANGE",
             ),
             (
-                """<definedName name="references_external_workbook">[1]Sheet1!$A$1</definedName>""",
+                '<definedName name="references_external_workbook">[1]Sheet1!$A$1</definedName>',
                 "references_external_workbook",
                 "[1]Sheet1!$A$1",
                 "RANGE",
             ),
             (
-                """<definedName name="references_nr_in_ext_wb">[1]!B2range</definedName>""",
+                '<definedName name="references_nr_in_ext_wb">[1]!B2range</definedName>',
                 "references_nr_in_ext_wb",
                 "[1]!B2range",
                 "RANGE",
             ),
             (
-                """<definedName name="references_other_named_range">B1namedrange</definedName>""",
+                '<definedName name="references_other_named_range">B1namedrange</definedName>',
                 "references_other_named_range",
                 "B1namedrange",
                 "RANGE",
             ),
-            ("""<definedName name="pi">3.14</definedName>""", "pi", "3.14", "NUMBER"),
+            ('<definedName name="pi">3.14</definedName>', "pi", "3.14", "NUMBER"),
             (
-                """<definedName name="name">"charlie"</definedName>""",
+                '<definedName name="name">"charlie"</definedName>',
                 "name",
                 '"charlie"',
                 "TEXT",
@@ -89,9 +98,9 @@ class TestDefinition:
             ),
         ],
     )
-    def test_from_xml(self, DefinedName, src, name, value, value_type):
+    def test_from_xml(self, defined_name, src, name, value, value_type):
         node = fromstring(src)
-        defn = DefinedName.from_tree(node)
+        defn = defined_name.from_tree(node)
         assert defn.name == name
         assert defn.value == value
         assert defn.type == value_type
@@ -110,10 +119,9 @@ class TestDefinition:
             ("'Sheet 1'!$A$1", (("Sheet 1", "$A$1"),)),
         ],
     )
-    def test_destinations(self, DefinedName, value, destinations):
-        defn = DefinedName(name="some")
+    def test_destinations(self, defined_name, value, destinations):
+        defn = defined_name(name="some")
         defn.value = value
-
         assert defn.type == "RANGE"
         des = tuple(defn.destinations)
         assert des == destinations
@@ -125,8 +133,8 @@ class TestDefinition:
             ("Print_Titles", {"name": "_xlnm.Print_Titles"}),
         ],
     )
-    def test_dict(self, DefinedName, name, expected):
-        defn = DefinedName(name)
+    def test_dict(self, defined_name, name, expected):
+        defn = defined_name(name)
         assert dict(defn) == expected
 
     @pytest.mark.parametrize(
@@ -143,8 +151,8 @@ class TestDefinition:
             ("B1namedrange", "RANGE"),  # this should not be a range
         ],
     )
-    def test_check_type(self, DefinedName, value, expected):
-        defn = DefinedName(name="test")
+    def test_check_type(self, defined_name, value, expected):
+        defn = defined_name(name="test")
         defn.value = value
         assert defn.type == expected
 
@@ -157,61 +165,45 @@ class TestDefinition:
             ("[1]!B2range", True),
         ],
     )
-    def test_external_range(self, DefinedName, value, expected):
-        defn = DefinedName(name="test")
+    def test_external_range(self, defined_name, value, expected):
+        defn = defined_name(name="test")
         defn.value = value
         assert defn.is_external is expected
 
 
-@pytest.fixture
-def DefinedNameList():
-    from ..defined_name import DefinedNameList
-
-    return DefinedNameList
-
-
 class TestDefinitionList:
-
-    def test_read(self, DefinedNameList, datadir):
+    def test_read(self, defined_name_list, datadir):
         datadir.chdir()
         with open("defined_names.xml") as src:
             xml = src.read()
         node = fromstring(xml)
-        dl = DefinedNameList.from_tree(node)
+        dl = defined_name_list.from_tree(node)
         assert len(dl) == 6
 
-    def test_by_sheet(self, DefinedNameList, datadir):
+    def test_by_sheet(self, defined_name_list, datadir):
         datadir.chdir()
         with open("defined_names.xml", "rb") as src:
             xml = src.read()
         node = fromstring(xml)
-        dl = DefinedNameList.from_tree(node)
+        dl = defined_name_list.from_tree(node)
         names = dl.by_sheet()
         assert names.keys() == {"global", 0, 1}
 
 
-@pytest.fixture
-def DefinedNameDict():
-    from ..defined_name import DefinedNameDict
-
-    return DefinedNameDict
-
-
 class TestDefinedNameDict:
-
-    def test_check(self, DefinedNameDict):
-        names = DefinedNameDict()
+    def test_check(self, defined_name_dict):
+        names = defined_name_dict()
         with pytest.raises(TypeError):
             names["A name"] = "A Value"
 
-    def test_name_mismatch(self, DefinedNameDict, DefinedName):
-        defn = DefinedName(name="my name")
-        names = DefinedNameDict()
+    def test_name_mismatch(self, defined_name_dict, defined_name):
+        defn = defined_name(name="my name")
+        names = defined_name_dict()
         with pytest.raises(ValueError):
             names["my_name"] = defn
 
-    def test_add(self, DefinedNameDict, DefinedName):
-        defn = DefinedName(name="my name")
-        names = DefinedNameDict()
+    def test_add(self, defined_name_dict, defined_name):
+        defn = defined_name(name="my name")
+        names = defined_name_dict()
         names.add(defn)
         assert "my name" in names

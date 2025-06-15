@@ -6,81 +6,66 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def WebPublishObject():
-    from ..web import WebPublishObject
+def web_publish_object():
+    from openpyxl.workbook.web import WebPublishObject
 
     return WebPublishObject
 
 
-class TestWebPublishObject:
-
-    def test_ctor(self, WebPublishObject):
-        obj = WebPublishObject(id=1, divId="main", destinationFile="www")
-        xml = tostring(obj.to_tree())
-        expected = """
-        <webPublishingObject destinationFile="www" divId="main" id="1" />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, WebPublishObject):
-        src = """
-        <webPublishingObject destinationFile="www" divId="main" id="1" />
-        """
-        node = fromstring(src)
-        obj = WebPublishObject.from_tree(node)
-        assert obj == WebPublishObject(id=1, divId="main", destinationFile="www")
-
-
 @pytest.fixture
-def WebPublishObjectList():
-    from ..web import WebPublishObjectList
+def web_publish_object_list():
+    from openpyxl.workbook.web import WebPublishObjectList
 
     return WebPublishObjectList
 
 
-class TestWebPublishObjectList:
-
-    def test_ctor(self, WebPublishObjectList):
-        objs = WebPublishObjectList()
-        xml = tostring(objs.to_tree())
-        expected = """
-        <webPublishingObjects />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, WebPublishObjectList):
-        src = """
-        <webPublishingObjects />
-        """
-        node = fromstring(src)
-        objs = WebPublishObjectList.from_tree(node)
-        assert objs == WebPublishObjectList()
-
-
 @pytest.fixture
-def WebPublishing():
-    from ..web import WebPublishing
+def web_publishing():
+    from openpyxl.workbook.web import WebPublishing
 
     return WebPublishing
 
 
-class TestWebPublishing:
-
-    def test_ctor(self, WebPublishing):
-        web = WebPublishing()
-        xml = tostring(web.to_tree())
-        expected = """
-        <webPublishing targetScreenSize="800x600" />
-        """
+class TestWebPublishObject:
+    def test_ctor(self, web_publish_object):
+        obj = web_publish_object(id=1, divId="main", destinationFile="www")
+        xml = tostring(obj.to_tree())
+        expected = '<webPublishingObject destinationFile="www" divId="main" id="1"/>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, WebPublishing):
-        src = """
-        <webPublishing />
-        """
+    def test_from_xml(self, web_publish_object):
+        src = '<webPublishingObject destinationFile="www" divId="main" id="1"/>'
         node = fromstring(src)
-        web = WebPublishing.from_tree(node)
-        assert web == WebPublishing()
+        obj = web_publish_object.from_tree(node)
+        assert obj == web_publish_object(id=1, divId="main", destinationFile="www")
+
+
+class TestWebPublishObjectList:
+    def test_ctor(self, web_publish_object_list):
+        objs = web_publish_object_list()
+        xml = tostring(objs.to_tree())
+        expected = "<webPublishingObjects/>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, web_publish_object_list):
+        src = "<webPublishingObjects/>"
+        node = fromstring(src)
+        objs = web_publish_object_list.from_tree(node)
+        assert objs == web_publish_object_list()
+
+
+class TestWebPublishing:
+    def test_ctor(self, web_publishing):
+        web = web_publishing()
+        xml = tostring(web.to_tree())
+        expected = '<webPublishing targetScreenSize="800x600"/>'
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, web_publishing):
+        src = "<webPublishing/>"
+        node = fromstring(src)
+        web = web_publishing.from_tree(node)
+        assert web == web_publishing()

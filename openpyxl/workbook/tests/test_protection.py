@@ -6,76 +6,69 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def WorkbookProtection():
-    from ..protection import WorkbookProtection
+def workbook_protection():
+    from openpyxl.workbook.protection import WorkbookProtection
 
     return WorkbookProtection
 
 
-class TestWorkbookProtection:
+@pytest.fixture
+def file_sharing():
+    from openpyxl.workbook.protection import FileSharing
 
-    def test_ctor(self, WorkbookProtection):
-        propt = WorkbookProtection()
+    return FileSharing
+
+
+class TestWorkbookProtection:
+    def test_ctor(self, workbook_protection):
+        propt = workbook_protection()
         xml = tostring(propt.to_tree())
-        expected = """
-        <workbookPr />
-        """
+        expected = "<workbookPr/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_ctor_with_passwords(self, WorkbookProtection):
-        prot = WorkbookProtection(workbookPassword="secret", revisionsPassword="secret")
+    def test_ctor_with_passwords(self, workbook_protection):
+        prot = workbook_protection(
+            workbookPassword="secret", revisionsPassword="secret"
+        )
         assert prot.workbookPassword == "DAA7"
         assert prot.revisionsPassword == "DAA7"
 
-    def test_from_xml(self, WorkbookProtection):
+    def test_from_xml(self, workbook_protection):
         src = """
         <workbookProtection
-          workbookAlgorithmName="SHA-512"
-          workbookHashValue="wDZaZrfM8uKpKghbfws7rY7pmVoOwHjy5qg5d2ABHdSMtH1y0IIkgwJT5Hl2lacSw1sNusImGBUQs/sHcql3hw=="
-          workbookSaltValue="ah1OevWahpb3tQiJO3qrnQ=="
-          workbookSpinCount="100000"
-          lockStructure="1"
-          workbookPassword="1234"
-          revisionsPassword="ABCD"
-        />
+                workbookAlgorithmName="SHA-512"
+                workbookHashValue="wDZaZrfM8uKpKghbfws7rY7pmVoOwHjy5qg5d2ABHdSMtH1y0IIkgwJT5Hl2lacSw1sNusImGBUQs/sHcql3hw=="
+                workbookSaltValue="ah1OevWahpb3tQiJO3qrnQ=="
+                workbookSpinCount="100000"
+                lockStructure="1"
+                workbookPassword="1234"
+                revisionsPassword="ABCD"/>
         """
         node = fromstring(src)
-        prot = WorkbookProtection.from_tree(node)
-        expectedProt = WorkbookProtection(
+        prot = workbook_protection.from_tree(node)
+        expected = workbook_protection(
             workbookAlgorithmName="SHA-512",
             workbookHashValue="wDZaZrfM8uKpKghbfws7rY7pmVoOwHjy5qg5d2ABHdSMtH1y0IIkgwJT5Hl2lacSw1sNusImGBUQs/sHcql3hw==",
             workbookSaltValue="ah1OevWahpb3tQiJO3qrnQ==",
             workbookSpinCount=100000,
             lockStructure="1",
         )
-        expectedProt.set_workbook_password("1234", already_hashed=True)
-        expectedProt.set_revisions_password("ABCD", already_hashed=True)
-        assert prot == expectedProt
-
-
-@pytest.fixture
-def FileSharing():
-    from ..protection import FileSharing
-
-    return FileSharing
+        expected.set_workbook_password("1234", already_hashed=True)
+        expected.set_revisions_password("ABCD", already_hashed=True)
+        assert prot == expected
 
 
 class TestFileSharing:
-
-    def test_ctor(self, FileSharing):
-        share = FileSharing(readOnlyRecommended=True)
+    def test_ctor(self, file_sharing):
+        share = file_sharing(readOnlyRecommended=True)
         xml = tostring(share.to_tree())
-        expected = """
-        <fileSharing readOnlyRecommended="1"/>
-        """
+        expected = '<fileSharing readOnlyRecommended="1"/>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, FileSharing):
-        src = """
-        <fileSharing userName="Alice" />
-        """
+    def test_from_xml(self, file_sharing):
+        src = '<fileSharing userName="Alice"/>'
         node = fromstring(src)
-        share = FileSharing.from_tree(node)
-        assert share == FileSharing(userName="Alice")
+        share = file_sharing.from_tree(node)
+        assert share == file_sharing(userName="Alice")

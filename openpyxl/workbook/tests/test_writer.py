@@ -1,14 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
 from openpyxl.tests.helper import compare_xml
-from openpyxl.utils import quote_sheetname
+from openpyxl.utils.cell import quote_sheetname
 from openpyxl.workbook.defined_name import DefinedName
-
-from ..workbook import Workbook
+from openpyxl.workbook.workbook import Workbook
 
 
 @pytest.fixture
-def Unicode_Workbook():
+def unicode_workbook():
     wb = Workbook()
     ws = wb.active
     ws.title = "D\xfcsseldorf Sheet"
@@ -16,224 +15,315 @@ def Unicode_Workbook():
 
 
 @pytest.fixture
-def WorkbookWriter():
-    from .._writer import WorkbookWriter
+def workbook_writer():
+    from openpyxl.workbook._writer import WorkbookWriter
 
     return WorkbookWriter
 
 
 class TestWorkbookWriter:
-
-    def test_hidden_worksheet(self, WorkbookWriter):
+    def test_hidden_worksheet(self, workbook_writer):
         wb = Workbook()
         ws = wb.active
         ws.sheet_state = ws.SHEETSTATE_HIDDEN
         wb.create_sheet()
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
         expected = """
-        <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-        <workbookPr/>
-        <workbookProtection/>
-        <bookViews>
-          <workbookView activeTab="1" autoFilterDateGrouping="1" firstSheet="0" minimized="0" showHorizontalScroll="1" showSheetTabs="1" showVerticalScroll="1" tabRatio="600" visibility="visible"/>
-        </bookViews>
-        <sheets>
-          <sheet name="Sheet" sheetId="1" state="hidden" r:id="rId1"/>
-          <sheet name="Sheet1" sheetId="2" state="visible" r:id="rId2"/>
-        </sheets>
-          <definedNames/>
-          <calcPr calcId="124519" fullCalcOnLoad="1"/>
+        <workbook
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+            <workbookPr/>
+            <workbookProtection/>
+            <bookViews>
+                <workbookView
+                        activeTab="1"
+                        autoFilterDateGrouping="1"
+                        firstSheet="0"
+                        minimized="0"
+                        showHorizontalScroll="1"
+                        showSheetTabs="1"
+                        showVerticalScroll="1"
+                        tabRatio="600"
+                        visibility="visible"/>
+            </bookViews>
+            <sheets>
+                <sheet name="Sheet" sheetId="1" state="hidden" r:id="rId1"/>
+                <sheet name="Sheet1" sheetId="2" state="visible" r:id="rId2"/>
+            </sheets>
+            <definedNames/>
+            <calcPr calcId="124519" fullCalcOnLoad="1"/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_workbook(self, datadir, WorkbookWriter):
+    def test_workbook(self, datadir, workbook_writer):
         datadir.chdir()
         wb = Workbook()
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
         assert len(writer.rels) == 1
         with open("workbook.xml") as expected:
             diff = compare_xml(xml, expected.read())
             assert diff is None, diff
 
-    def test_workbook_code_name(self, WorkbookWriter):
+    def test_workbook_code_name(self, workbook_writer):
         wb = Workbook()
         wb.code_name = "MyWB"
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
         expected = """
-        <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-        <workbookPr codeName="MyWB"/>
-        <workbookProtection/>
-        <bookViews>
-          <workbookView activeTab="0" autoFilterDateGrouping="1" firstSheet="0" minimized="0" showHorizontalScroll="1" showSheetTabs="1" showVerticalScroll="1" tabRatio="600" visibility="visible"/>
-        </bookViews>
-        <sheets>
-          <sheet name="Sheet" sheetId="1" state="visible" r:id="rId1"/>
-        </sheets>
-        <definedNames/>
-        <calcPr calcId="124519" fullCalcOnLoad="1"/>
+        <workbook
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+            <workbookPr codeName="MyWB"/>
+            <workbookProtection/>
+            <bookViews>
+                <workbookView
+                        activeTab="0"
+                        autoFilterDateGrouping="1"
+                        firstSheet="0"
+                        minimized="0"
+                        showHorizontalScroll="1"
+                        showSheetTabs="1"
+                        showVerticalScroll="1"
+                        tabRatio="600"
+                        visibility="visible"/>
+            </bookViews>
+            <sheets>
+                <sheet name="Sheet" sheetId="1" state="visible" r:id="rId1"/>
+            </sheets>
+            <definedNames/>
+            <calcPr calcId="124519" fullCalcOnLoad="1"/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_print_area(self, Unicode_Workbook, WorkbookWriter):
-        wb = Unicode_Workbook
+    def test_print_area(self, unicode_workbook, workbook_writer):
+        wb = unicode_workbook
         ws = wb.active
         ws.print_area = "A1:D4"
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
-
         expected = """
-        <workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-        xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <workbookPr/>
-        <workbookProtection/>
-        <bookViews>
-          <workbookView activeTab="0" autoFilterDateGrouping="1" firstSheet="0" minimized="0" showHorizontalScroll="1" showSheetTabs="1" showVerticalScroll="1" tabRatio="600" visibility="visible"/>
-        </bookViews>
-        <sheets>
-          <sheet name="D&#xFC;sseldorf Sheet" sheetId="1" state="visible" r:id="rId1"/>
-        </sheets>
-        <definedNames>
-          <definedName localSheetId="0" name="_xlnm.Print_Area">'D&#xFC;sseldorf Sheet'!$A$1:$D$4</definedName>
-        </definedNames>
-        <calcPr calcId="124519" fullCalcOnLoad="1"/>
+        <workbook
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <workbookPr/>
+            <workbookProtection/>
+            <bookViews>
+                <workbookView
+                        activeTab="0"
+                        autoFilterDateGrouping="1"
+                        firstSheet="0"
+                        minimized="0"
+                        showHorizontalScroll="1"
+                        showSheetTabs="1"
+                        showVerticalScroll="1"
+                        tabRatio="600"
+                        visibility="visible"/>
+            </bookViews>
+            <sheets>
+                <sheet name="D&#xFC;sseldorf Sheet"
+                       sheetId="1"
+                       state="visible"
+                       r:id="rId1"/>
+            </sheets>
+            <definedNames>
+                <definedName
+                        localSheetId="0"
+                        name="_xlnm.Print_Area">
+                    'D&#xFC;sseldorf Sheet'!$A$1:$D$4
+                </definedName>
+            </definedNames>
+            <calcPr calcId="124519" fullCalcOnLoad="1"/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_print_titles(self, Unicode_Workbook, WorkbookWriter):
-        wb = Unicode_Workbook
+    def test_print_titles(self, unicode_workbook, workbook_writer):
+        wb = unicode_workbook
         ws = wb.active
         ws.print_title_rows = "1:5"
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
-
         expected = """
-        <workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-        xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <workbookPr/>
-        <workbookProtection/>
-        <bookViews>
-          <workbookView activeTab="0" autoFilterDateGrouping="1" firstSheet="0" minimized="0" showHorizontalScroll="1" showSheetTabs="1" showVerticalScroll="1" tabRatio="600" visibility="visible"/>
-        </bookViews>
-        <sheets>
-          <sheet name="D&#xFC;sseldorf Sheet" sheetId="1" state="visible" r:id="rId1"/>
-        </sheets>
-        <definedNames>
-          <definedName localSheetId="0" name="_xlnm.Print_Titles">'D&#xFC;sseldorf Sheet'!$1:$5</definedName>
-        </definedNames>
-        <calcPr calcId="124519" fullCalcOnLoad="1"/>
+        <workbook
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <workbookPr/>
+            <workbookProtection/>
+            <bookViews>
+                <workbookView
+                        activeTab="0"
+                        autoFilterDateGrouping="1"
+                        firstSheet="0"
+                        minimized="0"
+                        showHorizontalScroll="1"
+                        showSheetTabs="1"
+                        showVerticalScroll="1"
+                        tabRatio="600"
+                        visibility="visible"/>
+            </bookViews>
+            <sheets>
+                <sheet name="D&#xFC;sseldorf Sheet"
+                       sheetId="1"
+                       state="visible"
+                       r:id="rId1"/>
+            </sheets>
+            <definedNames>
+                <definedName
+                        localSheetId="0"
+                        name="_xlnm.Print_Titles">
+                    'D&#xFC;sseldorf Sheet'!$1:$5
+                </definedName>
+            </definedNames>
+            <calcPr calcId="124519" fullCalcOnLoad="1"/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_autofilter(self, Unicode_Workbook, WorkbookWriter):
-        wb = Unicode_Workbook
+    def test_autofilter(self, unicode_workbook, workbook_writer):
+        wb = unicode_workbook
         ws = wb.active
         ws.auto_filter.ref = "A1:A10"
         ws.auto_filter.add_filter_column(0, ["Kiwi", "Apple", "Mango"])
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
-
         expected = """
-        <workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-        xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <workbookPr/>
-        <workbookProtection/>
-        <bookViews>
-          <workbookView activeTab="0" autoFilterDateGrouping="1" firstSheet="0" minimized="0" showHorizontalScroll="1" showSheetTabs="1" showVerticalScroll="1" tabRatio="600" visibility="visible"/>
-        </bookViews>
-        <sheets>
-          <sheet name="D&#xFC;sseldorf Sheet" sheetId="1" state="visible" r:id="rId1"/>
-        </sheets>
-        <definedNames>
-        <definedName localSheetId="0" hidden="1" name="_xlnm._FilterDatabase">'D&#xFC;sseldorf Sheet'!$A$1:$A$10</definedName>
-        </definedNames>
-        <calcPr calcId="124519" fullCalcOnLoad="1"/>
+        <workbook
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <workbookPr/>
+            <workbookProtection/>
+            <bookViews>
+                <workbookView
+                        activeTab="0"
+                        autoFilterDateGrouping="1"
+                        firstSheet="0"
+                        minimized="0"
+                        showHorizontalScroll="1"
+                        showSheetTabs="1"
+                        showVerticalScroll="1"
+                        tabRatio="600"
+                        visibility="visible"/>
+            </bookViews>
+            <sheets>
+                <sheet name="D&#xFC;sseldorf Sheet"
+                       sheetId="1"
+                       state="visible"
+                       r:id="rId1"/>
+            </sheets>
+            <definedNames>
+                <definedName
+                        localSheetId="0"
+                        hidden="1"
+                        name="_xlnm._FilterDatabase">
+                    'D&#xFC;sseldorf Sheet'!$A$1:$A$10
+                </definedName>
+            </definedNames>
+            <calcPr calcId="124519" fullCalcOnLoad="1"/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_defined_name_global(self, Unicode_Workbook, WorkbookWriter):
-        wb = Unicode_Workbook
+    def test_defined_name_global(self, unicode_workbook, workbook_writer):
+        wb = unicode_workbook
         name = DefinedName(name="MyConstant", attr_text="3.14")
         wb.defined_names.add(name)
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
         expected = """
-        <workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-        xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <workbookPr/>
-        <workbookProtection/>
-        <bookViews>
-          <workbookView activeTab="0" autoFilterDateGrouping="1" firstSheet="0" minimized="0" showHorizontalScroll="1" showSheetTabs="1" showVerticalScroll="1" tabRatio="600" visibility="visible"/>
-        </bookViews>
-        <sheets>
-          <sheet name="D&#xFC;sseldorf Sheet" sheetId="1" state="visible" r:id="rId1"/>
-        </sheets>
-        <definedNames>
-        <definedName name="MyConstant">3.14</definedName>
-        </definedNames>
-        <calcPr calcId="124519" fullCalcOnLoad="1"/>
+        <workbook
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <workbookPr/>
+            <workbookProtection/>
+            <bookViews>
+                <workbookView
+                        activeTab="0"
+                        autoFilterDateGrouping="1"
+                        firstSheet="0"
+                        minimized="0"
+                        showHorizontalScroll="1"
+                        showSheetTabs="1"
+                        showVerticalScroll="1"
+                        tabRatio="600"
+                        visibility="visible"/>
+            </bookViews>
+            <sheets>
+                <sheet name="D&#xFC;sseldorf Sheet"
+                       sheetId="1"
+                       state="visible"
+                       r:id="rId1"/>
+            </sheets>
+            <definedNames>
+                <definedName name="MyConstant">3.14</definedName>
+            </definedNames>
+            <calcPr calcId="124519" fullCalcOnLoad="1"/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_defined_name_locall(self, Unicode_Workbook, WorkbookWriter):
-        wb = Unicode_Workbook
+    def test_defined_name_locall(self, unicode_workbook, workbook_writer):
+        wb = unicode_workbook
         ws = wb.active
         ref = f"{quote_sheetname(ws.title)}!$A$1:$A$10"
         name = DefinedName(name="MyReference", attr_text=ref)
         ws.defined_names.add(name)
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
         expected = """
-        <workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-        xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <workbookPr/>
-        <workbookProtection/>
-        <bookViews>
-          <workbookView activeTab="0" autoFilterDateGrouping="1" firstSheet="0" minimized="0" showHorizontalScroll="1" showSheetTabs="1" showVerticalScroll="1" tabRatio="600" visibility="visible"/>
-        </bookViews>
-        <sheets>
-          <sheet name="D&#xFC;sseldorf Sheet" sheetId="1" state="visible" r:id="rId1"/>
-        </sheets>
-        <definedNames>
-        <definedName localSheetId="0" name="MyReference">'D&#xFC;sseldorf Sheet'!$A$1:$A$10</definedName>
-        </definedNames>
-        <calcPr calcId="124519" fullCalcOnLoad="1"/>
+        <workbook
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            <workbookPr/>
+            <workbookProtection/>
+            <bookViews>
+                <workbookView
+                        activeTab="0"
+                        autoFilterDateGrouping="1"
+                        firstSheet="0"
+                        minimized="0"
+                        showHorizontalScroll="1"
+                        showSheetTabs="1"
+                        showVerticalScroll="1"
+                        tabRatio="600"
+                        visibility="visible"/>
+            </bookViews>
+            <sheets>
+                <sheet name="D&#xFC;sseldorf Sheet"
+                       sheetId="1"
+                       state="visible"
+                       r:id="rId1"/>
+            </sheets>
+            <definedNames>
+                <definedName
+                        localSheetId="0"
+                        name="MyReference">
+                    'D&#xFC;sseldorf Sheet'!$A$1:$A$10
+                </definedName>
+            </definedNames>
+            <calcPr calcId="124519" fullCalcOnLoad="1"/>
         </workbook>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_workbook_protection(self, datadir, WorkbookWriter):
-        from ...workbook.protection import WorkbookProtection
+    def test_workbook_protection(self, datadir, workbook_writer):
+        from openpyxl.workbook.protection import WorkbookProtection
 
         datadir.chdir()
         wb = Workbook()
         wb.security = WorkbookProtection(lockStructure=True)
         wb.security.set_workbook_password("ABCD", already_hashed=True)
-
-        writer = WorkbookWriter(wb)
+        writer = workbook_writer(wb)
         xml = writer.write()
         with open("workbook_protection.xml") as expected:
             diff = compare_xml(xml, expected.read())
@@ -241,11 +331,11 @@ class TestWorkbookWriter:
 
 
 def test_write_hidden_single_worksheet():
+    from openpyxl.workbook._writer import get_active_sheet
+
     wb = Workbook()
     ws = wb.active
     ws.sheet_state = "hidden"
-    from .._writer import get_active_sheet
-
     with pytest.raises(IndexError):
         get_active_sheet(wb)
 
@@ -253,21 +343,16 @@ def test_write_hidden_single_worksheet():
 @pytest.mark.parametrize(
     "vba, filename",
     [
-        (
-            None,
-            "workbook.xml.rels",
-        ),
+        (None, "workbook.xml.rels"),
         (True, "workbook_vba.xml.rels"),
     ],
 )
-def test_write_workbook_rels(datadir, vba, filename, WorkbookWriter):
+def test_write_workbook_rels(datadir, vba, filename, workbook_writer):
     datadir.chdir()
     wb = Workbook()
     wb._vba = vba
-
-    writer = WorkbookWriter(wb)
+    writer = workbook_writer(wb)
     xml = writer.write_rels()
-
     with open(filename) as expected:
         diff = compare_xml(xml, expected.read())
         assert diff is None, diff
@@ -276,23 +361,21 @@ def test_write_workbook_rels(datadir, vba, filename, WorkbookWriter):
 @pytest.mark.parametrize(
     "volatile_deps, filename",
     [
-        (
-            None,
-            "workbook.xml.rels",
-        ),
+        (None, "workbook.xml.rels"),
         (True, "workbook_volatile_deps.xml.rels"),
     ],
 )
 def test_write_workbook_rels_volatile_deps(
-    datadir, volatile_deps, filename, WorkbookWriter
+    datadir,
+    volatile_deps,
+    filename,
+    workbook_writer,
 ):
     datadir.chdir()
     wb = Workbook()
     wb._volatile_deps = volatile_deps
-
-    writer = WorkbookWriter(wb)
+    writer = workbook_writer(wb)
     xml = writer.write_rels()
-
     with open(filename) as expected:
         diff = compare_xml(xml, expected.read())
         assert diff is None, diff
@@ -301,31 +384,30 @@ def test_write_workbook_rels_volatile_deps(
 @pytest.mark.parametrize(
     "connections, filename",
     [
-        (
-            None,
-            "workbook.xml.rels",
-        ),
+        (None, "workbook.xml.rels"),
         (True, "workbook_connections.xml.rels"),
     ],
 )
 def test_write_workbook_rels_connections(
-    datadir, connections, filename, WorkbookWriter
+    datadir,
+    connections,
+    filename,
+    workbook_writer,
 ):
     datadir.chdir()
     wb = Workbook()
     wb._connections = connections
-
-    writer = WorkbookWriter(wb)
+    writer = workbook_writer(wb)
     xml = writer.write_rels()
-
     with open(filename) as expected:
         diff = compare_xml(xml, expected.read())
         assert diff is None, diff
 
 
-def test_write_workbook_with_workbook_pivots(datadir, WorkbookWriter):
-
-    from openpyxl.pivot.cache import CacheDefinition, CacheSource, CacheFieldList
+def test_write_workbook_with_workbook_pivots(datadir, workbook_writer):
+    from openpyxl.pivot.cache import CacheDefinition
+    from openpyxl.pivot.cache import CacheFieldList
+    from openpyxl.pivot.cache import CacheSource
 
     datadir.chdir()
     wb = Workbook()
@@ -333,19 +415,19 @@ def test_write_workbook_with_workbook_pivots(datadir, WorkbookWriter):
         cacheSource=CacheSource(type="worksheet"),
         cacheFields=CacheFieldList(),
     )
-    writer = WorkbookWriter(wb)
+    writer = workbook_writer(wb)
     writer.pivot_caches.add(cache)
     writer.write_pivot_caches()
     xml = writer.write_rels()
-
     with open("workbook_pivot.xml.rels") as expected:
         diff = compare_xml(xml, expected.read())
         assert diff is None, diff
 
 
-def test_write_workbook_with_connection_pivots(datadir, WorkbookWriter):
-
-    from openpyxl.pivot.cache import CacheDefinition, CacheSource, CacheFieldList
+def test_write_workbook_with_connection_pivots(datadir, workbook_writer):
+    from openpyxl.pivot.cache import CacheDefinition
+    from openpyxl.pivot.cache import CacheFieldList
+    from openpyxl.pivot.cache import CacheSource
 
     datadir.chdir()
     wb = Workbook()
@@ -353,26 +435,34 @@ def test_write_workbook_with_connection_pivots(datadir, WorkbookWriter):
         cacheSource=CacheSource(type="external"),
         cacheFields=CacheFieldList(),
     )
-    writer = WorkbookWriter(wb)
+    writer = workbook_writer(wb)
     writer.pivot_caches.add(cache)
     writer.write_pivot_caches()
     xml = writer.write_rels()
-
     with open("workbook_connections_and_cache.xml.rels") as expected:
         diff = compare_xml(xml, expected.read())
         assert diff is None, diff
 
 
-def test_write_root_rels(WorkbookWriter):
+def test_write_root_rels(workbook_writer):
     wb = Workbook()
-    writer = WorkbookWriter(wb)
-
+    writer = workbook_writer(wb)
     xml = writer.write_root_rels()
     expected = """
-    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-      <Relationship Id="rId1" Target="xl/workbook.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"/>
-      <Relationship Id="rId2" Target="docProps/core.xml" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"/>
-      <Relationship Id="rId3" Target="docProps/app.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties"/>
+    <Relationships
+            xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        <Relationship
+                Id="rId1"
+                Target="xl/workbook.xml"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"/>
+        <Relationship
+                Id="rId2"
+                Target="docProps/core.xml"
+                Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"/>
+        <Relationship
+                Id="rId3"
+                Target="docProps/app.xml"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties"/>
     </Relationships>
     """
     diff = compare_xml(xml, expected)

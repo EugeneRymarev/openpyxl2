@@ -2,19 +2,18 @@
 import pytest
 
 
-class DummyWorkbook:
+@pytest.fixture
+def workbook_child():
+    from openpyxl.workbook.child import _WorkbookChild
 
+    return _WorkbookChild
+
+
+class DummyWorkbook:
     encoding = "utf-8"
 
     def __init__(self):
         self.sheetnames = ["Sheet 1"]
-
-
-@pytest.fixture
-def WorkbookChild():
-    from ..child import _WorkbookChild
-
-    return _WorkbookChild
 
 
 s = r"[\\*?:/\[\]]"
@@ -22,18 +21,10 @@ s = r"[\\*?:/\[\]]"
 
 @pytest.mark.parametrize(
     "value",
-    [
-        "Title:",
-        "title?",
-        "title/",
-        "title[",
-        "title]",
-        r"title\\",
-        "title*",
-    ],
+    ["Title:", "title?", "title/", "title[", "title]", r"title\\", "title*"],
 )
 def test_invalid_chars(value):
-    from ..child import INVALID_TITLE_REGEX
+    from openpyxl.workbook.child import INVALID_TITLE_REGEX
 
     assert INVALID_TITLE_REGEX.search(value)
 
@@ -55,48 +46,46 @@ def test_invalid_chars(value):
     ],
 )
 def test_duplicate_title(names, value, result):
-    from ..child import avoid_duplicate_name
+    from openpyxl.workbook.child import avoid_duplicate_name
 
     title = avoid_duplicate_name(names, value)
     assert title == result
 
 
 class TestWorkbookChild:
-
-    def test_ctor(self, WorkbookChild):
+    def test_ctor(self, workbook_child):
         wb = DummyWorkbook()
-        child = WorkbookChild(wb)
+        child = workbook_child(wb)
         assert child.parent == wb
         assert child.encoding == "utf-8"
         assert child.title == "Sheet"
 
-    def test_repr(self, WorkbookChild):
+    def test_repr(self, workbook_child):
         wb = DummyWorkbook()
-        child = WorkbookChild(wb)
+        child = workbook_child(wb)
         assert repr(child) == '<_WorkbookChild "Sheet">'
 
-    def test_invalid_title(self, WorkbookChild):
+    def test_invalid_title(self, workbook_child):
         wb = DummyWorkbook()
-        child = WorkbookChild(wb)
+        child = workbook_child(wb)
         with pytest.raises(ValueError):
             child.title = "title?"
 
-    def test_reassign_title(self, WorkbookChild):
+    def test_reassign_title(self, workbook_child):
         wb = DummyWorkbook()
-        child = WorkbookChild(wb, "Sheet")
+        child = workbook_child(wb, "Sheet")
         assert child.title == "Sheet"
 
-    def test_title_too_long(self, WorkbookChild, recwarn):
-
-        WorkbookChild(DummyWorkbook(), "X" * 50)
+    def test_title_too_long(self, workbook_child, recwarn):
+        workbook_child(DummyWorkbook(), "X" * 50)
         w = recwarn.pop()
         assert w.category == UserWarning
 
-    def test_set_encoded_title(self, WorkbookChild):
+    def test_set_encoded_title(self, workbook_child):
         with pytest.raises(ValueError):
-            WorkbookChild(DummyWorkbook(), b"B\xc3\xbcro")
+            workbook_child(DummyWorkbook(), b"B\xc3\xbcro")
 
-    def test_empty_title(self, WorkbookChild):
-        child = WorkbookChild(DummyWorkbook())
+    def test_empty_title(self, workbook_child):
+        child = workbook_child(DummyWorkbook())
         with pytest.raises(ValueError):
             child.title = ""

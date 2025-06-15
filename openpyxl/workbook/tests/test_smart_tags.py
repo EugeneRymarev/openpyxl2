@@ -6,81 +6,66 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def SmartTag():
-    from ..smart_tags import SmartTag
+def smart_tag():
+    from openpyxl.workbook.smart_tags import SmartTag
 
     return SmartTag
 
 
-class TestSmartTag:
-
-    def test_ctor(self, SmartTag):
-        smart_tags = SmartTag()
-        xml = tostring(smart_tags.to_tree())
-        expected = """
-        <smartTagType />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, SmartTag):
-        src = """
-        <smartTagType />
-        """
-        node = fromstring(src)
-        smart_tags = SmartTag.from_tree(node)
-        assert smart_tags == SmartTag()
-
-
 @pytest.fixture
-def SmartTagList():
-    from ..smart_tags import SmartTagList
+def smart_tag_list():
+    from openpyxl.workbook.smart_tags import SmartTagList
 
     return SmartTagList
 
 
-class TestSmartTagList:
-
-    def test_ctor(self, SmartTagList):
-        smart_tags = SmartTagList()
-        xml = tostring(smart_tags.to_tree())
-        expected = """
-        <smartTagTypes />
-        """
-        diff = compare_xml(xml, expected)
-        assert diff is None, diff
-
-    def test_from_xml(self, SmartTagList):
-        src = """
-        <smartTagTypes />
-        """
-        node = fromstring(src)
-        smart_tags = SmartTagList.from_tree(node)
-        assert smart_tags == SmartTagList()
-
-
 @pytest.fixture
-def SmartTagProperties():
-    from ..smart_tags import SmartTagProperties
+def smart_tag_properties():
+    from openpyxl.workbook.smart_tags import SmartTagProperties
 
     return SmartTagProperties
 
 
-class TestSmartTagProperties:
-
-    def test_ctor(self, SmartTagProperties):
-        smart_tags = SmartTagProperties()
+class TestSmartTag:
+    def test_ctor(self, smart_tag):
+        smart_tags = smart_tag()
         xml = tostring(smart_tags.to_tree())
-        expected = """
-        <smartTagPr />
-        """
+        expected = "<smartTagType/>"
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, SmartTagProperties):
-        src = """
-        <smartTagPr />
-        """
+    def test_from_xml(self, smart_tag):
+        src = "<smartTagType/>"
         node = fromstring(src)
-        smart_tags = SmartTagProperties.from_tree(node)
-        assert smart_tags == SmartTagProperties()
+        smart_tags = smart_tag.from_tree(node)
+        assert smart_tags == smart_tag()
+
+
+class TestSmartTagList:
+    def test_ctor(self, smart_tag_list):
+        smart_tags = smart_tag_list()
+        xml = tostring(smart_tags.to_tree())
+        expected = "<smartTagTypes/>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, smart_tag_list):
+        src = "<smartTagTypes/>"
+        node = fromstring(src)
+        smart_tags = smart_tag_list.from_tree(node)
+        assert smart_tags == smart_tag_list()
+
+
+class TestSmartTagProperties:
+    def test_ctor(self, smart_tag_properties):
+        smart_tags = smart_tag_properties()
+        xml = tostring(smart_tags.to_tree())
+        expected = "<smartTagPr/>"
+        diff = compare_xml(xml, expected)
+        assert diff is None, diff
+
+    def test_from_xml(self, smart_tag_properties):
+        src = "<smartTagPr/>"
+        node = fromstring(src)
+        smart_tags = smart_tag_properties.from_tree(node)
+        assert smart_tags == smart_tag_properties()
