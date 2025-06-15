@@ -1,6 +1,19 @@
 import pytest
-
-from .. import units
+from openpyxl.utils.units import EMU_to_cm
+from openpyxl.utils.units import EMU_to_inch
+from openpyxl.utils.units import EMU_to_pixels
+from openpyxl.utils.units import angle_to_degrees
+from openpyxl.utils.units import cm_to_dxa
+from openpyxl.utils.units import cm_to_EMU
+from openpyxl.utils.units import degrees_to_angle
+from openpyxl.utils.units import dxa_to_cm
+from openpyxl.utils.units import dxa_to_inch
+from openpyxl.utils.units import inch_to_dxa
+from openpyxl.utils.units import inch_to_EMU
+from openpyxl.utils.units import pixels_to_EMU
+from openpyxl.utils.units import pixels_to_points
+from openpyxl.utils.units import points_to_pixels
+from openpyxl.utils.units import short_color
 
 
 @pytest.mark.parametrize(
@@ -14,23 +27,17 @@ from .. import units
     ],
 )
 def test_dxa_to_inch(value, expected):
-    FUT = units.dxa_to_inch
-    assert FUT(value) == expected
+    fut = dxa_to_inch
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, -14400),
-        (0, 0),
-        (1, 1440),
-        (2.37, 3412),
-        (9, 12960),
-    ],
+    [(-10, -14400), (0, 0), (1, 1440), (2.37, 3412), (9, 12960)],
 )
 def test_inch_to_dxa(value, expected):
-    FUT = units.inch_to_dxa
-    assert FUT(value) == expected
+    fut = inch_to_dxa
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
@@ -44,170 +51,104 @@ def test_inch_to_dxa(value, expected):
     ],
 )
 def test_dxa_to_cm(value, expected):
-    FUT = units.dxa_to_cm
-    assert FUT(value) == expected
+    fut = dxa_to_cm
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, -5669),
-        (0, 0),
-        (1, 566),
-        (10.0, 5669),
-        (1000, 566929),
-    ],
+    [(-10, -5669), (0, 0), (1, 566), (10.0, 5669), (1000, 566929)],
 )
 def test_cm_to_dxa(value, expected):
-    FUT = units.cm_to_dxa
-    assert FUT(value) == expected
+    fut = cm_to_dxa
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, -95250),
-        (0, 0),
-        (1, 9525),
-        (10.0, 95250),
-        (1000, 9525000),
-    ],
+    [(-10, -95250), (0, 0), (1, 9525), (10.0, 95250), (1000, 9525000)],
 )
-def test_pixels_to_EMU(value, expected):
-    FUT = units.pixels_to_EMU
-    assert FUT(value) == expected
+def test_pixels_to_emu(value, expected):
+    fut = pixels_to_EMU
+    assert fut(value) == expected
+
+
+@pytest.mark.parametrize("value, expected", [(0, 0), (1000, 0), (5000, 1), (9525, 1)])
+def test_emu_to_pixels(value, expected):
+    fut = EMU_to_pixels
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (0, 0),
-        (1000, 0),
-        (5000, 1),
-        (9525, 1),
-    ],
+    [(-100000, -0.2778), (0, 0), (200000, 0.5556), (360000, 1), (500000, 1.3889)],
 )
-def test_EMU_to_pixels(value, expected):
-    FUT = units.EMU_to_pixels
-    assert FUT(value) == expected
+def test_emu_to_cm(value, expected):
+    fut = EMU_to_cm
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-100000, -0.2778),
-        (0, 0),
-        (200000, 0.5556),
-        (360000, 1),
-        (500000, 1.3889),
-    ],
+    [(-10, -3600000), (0, 0), (1, 360000), (3.23, 1162800)],
 )
-def test_EMU_to_cm(value, expected):
-    FUT = units.EMU_to_cm
-    assert FUT(value) == expected
+def test_cm_to_emu(value, expected):
+    fut = cm_to_EMU
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, -3600000),
-        (0, 0),
-        (1, 360000),
-        (3.23, 1162800),
-    ],
+    [(-100000, -0.1094), (0, 0), (200000, 0.2187), (914400, 1), (500000, 0.5468)],
 )
-def test_cm_to_EMU(value, expected):
-    FUT = units.cm_to_EMU
-    assert FUT(value) == expected
+def test_emu_to_inch(value, expected):
+    fut = EMU_to_inch
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-100000, -0.1094),
-        (0, 0),
-        (200000, 0.2187),
-        (914400, 1),
-        (500000, 0.5468),
-    ],
+    [(-10, -9144000), (0, 0), (1, 914400), (3.23, 2953512)],
 )
-def test_EMU_to_inch(value, expected):
-    FUT = units.EMU_to_inch
-    assert FUT(value) == expected
+def test_inch_to_emu(value, expected):
+    fut = inch_to_EMU
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, -9144000),
-        (0, 0),
-        (1, 914400),
-        (3.23, 2953512),
-    ],
-)
-def test_inch_to_EMU(value, expected):
-    FUT = units.inch_to_EMU
-    assert FUT(value) == expected
-
-
-@pytest.mark.parametrize(
-    "value, expected",
-    [
-        (-10, -7.5),
-        (0, 0),
-        (1, 0.75),
-        (96, 72),
-        (144, 108),
-    ],
+    [(-10, -7.5), (0, 0), (1, 0.75), (96, 72), (144, 108)],
 )
 def test_pixels_to_points(value, expected):
-    FUT = units.pixels_to_points
-    assert FUT(value) == expected
+    fut = pixels_to_points
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, -13),
-        (0, 0),
-        (1, 2),
-        (10.0, 14),
-        (72, 96),
-    ],
+    [(-10, -13), (0, 0), (1, 2), (10.0, 14), (72, 96)],
 )
 def test_points_to_pixels(value, expected):
-    FUT = units.points_to_pixels
-    assert FUT(value) == expected
+    fut = points_to_pixels
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, -600000),
-        (0, 0),
-        (1, 60000),
-        (10.0, 600000),
-        (1000, 60000000),
-    ],
+    [(-10, -600000), (0, 0), (1, 60000), (10.0, 600000), (1000, 60000000)],
 )
 def test_degrees_to_angle(value, expected):
-    FUT = units.degrees_to_angle
-    assert FUT(value) == expected
+    fut = degrees_to_angle
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        (-10, 0),
-        (0, 0),
-        (10, 0),
-        (50000, 0.83),
-        (60000, 1),
-    ],
+    [(-10, 0), (0, 0), (10, 0), (50000, 0.83), (60000, 1)],
 )
 def test_angle_to_degrees(value, expected):
-    FUT = units.angle_to_degrees
-    assert FUT(value) == expected
+    fut = angle_to_degrees
+    assert fut(value) == expected
 
 
 @pytest.mark.parametrize(
@@ -222,5 +163,5 @@ def test_angle_to_degrees(value, expected):
     ],
 )
 def test_short_color(value, expected):
-    FUT = units.short_color
-    assert FUT(value) == expected
+    fut = short_color
+    assert fut(value) == expected

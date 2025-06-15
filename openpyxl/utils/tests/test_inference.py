@@ -1,11 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
-from datetime import time
+import datetime
 
 import pytest
-
-from ..inference import cast_numeric
-from ..inference import cast_percentage
-from ..inference import cast_time
+from openpyxl.utils.inference import cast_numeric
+from openpyxl.utils.inference import cast_percentage
+from openpyxl.utils.inference import cast_time
 
 
 @pytest.mark.parametrize(
@@ -27,11 +26,7 @@ def test_cast_numeric(value, expected):
 
 @pytest.mark.parametrize(
     "value, expected",
-    [
-        ("-3.1%", -0.031),
-        ("3.1%", 0.031),
-        ("4.5 %", 0.045),
-    ],
+    [("-3.1%", -0.031), ("3.1%", 0.031), ("4.5 %", 0.045)],
 )
 def test_cast_percent(value, expected):
     assert cast_percentage(value) == expected
@@ -40,26 +35,26 @@ def test_cast_percent(value, expected):
 @pytest.mark.parametrize(
     "value, expected",
     [
-        ("03:40:16", time(3, 40, 16)),
-        ("03:40", time(3, 40)),
-        ("30:33.865633336", time(0, 30, 33, 865633)),
+        ("03:40:16", datetime.time(3, 40, 16)),
+        ("03:40", datetime.time(3, 40)),
+        ("30:33.865633336", datetime.time(0, 30, 33, 865633)),
     ],
 )
 def test_infer_datetime(value, expected):
     assert cast_time(value) == expected
 
 
-values = (
-    ("30:33.865633336", [("", "", "", "30", "33", "865633")]),
-    ("03:40:16", [("03", "40", "16", "", "", "")]),
-    ("03:40", [("03", "40", "", "", "", "")]),
-    ("55:72:12", []),
+@pytest.mark.parametrize(
+    "value, expected",
+    (
+        ("30:33.865633336", [("", "", "", "30", "33", "865633")]),
+        ("03:40:16", [("03", "40", "16", "", "", "")]),
+        ("03:40", [("03", "40", "", "", "", "")]),
+        ("55:72:12", []),
+    ),
 )
-
-
-@pytest.mark.parametrize("value, expected", values)
 def test_time_regex(value, expected):
-    from ..inference import TIME_REGEX
+    from openpyxl.utils.inference import TIME_REGEX
 
     m = TIME_REGEX.findall(value)
     assert m == expected

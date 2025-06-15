@@ -1,5 +1,5 @@
 # Copyright (c) 2010-2025 openpyxl
-from ..protection import hash_password
+from openpyxl.utils.protection import hash_password
 
 
 def test_password():

@@ -1,19 +1,20 @@
 # Copyright (c) 2010-2025 openpyxl
+import itertools
+
+import numpy
+import pandas
 import pytest
 
 
 @pytest.fixture
 def sample_data():
-    import numpy
-    from pandas import DataFrame, date_range
-
     data = {
         "A": [0.0, 1.0, 2.0, 3.0, 4.0],
         "B": [0.0, 1.0, 0.0, 1.0, 0.0],
         "C": ["foo1", "foo2", "foo3", "foo4", "foo5"],
-        "D": date_range("2009-01-01", periods=5),
+        "D": pandas.date_range("2009-01-01", periods=5),
     }
-    df = DataFrame(data)
+    df = pandas.DataFrame(data)
     df.index.name = "openpyxl test"
     df.iloc[0] = numpy.nan
     return df
@@ -21,16 +22,15 @@ def sample_data():
 
 @pytest.mark.pandas_required
 def test_dataframe(sample_data):
-    from pandas import Timestamp
-    from ..dataframe import dataframe_to_rows
+    from openpyxl.utils.dataframe import dataframe_to_rows
 
     rows = tuple(dataframe_to_rows(sample_data, index=False, header=False))
-    assert rows[2] == [2.0, 0.0, "foo3", Timestamp("2009-01-03 00:00:00")]
+    assert rows[2] == [2.0, 0.0, "foo3", pandas.Timestamp("2009-01-03 00:00:00")]
 
 
 @pytest.mark.pandas_required
 def test_dataframe_header(sample_data):
-    from ..dataframe import dataframe_to_rows
+    from openpyxl.utils.dataframe import dataframe_to_rows
 
     rows = tuple(dataframe_to_rows(sample_data, index=False))
     assert rows[0] == ["A", "B", "C", "D"]
@@ -38,7 +38,7 @@ def test_dataframe_header(sample_data):
 
 @pytest.mark.pandas_required
 def test_dataframe_index(sample_data):
-    from ..dataframe import dataframe_to_rows
+    from openpyxl.utils.dataframe import dataframe_to_rows
 
     rows = tuple(dataframe_to_rows(sample_data, header=False))
     assert rows[0] == ["openpyxl test"]
@@ -46,21 +46,18 @@ def test_dataframe_index(sample_data):
 
 @pytest.mark.pandas_required
 def test_dataframe_multiindex():
-    from ..dataframe import dataframe_to_rows
-    from pandas import MultiIndex, Series, DataFrame
-    import numpy
+    from openpyxl.utils.dataframe import dataframe_to_rows
 
     arrays = [
         ["bar", "bar", "bar", "baz", "foo", "foo", "qux", "qux"],
         ["one", "two", "three", "one", "one", "two", "one", "two"],
     ]
     tuples = list(zip(*arrays))
-    index = MultiIndex.from_tuples(tuples, names=["first", "second"])
-    df = Series(0, index=index)
-    df = DataFrame(df)
-
+    index = pandas.MultiIndex.from_tuples(tuples, names=["first", "second"])
+    df = pandas.Series(0, index=index)
+    df = pandas.DataFrame(df)
     rows = list(dataframe_to_rows(df, header=False))
-    assert rows == [
+    expected = [
         ["first", "second"],
         ["bar", "one", 0],
         [None, "two", 0],
@@ -71,13 +68,12 @@ def test_dataframe_multiindex():
         ["qux", "one", 0],
         [None, "two", 0],
     ]
+    assert rows == expected
 
 
 @pytest.mark.pandas_required
 def test_expand_index_vertically():
-    from ..dataframe import expand_index
-
-    from pandas import MultiIndex
+    from openpyxl.utils.dataframe import expand_index
 
     arrays = [
         [2019, 2019, 2019, 2019, 2020, 2020, 2020, 2021, 2021, 2021, 2021],
@@ -95,25 +91,11 @@ def test_expand_index_vertically():
             "Minor",
             "Minor",
         ],
-        [
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-        ],
+        ["a", "b", "a", "b", "a", "b", "a", "b", "a", "b", "a", "b"],
     ]
 
     tuples = list(zip(*arrays))
-    index = MultiIndex.from_tuples(tuples, names=["first", "second", "third"])
-
+    index = pandas.MultiIndex.from_tuples(tuples, names=["first", "second", "third"])
     rows = list(expand_index(index))
     assert rows[0] == [2019, "Major", "a"]
     assert rows[1] == [None, None, "b"]
@@ -121,24 +103,13 @@ def test_expand_index_vertically():
 
 @pytest.mark.pandas_required
 def test_expand_levels_horizontally():
-    from ..dataframe import expand_index
-    from pandas import MultiIndex
+    from openpyxl.utils.dataframe import expand_index
 
-    levels = [
-        ["2016", "2017", "2018"],
-        [
-            "Major",
-            "Minor",
-        ],
-        ["a", "b"],
-    ]
-
-    from itertools import product
-
-    tuples = product(*levels)
-    index = MultiIndex.from_tuples(tuples, names=["first", "second", "third"])
+    levels = [["2016", "2017", "2018"], ["Major", "Minor"], ["a", "b"]]
+    tuples = itertools.product(*levels)
+    index = pandas.MultiIndex.from_tuples(tuples, names=["first", "second", "third"])
     expanded = list(expand_index(index, header=True))
-    assert expanded[0] == [
+    expected = [
         "2016",
         None,
         None,
@@ -152,7 +123,8 @@ def test_expand_levels_horizontally():
         None,
         None,
     ]
-    assert expanded[1] == [
+    assert expanded[0] == expected
+    expected = [
         "Major",
         None,
         "Minor",
@@ -166,13 +138,13 @@ def test_expand_levels_horizontally():
         "Minor",
         None,
     ]
+    assert expanded[1] == expected
     assert expanded[2] == ["a", "b", "a", "b", "a", "b", "a", "b", "a", "b", "a", "b"]
 
 
 @pytest.mark.pandas_required
 def test_dataframe_categorical():
-    from pandas import DataFrame
-    from ..dataframe import dataframe_to_rows
+    from openpyxl.utils.dataframe import dataframe_to_rows
 
     arrays = [
         [2019, 2019, 2019, 2019, 2020, 2020, 2020, 2021, 2021, 2021, 2021, 2022],
@@ -190,24 +162,9 @@ def test_dataframe_categorical():
             "Minor",
             "Minor",
         ],
-        [
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-            "a",
-            "b",
-        ],
+        ["a", "b", "a", "b", "a", "b", "a", "b", "a", "b", "a", "b"],
     ]
-
-    df = DataFrame(arrays)
+    df = pandas.DataFrame(arrays)
     df = df.apply(lambda col: col.astype("category"))
-
     rows = list(dataframe_to_rows(df, header=False, index=False))
     assert rows == arrays

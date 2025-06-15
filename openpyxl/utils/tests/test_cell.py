@@ -1,11 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-
-from .. import absolute_coordinate
-from .. import column_index_from_string
-from .. import get_column_interval
-from .. import get_column_letter
-from ..cell import coordinate_from_string
+from openpyxl.utils.cell import absolute_coordinate
+from openpyxl.utils.cell import column_index_from_string
+from openpyxl.utils.cell import coordinate_from_string
+from openpyxl.utils.cell import get_column_interval
+from openpyxl.utils.cell import get_column_letter
 
 
 def test_coordinates():
@@ -14,7 +13,7 @@ def test_coordinates():
 
 @pytest.mark.parametrize("value", ["AAA", "AQ0"])
 def test_invalid_coordinate(value):
-    from ..exceptions import CellCoordinatesException
+    from openpyxl.utils.exceptions import CellCoordinatesException
 
     with pytest.raises(CellCoordinatesException):
         coordinate_from_string(value)
@@ -23,10 +22,7 @@ def test_invalid_coordinate(value):
 @pytest.mark.parametrize(
     "coord, result",
     [
-        (
-            "ZF51",
-            "$ZF$51",
-        ),
+        ("ZF51", "$ZF$51"),
         ("ZF51:ZF53", "$ZF$51:$ZF$53"),
         ("A:G", "$A:$G"),
         ("A", "$A"),
@@ -69,15 +65,7 @@ def test_column_index(column, idx):
     assert column_index_from_string(column) == idx
 
 
-@pytest.mark.parametrize(
-    "column",
-    (
-        "JJJJ",
-        "",
-        "$",
-        "1",
-    ),
-)
+@pytest.mark.parametrize("column", ("JJJJ", "", "$", "1"))
 def test_bad_column_index(column):
     with pytest.raises(ValueError):
         column_index_from_string(column)
@@ -98,7 +86,7 @@ def test_column_letter(value, expected):
 
 
 def test_coordinate_tuple():
-    from .. import coordinate_to_tuple
+    from openpyxl.utils.cell import coordinate_to_tuple
 
     assert coordinate_to_tuple("D15") == (15, 4)
 
@@ -112,13 +100,13 @@ def test_coordinate_tuple():
     ],
 )
 def test_range_to_tuple(range_string, sheetname, boundaries):
-    from .. import range_to_tuple
+    from openpyxl.utils.cell import range_to_tuple
 
     assert range_to_tuple(range_string) == (sheetname, boundaries)
 
 
 def test_invalid_range():
-    from .. import range_to_tuple
+    from openpyxl.utils.cell import range_to_tuple
 
     with pytest.raises(ValueError):
         range_to_tuple("A1:E5")
@@ -136,35 +124,37 @@ def test_invalid_range():
     ],
 )
 def test_quote_sheetname(title, quoted):
-    from .. import quote_sheetname
+    from openpyxl.utils.cell import quote_sheetname
 
     assert quote_sheetname(title) == quoted
 
 
 def test_rows_from_range():
-    from .. import rows_from_range
+    from openpyxl.utils.cell import rows_from_range
 
     cells = rows_from_range("A1:D4")
     cells = [list(row) for row in cells]
-    assert cells == [
+    expected = [
         ["A1", "B1", "C1", "D1"],
         ["A2", "B2", "C2", "D2"],
         ["A3", "B3", "C3", "D3"],
         ["A4", "B4", "C4", "D4"],
     ]
+    assert cells == expected
 
 
 def test_cols_from_range():
-    from .. import cols_from_range
+    from openpyxl.utils.cell import cols_from_range
 
     cells = cols_from_range("A1:D4")
     cells = [list(row) for row in cells]
-    assert cells == [
+    expected = [
         ["A1", "A2", "A3", "A4"],
         ["B1", "B2", "B3", "B4"],
         ["C1", "C2", "C3", "C4"],
         ["D1", "D2", "D3", "D4"],
     ]
+    assert cells == expected
 
 
 @pytest.mark.parametrize(
@@ -179,7 +169,7 @@ def test_cols_from_range():
     ],
 )
 def test_bounds(range_string, coords):
-    from ..cell import range_boundaries
+    from openpyxl.utils.cell import range_boundaries
 
     assert range_boundaries(range_string) == coords
 
@@ -203,7 +193,7 @@ def test_bounds(range_string, coords):
     ],
 )
 def test_invalid_bounds(range_string):
-    from ..cell import range_boundaries
+    from openpyxl.utils.cell import range_boundaries
 
     with pytest.raises(ValueError):
         range_boundaries(range_string)

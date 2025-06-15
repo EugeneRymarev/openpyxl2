@@ -1,10 +1,8 @@
 import pytest
-
-from ..formulas import validate
+from openpyxl.utils.formulas import validate
 
 
 class TestValidate:
-
     def test_invalid_name(self):
         with pytest.raises(ValueError):
             validate("=CHARGE()")
