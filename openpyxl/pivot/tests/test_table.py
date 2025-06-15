@@ -247,7 +247,12 @@ class TestLocation:
         """
         node = fromstring(src)
         loc = location.from_tree(node)
-        expected = location(ref="A3:E14", firstHeaderRow=1, firstDataRow=2, firstDataCol=1,)
+        expected = location(
+            ref="A3:E14",
+            firstHeaderRow=1,
+            firstDataRow=2,
+            firstDataCol=1,
+        )
         assert loc == expected
 
 
@@ -574,7 +579,11 @@ class TestChartFormat:
 class TestPivotFilter:
     def test_ctor(self, pivot_filter, auto_filter):
         flt = pivot_filter(
-            fld=0, id=6, evalOrder=-1, type="dateBetween", autoFilter=auto_filter,
+            fld=0,
+            id=6,
+            evalOrder=-1,
+            type="dateBetween",
+            autoFilter=auto_filter,
         )
         xml = tostring(flt.to_tree())
         expected = """
@@ -607,7 +616,13 @@ class TestPivotFilter:
         """
         node = fromstring(src)
         flt = pivot_filter.from_tree(node)
-        expected = pivot_filter(fld=0, id=6, evalOrder=-1, type="dateBetween", autoFilter=auto_filter,)
+        expected = pivot_filter(
+            fld=0,
+            id=6,
+            evalOrder=-1,
+            type="dateBetween",
+            autoFilter=auto_filter,
+        )
         assert flt == expected
 
 
@@ -633,7 +648,10 @@ class TestFormat:
         node = fromstring(src)
         fmt = format_.from_tree(node)
         area = pivot_area(
-            outline=False, fieldPosition=False, labelOnly=True, dataOnly=False,
+            outline=False,
+            fieldPosition=False,
+            labelOnly=True,
+            dataOnly=False,
         )
         assert fmt == format_(action="blank", pivotArea=area)
 
