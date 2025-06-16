@@ -6,10 +6,17 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def SheetView():
-    from ..views import SheetView
+def sheet_view():
+    from openpyxl.worksheet.views import SheetView
 
     return SheetView
+
+
+@pytest.fixture
+def sheet_view_list():
+    from openpyxl.worksheet.views import SheetViewList
+
+    return SheetViewList
 
 
 @pytest.mark.parametrize(
@@ -19,71 +26,71 @@ def SheetView():
         (False, {"workbookViewId": "0", "showGridLines": "0"}),
     ],
 )
-def test_show_gridlines(SheetView, value, result):
-    view = SheetView(showGridLines=value)
+def test_show_gridlines(sheet_view, value, result):
+    view = sheet_view(showGridLines=value)
     assert dict(view) == result
 
 
-def test_parse(SheetView):
+def test_parse(sheet_view):
     src = """
-     <sheetView xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" tabSelected="1" zoomScale="200" zoomScaleNormal="200" zoomScalePageLayoutView="200" workbookViewId="0">
-      <pane xSplit="5" ySplit="19" topLeftCell="F20" activePane="bottomRight" state="frozenSplit"/>
-      <selection pane="topRight" activeCell="F1" sqref="F1"/>
-      <selection pane="bottomLeft" activeCell="A20" sqref="A20"/>
-      <selection pane="bottomRight" activeCell="E22" sqref="E22"/>
+    <sheetView
+            xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+            tabSelected="1"
+            zoomScale="200"
+            zoomScaleNormal="200"
+            zoomScalePageLayoutView="200"
+            workbookViewId="0">
+        <pane xSplit="5"
+              ySplit="19"
+              topLeftCell="F20"
+              activePane="bottomRight"
+              state="frozenSplit"/>
+        <selection pane="topRight" activeCell="F1" sqref="F1"/>
+        <selection pane="bottomLeft" activeCell="A20" sqref="A20"/>
+        <selection pane="bottomRight" activeCell="E22" sqref="E22"/>
     </sheetView>
     """
     xml = fromstring(src)
-    view = SheetView.from_tree(xml)
-    assert dict(view) == {
+    view = sheet_view.from_tree(xml)
+    expected = {
         "tabSelected": "1",
         "zoomScale": "200",
         "workbookViewId": "0",
         "zoomScaleNormal": "200",
         "zoomScalePageLayoutView": "200",
     }
+    assert dict(view) == expected
     assert len(view.selection) == 3
 
 
-def test_serialise(SheetView):
-    view = SheetView()
-
+def test_serialise(sheet_view):
+    view = sheet_view()
     xml = tostring(view.to_tree())
     expected = """
     <sheetView workbookViewId="0">
-       <selection activeCell="A1" sqref="A1"></selection>
+        <selection activeCell="A1" sqref="A1"></selection>
     </sheetView>
     """
     diff = compare_xml(xml, expected)
     assert diff is None, diff
 
 
-@pytest.fixture
-def SheetViewList():
-    from ..views import SheetViewList
-
-    return SheetViewList
-
-
 class TestSheetViews:
-
-    def test_ctor(self, SheetViewList):
-        views = SheetViewList()
+    def test_ctor(self, sheet_view_list):
+        views = sheet_view_list()
         xml = tostring(views.to_tree())
         expected = """
-        <sheetViews >
-           <sheetView workbookViewId="0">
-             <selection activeCell="A1" sqref="A1"></selection>
-           </sheetView>
-       </sheetViews>
+        <sheetViews>
+            <sheetView workbookViewId="0">
+                <selection activeCell="A1" sqref="A1"></selection>
+            </sheetView>
+        </sheetViews>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, SheetViewList):
-        src = """
-        <sheetViews />
-        """
+    def test_from_xml(self, sheet_view_list):
+        src = "<sheetViews/>"
         node = fromstring(src)
-        views = SheetViewList.from_tree(node)
-        assert views == SheetViewList()
+        views = sheet_view_list.from_tree(node)
+        assert views == sheet_view_list()

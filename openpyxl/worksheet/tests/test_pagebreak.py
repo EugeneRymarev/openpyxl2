@@ -5,57 +5,53 @@ from openpyxl.xml.functions import tostring
 
 
 @pytest.fixture
-def Break():
-    from ..pagebreak import Break
+def break_():
+    from openpyxl.worksheet.pagebreak import Break
 
     return Break
 
 
 @pytest.fixture
-def RowBreak():
-    from ..pagebreak import RowBreak
+def row_break():
+    from openpyxl.worksheet.pagebreak import RowBreak
 
     return RowBreak
 
 
 @pytest.fixture
-def ColBreak():
-    from ..pagebreak import ColBreak
+def col_break():
+    from openpyxl.worksheet.pagebreak import ColBreak
 
     return ColBreak
 
 
 class TestBreak:
-
-    def test_ctor(self, Break):
-        brk = Break()
+    def test_ctor(self, break_):
+        brk = break_()
         assert dict(brk) == {"id": "0", "man": "1", "max": "16383", "min": "0"}
         xml = tostring(brk.to_tree())
-        expected = """
-        <brk id="0" man="1" max="16383" min="0"></brk>
-        """
+        expected = '<brk id="0" man="1" max="16383" min="0"></brk>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
 
 class TestRowBreak:
-
-    def test_no_brks(self, RowBreak):
-        pb = RowBreak()
+    def test_no_breaks(self, row_break):
+        pb = row_break()
         assert dict(pb) == {"count": "0", "manualBreakCount": "0"}
 
-    def test_append(self, RowBreak):
-        pb = RowBreak()
+    def test_append(self, row_break):
+        pb = row_break()
         pb.append()
         assert dict(pb) == {"count": "1", "manualBreakCount": "1"}
 
-    def test_to_tree(self, RowBreak):
-        pb = RowBreak()
+    def test_to_tree(self, row_break):
+        pb = row_break()
         pb.append()
         xml = tostring(pb.to_tree())
         expected = """
         <rowBreaks count="1" manualBreakCount="1">
-           <brk id="1" man="1" max="16383" min="0"></brk>
+            <brk id="1" man="1" max="16383" min="0"></brk>
         </rowBreaks>
         """
         diff = compare_xml(xml, expected)
@@ -63,14 +59,13 @@ class TestRowBreak:
 
 
 class TestColBreak:
-
-    def test_to_tree(self, ColBreak):
-        pb = ColBreak()
+    def test_to_tree(self, col_break):
+        pb = col_break()
         pb.append()
         xml = tostring(pb.to_tree())
         expected = """
         <colBreaks count="1" manualBreakCount="1">
-           <brk id="1" man="1" max="16383" min="0"></brk>
+            <brk id="1" man="1" max="16383" min="0"></brk>
         </colBreaks>
         """
         diff = compare_xml(xml, expected)

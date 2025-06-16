@@ -3,16 +3,22 @@ import pytest
 
 
 @pytest.fixture
-def TableFormula():
-    from ..formula import TableFormula
+def data_table_formula():
+    from openpyxl.worksheet.formula import DataTableFormula
 
     return DataTableFormula
 
 
-class TestDataTable:
+@pytest.fixture
+def array_formula():
+    from openpyxl.worksheet.formula import ArrayFormula
 
-    def test_ctor(self, TableFormula):
-        dt = DataTableFormula(
+    return ArrayFormula
+
+
+class TestDataTableFormula:
+    def test_ctor(self, data_table_formula):
+        dt = data_table_formula(
             t="dataTable",
             ref="I9:S24",
             dt2D="1",
@@ -22,24 +28,16 @@ class TestDataTable:
         )
         assert dt.ref == "I9:S24"
 
-    def test_dict(self, TableFormula):
-        dt = DataTableFormula(ref="A1:B6", r1="G5", dt2D=True)
+    def test_dict(self, data_table_formula):
+        dt = data_table_formula(ref="A1:B6", r1="G5", dt2D=True)
         assert dict(dt) == {"ref": "A1:B6", "r1": "G5", "dt2D": "1", "t": "dataTable"}
 
 
-@pytest.fixture
-def ArrayFormula():
-    from ..formula import ArrayFormula
-
-    return ArrayFormula
-
-
 class TestDataTable:
-
-    def test_ctor(self, ArrayFormula):
-        af = ArrayFormula(ref="I9:S24")
+    def test_ctor(self, array_formula):
+        af = array_formula(ref="I9:S24")
         assert af.ref == "I9:S24"
 
-    def test_dict(self, ArrayFormula):
-        af = ArrayFormula(ref="A1:B6")
+    def test_dict(self, array_formula):
+        af = array_formula(ref="A1:B6")
         assert dict(af) == {"ref": "A1:B6", "t": "array"}

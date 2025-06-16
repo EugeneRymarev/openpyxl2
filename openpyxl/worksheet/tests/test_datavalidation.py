@@ -1,40 +1,48 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
 from openpyxl.tests.helper import compare_xml
+from openpyxl.worksheet.cell_range import MultiCellRange
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
-from ..cell_range import MultiCellRange
-
 
 @pytest.fixture
-def DataValidation():
-    from ..datavalidation import DataValidation
+def data_validation():
+    from openpyxl.worksheet.datavalidation import DataValidation
 
     return DataValidation
 
 
-class TestDataValidation:
+@pytest.fixture
+def data_validation_list():
+    from openpyxl.worksheet.datavalidation import DataValidationList
 
-    def test_ctor(self, DataValidation):
-        dv = DataValidation(allowBlank=True)
+    return DataValidationList
+
+
+class TestDataValidation:
+    def test_ctor(self, data_validation):
+        dv = data_validation(allowBlank=True)
         xml = tostring(dv.to_tree())
         expected = """
-        <dataValidation allowBlank="1" showDropDown="0" showErrorMessage="0" showInputMessage="0" sqref="" />
+        <dataValidation
+                allowBlank="1"
+                showDropDown="0"
+                showErrorMessage="0"
+                showInputMessage="0"
+                sqref=""/>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DataValidation):
-        src = """
-        <root />
-        """
+    def test_from_xml(self, data_validation):
+        src = "<root/>"
         node = fromstring(src)
-        dv = DataValidation.from_tree(node)
-        assert dv == DataValidation()
+        dv = data_validation.from_tree(node)
+        assert dv == data_validation()
 
-    def test_list_validation(self, DataValidation):
-        dv = DataValidation(
+    def test_list_validation(self, data_validation):
+        dv = data_validation(
             type="list",
             formula1='"Dog,Cat,Fish"',
             allowBlank=False,
@@ -49,19 +57,17 @@ class TestDataValidation:
         assert dv_dict["showInputMessage"] == "1"
         assert dv_dict["showDropDown"] == "0"
 
-    def test_hide_drop_down(self, DataValidation):
-        dv = DataValidation()
+    def test_hide_drop_down(self, data_validation):
+        dv = data_validation()
         assert not dv.hide_drop_down
         dv.hide_drop_down = True
         assert dv.showDropDown is True
 
-    def test_writer_validation(self, DataValidation):
-
+    def test_writer_validation(self, data_validation):
         class DummyCell:
-
             coordinate = "A1"
 
-        dv = DataValidation(
+        dv = data_validation(
             type="list",
             formula1='"Dog,Cat,Fish"',
             allowBlank=False,
@@ -69,49 +75,71 @@ class TestDataValidation:
             showInputMessage=True,
         )
         dv.add(DummyCell())
-
         xml = tostring(dv.to_tree())
         expected = """
-        <dataValidation allowBlank="0" showDropDown="0" showErrorMessage="1" showInputMessage="1" sqref="A1" type="list">
-          <formula1>&quot;Dog,Cat,Fish&quot;</formula1>
+        <dataValidation
+                allowBlank="0"
+                showDropDown="0"
+                showErrorMessage="1"
+                showInputMessage="1"
+                sqref="A1"
+                type="list">
+            <formula1>&quot;Dog,Cat,Fish&quot;</formula1>
         </dataValidation>
         """
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_sqref(self, DataValidation):
-        dv = DataValidation(sqref="A1")
+    def test_sqref(self, data_validation):
+        dv = data_validation(sqref="A1")
         assert dv.sqref == MultiCellRange("A1")
 
-    def test_add_after_sqref(self, DataValidation):
+    def test_add_after_sqref(self, data_validation):
         class DummyCell:
-
             coordinate = "A2"
 
-        dv = DataValidation()
+        dv = data_validation()
         dv.sqref = "A1"
         dv.add(DummyCell())
         assert dv.cells == MultiCellRange("A1 A2")
 
-    def test_read_formula(self, DataValidation):
+    def test_read_formula(self, data_validation):
         xml = """
-        <dataValidation xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" allowBlank="0" showDropDown="0" showErrorMessage="0" showInputMessage="1" sqref="A1" type="list">
-          <formula1>&quot;Dog,Cat,Fish&quot;</formula1>
+        <dataValidation
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                allowBlank="0"
+                showDropDown="0"
+                showErrorMessage="0"
+                showInputMessage="1"
+                sqref="A1"
+                type="list">
+            <formula1>&quot;Dog,Cat,Fish&quot;</formula1>
         </dataValidation>
         """
         xml = fromstring(xml)
-        dv = DataValidation.from_tree(xml)
+        dv = data_validation.from_tree(xml)
         assert dv.type == "list"
         assert dv.formula1 == '"Dog,Cat,Fish"'
 
-    def test_parser(self, DataValidation):
+    def test_parser(self, data_validation):
         xml = """
-        <dataValidation xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" type="list" errorStyle="warning" allowBlank="1" showInputMessage="1" showErrorMessage="1" error="Value must be between 1 and 3!" errorTitle="An Error Message" promptTitle="Multiplier" prompt="for monthly or quartely reports" sqref="H6">
+        <dataValidation
+                xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+                type="list"
+                errorStyle="warning"
+                allowBlank="1"
+                showInputMessage="1"
+                showErrorMessage="1"
+                error="Value must be between 1 and 3!"
+                errorTitle="An Error Message"
+                promptTitle="Multiplier"
+                prompt="for monthly or quartely reports"
+                sqref="H6">
         </dataValidation>
         """
         xml = fromstring(xml)
-        dv = DataValidation.from_tree(xml)
-        assert dv == DataValidation(
+        dv = data_validation.from_tree(xml)
+        expected = data_validation(
             error="Value must be between 1 and 3!",
             errorStyle="warning",
             errorTitle="An Error Message",
@@ -123,65 +151,54 @@ class TestDataValidation:
             showErrorMessage="1",
             showInputMessage="1",
         )
+        assert dv == expected
 
-    def test_contains(self, DataValidation):
-        dv = DataValidation(sqref="A1:D4 E5")
+    def test_contains(self, data_validation):
+        dv = data_validation(sqref="A1:D4 E5")
         assert "C2" in dv
 
 
-@pytest.fixture
-def DataValidationList():
-    from ..datavalidation import DataValidationList
-
-    return DataValidationList
-
-
 class TestDataValidationList:
-
-    def test_ctor(self, DataValidationList):
-        dvs = DataValidationList()
+    def test_ctor(self, data_validation_list):
+        dvs = data_validation_list()
         xml = tostring(dvs.to_tree())
-        expected = """
-        <dataValidations count="0" />
-        """
+        expected = '<dataValidations count="0"/>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_from_xml(self, DataValidationList):
-        src = """
-        <dataValidations />
-        """
+    def test_from_xml(self, data_validation_list):
+        src = "<dataValidations/>"
         node = fromstring(src)
-        dvs = DataValidationList.from_tree(node)
-        assert dvs == DataValidationList()
+        dvs = data_validation_list.from_tree(node)
+        assert dvs == data_validation_list()
 
-    def test_empty_dv(self, DataValidationList, DataValidation):
-        dv = DataValidation()
-        dvs = DataValidationList(dataValidation=[dv])
+    def test_empty_dv(self, data_validation_list, data_validation):
+        dv = data_validation()
+        dvs = data_validation_list(dataValidation=[dv])
         xml = tostring(dvs.to_tree())
         expected = '<dataValidations count="0"/>'
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
 
-COLLAPSE_TEST_DATA = [
-    (["A1"], "A1"),
-    (["A1", "B1"], "A1 B1"),
-    (["A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4"], "A1:A4 B1:B4"),
-    (["A2", "A4", "A3", "A1", "A5"], "A1:A5"),
-    (["AA1", "AA2", "B1", "B2", "B3", "AA4", "AA3"], ("B1:B3 AA1:AA4")),
-]
-
-
-@pytest.mark.parametrize("cells, expected", COLLAPSE_TEST_DATA)
+@pytest.mark.parametrize(
+    "cells, expected",
+    [
+        (["A1"], "A1"),
+        (["A1", "B1"], "A1 B1"),
+        (["A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4"], "A1:A4 B1:B4"),
+        (["A2", "A4", "A3", "A1", "A5"], "A1:A5"),
+        (["AA1", "AA2", "B1", "B2", "B3", "AA4", "AA3"], ("B1:B3 AA1:AA4")),
+    ],
+)
 def test_collapse_cell_addresses(cells, expected):
-    from ..datavalidation import collapse_cell_addresses
+    from openpyxl.worksheet.datavalidation import collapse_cell_addresses
 
     assert collapse_cell_addresses(cells) == expected
 
 
 def test_expand_cell_ranges():
-    from ..datavalidation import expand_cell_ranges
+    from openpyxl.worksheet.datavalidation import expand_cell_ranges
 
     rs = "A1:A3 B1:B3"
-    assert expand_cell_ranges(rs) == set(["A1", "A2", "A3", "B1", "B2", "B3"])
+    assert expand_cell_ranges(rs) == {"A1", "A2", "A3", "B1", "B2", "B3"}

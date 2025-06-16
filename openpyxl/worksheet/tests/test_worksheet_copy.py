@@ -1,14 +1,20 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-from openpyxl import load_workbook
-from openpyxl import Workbook
 from openpyxl.comments import Comment
-from openpyxl.styles import Font
+from openpyxl.reader.excel import load_workbook
+from openpyxl.styles.fonts import Font
+from openpyxl.workbook.workbook import Workbook
+
+
+@pytest.fixture
+def worksheet_copy():
+    from openpyxl.worksheet.copier import WorksheetCopy
+
+    return WorksheetCopy
 
 
 def compare_cells(source_cell, target_cell):
     attrs = ("_value", "data_type", "_comment", "_hyperlink", "_style")
-
     for attr in attrs:
         s_attr = getattr(source_cell, attr)
         o_attr = getattr(target_cell, attr)
@@ -17,48 +23,40 @@ def compare_cells(source_cell, target_cell):
     return True
 
 
-@pytest.fixture
-def WorksheetCopy():
-    from ..copier import WorksheetCopy
-
-    return WorksheetCopy
-
-
 @pytest.fixture()
-def copier(WorksheetCopy):
+def copier(worksheet_copy):
     wb = Workbook()
     ws1 = wb.active
     ws2 = wb.create_sheet("copy_sheet")
-    return WorksheetCopy(ws1, ws2)
+    return worksheet_copy(ws1, ws2)
 
 
 class TestWorksheetCopy:
-
-    def test_ctor(self, WorksheetCopy):
+    def test_ctor(self, worksheet_copy):
         wb = Workbook()
         ws1 = wb.create_sheet()
         ws2 = wb.create_sheet()
-        copier = WorksheetCopy(ws1, ws2)
+        copier = worksheet_copy(ws1, ws2)
         assert copier.source == ws1
         assert copier.target == ws2
 
-    def test_cannot_copy_between_workbooks(self, WorksheetCopy):
+    def test_cannot_copy_between_workbooks(self, worksheet_copy):
         wb1 = Workbook()
         ws1 = wb1.active
         wb2 = Workbook()
         ws2 = wb2.active
         with pytest.raises(ValueError):
-            WorksheetCopy(ws1, ws2)
+            worksheet_copy(ws1, ws2)
 
-    def test_cannot_copy_to_self(self, WorksheetCopy):
+    def test_cannot_copy_to_self(self, worksheet_copy):
         wb1 = Workbook()
         ws1 = wb1.active
         with pytest.raises(ValueError):
-            WorksheetCopy(ws1, ws1)
+            worksheet_copy(ws1, ws1)
 
-    def test_cannot_copy_junk(self, WorksheetCopy):
+    def test_cannot_copy_junk(self, worksheet_copy):
         with pytest.raises(TypeError):
-            WorksheetCopy("Test", None)
+            worksheet_copy("Test", None)
 
     def test_merged_cell_copy(self, copier):
         ws1 = copier.source
@@ -136,17 +134,17 @@ class TestWorksheetCopy:
         ws1.print_options.horizontalCentered = True
         ws2 = copier.target
         copier.copy_worksheet()
-        assert (
-            ws1.print_options.horizontalCentered == ws2.print_options.horizontalCentered
-        )
+        po1 = ws1.print_options.horizontalCentered
+        po2 = ws2.print_options.horizontalCentered
+        assert po1 == po2
 
 
-def test_copy_worksheet(datadir, WorksheetCopy):
+def test_copy_worksheet(datadir, worksheet_copy):
     datadir.chdir()
     wb = load_workbook("copy_test.xlsx")
     ws1 = wb["original_sheet"]
     ws2 = wb.create_sheet("copy_sheet")
-    cp = WorksheetCopy(ws1, ws2)
+    cp = worksheet_copy(ws1, ws2)
     cp.copy_worksheet()
     for c1, c2 in zip(ws1["A"], ws2["a"]):
         assert compare_cells(c1, c2) is True

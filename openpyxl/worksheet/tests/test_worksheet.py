@@ -1,219 +1,185 @@
 # Copyright (c) 2010-2025 openpyxl
-# test imports
-from itertools import islice
+import itertools
 
 import pytest
-from openpyxl.cell import Cell
-from openpyxl.workbook import Workbook
+from openpyxl.cell.cell import Cell
+from openpyxl.workbook.workbook import Workbook
+from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.table import Table
-from openpyxl.worksheet.table import TableList
 
-from ..cell_range import CellRange
-# package imports
+
+@pytest.fixture
+def worksheet():
+    from openpyxl.worksheet.worksheet import Worksheet
+
+    return Worksheet
 
 
 class DummyWorkbook:
-
     encoding = "UTF-8"
 
     def __init__(self):
         self.sheetnames = []
 
 
-@pytest.fixture
-def Worksheet():
-    from ..worksheet import Worksheet
-
-    return Worksheet
-
-
 class TestWorksheet:
-
-    def test_path(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_path(self, worksheet):
+        ws = worksheet(Workbook())
         assert ws.path == "/xl/worksheets/sheetNone.xml"
 
-    def test_new_worksheet(self, Worksheet):
+    def test_new_worksheet(self, worksheet):
         wb = Workbook()
-        ws = Worksheet(wb)
+        ws = worksheet(wb)
         assert ws.parent == wb
 
-    def test_get_cell(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_get_cell(self, worksheet):
+        ws = worksheet(Workbook())
         cell = ws.cell(row=1, column=1)
         assert cell.coordinate == "A1"
 
-    def test_invalid_cell(self, Worksheet):
+    def test_invalid_cell(self, worksheet):
         wb = Workbook()
-        ws = Worksheet(wb)
+        ws = worksheet(wb)
         with pytest.raises(ValueError):
             ws.cell(row=0, column=0)
 
-    def test_worksheet_dimension(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_worksheet_dimension(self, worksheet):
+        ws = worksheet(Workbook())
         assert "A1:A1" == ws.calculate_dimension()
         ws["B12"].value = "AAA"
         assert "B12:B12" == ws.calculate_dimension()
 
-    @pytest.mark.parametrize(
-        "row, column, coordinate",
-        [
-            (1, 0, "A1"),
-            (9, 2, "C9"),
-        ],
-    )
-    def test_fill_rows(self, Worksheet, row, column, coordinate):
-        ws = Worksheet(Workbook())
+    @pytest.mark.parametrize("row, column, coordinate", [(1, 0, "A1"), (9, 2, "C9")])
+    def test_fill_rows(self, worksheet, row, column, coordinate):
+        ws = worksheet(Workbook())
         ws["A1"] = "first"
         ws["C9"] = "last"
         assert ws.calculate_dimension() == "A1:C9"
         rows = ws.iter_rows()
-        first_row = next(islice(rows, row - 1, row))
+        first_row = next(itertools.islice(rows, row - 1, row))
         assert first_row[column].coordinate == coordinate
 
-    def test_iter_rows(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_iter_rows(self, worksheet):
+        ws = worksheet(Workbook())
         expected = [
             ("A1", "B1", "C1"),
             ("A2", "B2", "C2"),
             ("A3", "B3", "C3"),
             ("A4", "B4", "C4"),
         ]
-
         rows = ws.iter_rows(min_row=1, min_col=1, max_row=4, max_col=3)
         for row, coord in zip(rows, expected):
             assert tuple(c.coordinate for c in row) == coord
 
-    def test_cell_alternate_coordinates(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_cell_alternate_coordinates(self, worksheet):
+        ws = worksheet(Workbook())
         cell = ws.cell(row=8, column=4)
         assert "D8" == cell.coordinate
 
-    def test_cell_insufficient_coordinates(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_cell_insufficient_coordinates(self, worksheet):
+        ws = worksheet(Workbook())
         with pytest.raises(TypeError):
             ws.cell(row=8)
 
-    def test_hyperlink_value(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_hyperlink_value(self, worksheet):
+        ws = worksheet(Workbook())
         ws["A1"].hyperlink = "http://test.com"
         assert "http://test.com" == ws["A1"].value
         ws["A1"].value = "test"
         assert "test" == ws["A1"].value
 
-    def test_append(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_append(self, worksheet):
+        ws = worksheet(Workbook())
         ws.append(["value"])
         assert ws["A1"].value == "value"
 
-    def test_append_list(self, Worksheet):
-        ws = Worksheet(Workbook())
-
+    def test_append_list(self, worksheet):
+        ws = worksheet(Workbook())
         ws.append(["This is A1", "This is B1"])
-
         assert "This is A1" == ws["A1"].value
         assert "This is B1" == ws["B1"].value
 
-    def test_append_dict_letter(self, Worksheet):
-        ws = Worksheet(Workbook())
-
+    def test_append_dict_letter(self, worksheet):
+        ws = worksheet(Workbook())
         ws.append({"A": "This is A1", "C": "This is C1"})
-
         assert "This is A1" == ws["A1"].value
         assert "This is C1" == ws["C1"].value
 
-    def test_append_dict_index(self, Worksheet):
-        ws = Worksheet(Workbook())
-
+    def test_append_dict_index(self, worksheet):
+        ws = worksheet(Workbook())
         ws.append({1: "This is A1", 3: "This is C1"})
-
         assert "This is A1" == ws["A1"].value
         assert "This is C1" == ws["C1"].value
 
-    def test_bad_append(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_bad_append(self, worksheet):
+        ws = worksheet(Workbook())
         with pytest.raises(TypeError):
             ws.append("test")
 
-    def test_append_range(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_append_range(self, worksheet):
+        ws = worksheet(Workbook())
         ws.append(range(30))
         assert ws["AD1"].value == 29
 
-    def test_append_iterator(self, Worksheet):
+    def test_append_iterator(self, worksheet):
         def itty():
             for i in range(30):
                 yield i
 
-        ws = Worksheet(Workbook())
+        ws = worksheet(Workbook())
         gen = itty()
         ws.append(gen)
         assert ws["AD1"].value == 29
 
-    def test_append_2d_list(self, Worksheet):
-
-        ws = Worksheet(Workbook())
-
+    def test_append_2d_list(self, worksheet):
+        ws = worksheet(Workbook())
         ws.append(["This is A1", "This is B1"])
         ws.append(["This is A2", "This is B2"])
-
-        expected = (
-            ("This is A1", "This is B1"),
-            ("This is A2", "This is B2"),
-        )
+        expected = (("This is A1", "This is B1"), ("This is A2", "This is B2"))
         for e, v in zip(expected, ws.values):
             assert e == tuple(v)
 
-    def test_append_cell(self, Worksheet):
-        from openpyxl.cell import Cell
+    def test_append_cell(self, worksheet):
+        from openpyxl.cell.cell import Cell
 
         cell = Cell(None, "A", 1, 25)
-
-        ws = Worksheet(Workbook())
+        ws = worksheet(Workbook())
         ws.append([])
-
         ws.append([cell])
-
         assert ws["A2"].value == 25
 
-    def test_rows(self, Worksheet):
-
-        ws = Worksheet(Workbook())
-
+    def test_rows(self, worksheet):
+        ws = worksheet(Workbook())
         ws["A1"] = "first"
         ws["C9"] = "last"
-
         rows = tuple(ws.rows)
-
         assert len(rows) == 9
         first_row = rows[0]
         last_row = rows[-1]
-
         assert first_row[0].value == "first" and first_row[0].coordinate == "A1"
         assert last_row[-1].value == "last"
 
-    def test_no_rows(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_no_rows(self, worksheet):
+        ws = worksheet(Workbook())
         assert tuple(ws.rows) == ()
 
-    def test_no_cols(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_no_cols(self, worksheet):
+        ws = worksheet(Workbook())
         assert tuple(ws.columns) == ()
 
-    def test_one_cell(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_one_cell(self, worksheet):
+        ws = worksheet(Workbook())
         c = ws["A1"]
         assert tuple(ws.rows) == tuple(ws.columns) == ((c,),)
 
-    def test_by_col(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_by_col(self, worksheet):
+        ws = worksheet(Workbook())
         c = ws["A1"]
         cols = ws._cells_by_col(1, 1, 1, 1)
         assert tuple(cols) == ((c,),)
 
-    def test_cols(self, Worksheet):
-        ws = Worksheet(Workbook())
-
+    def test_cols(self, worksheet):
+        ws = worksheet(Workbook())
         ws["A1"] = "first"
         ws["C9"] = "last"
         expected = [
@@ -221,101 +187,84 @@ class TestWorksheet:
             ("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9"),
             ("C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"),
         ]
-
         cols = tuple(ws.columns)
         for col, coord in zip(cols, expected):
             assert tuple(c.coordinate for c in col) == coord
-
         assert len(cols) == 3
-
         assert cols[0][0].value == "first"
         assert cols[-1][-1].value == "last"
 
-    def test_values(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_values(self, worksheet):
+        ws = worksheet(Workbook())
         ws.append([1, 2, 3])
         ws.append([4, 5, 6])
         vals = ws.values
         assert next(vals) == (1, 2, 3)
         assert next(vals) == (4, 5, 6)
 
-    def test_auto_filter(self, Worksheet):
-        ws = Worksheet(Workbook())
-
+    def test_auto_filter(self, worksheet):
+        ws = worksheet(Workbook())
         ws.auto_filter.ref = "c1:g9"
         assert ws.auto_filter.ref == "C1:G9"
 
-    def test_getitem(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_getitem(self, worksheet):
+        ws = worksheet(Workbook())
         c = ws["A1"]
         assert isinstance(c, Cell)
         assert c.coordinate == "A1"
         assert ws["A1"].value is None
 
-    @pytest.mark.parametrize(
-        "key",
-        [
-            slice(None, None),
-            slice(None, -1),
-            ":",
-            "A0",
-        ],
-    )
-    def test_getitem_invalid(self, Worksheet, key):
-        ws = Worksheet(Workbook())
+    @pytest.mark.parametrize("key", [slice(None, None), slice(None, -1), ":", "A0"])
+    def test_getitem_invalid(self, worksheet, key):
+        ws = worksheet(Workbook())
         with pytest.raises((IndexError, ValueError)):
             ws[key]
 
-    def test_setitem(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_setitem(self, worksheet):
+        ws = worksheet(Workbook())
         ws["A12"] = 5
         assert ws["A12"].value == 5
 
     def test_delitem(self, dummy_worksheet):
         ws = dummy_worksheet
-
         assert (2, 1) in ws._cells
-
         del ws["A2"]
         assert (2, 1) not in ws._cells
 
-    def test_getslice(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_getslice(self, worksheet):
+        ws = worksheet(Workbook())
         ws["B2"] = "cell"
         cell_range = ws["A1":"B2"]
         assert cell_range == ((ws["A1"], ws["B1"]), (ws["A2"], ws["B2"]))
 
     @pytest.mark.parametrize("key", ["C", "C:C"])
-    def test_get_single__column(self, Worksheet, key):
-        ws = Worksheet(Workbook())
+    def test_get_single__column(self, worksheet, key):
+        ws = worksheet(Workbook())
         c1 = ws.cell(row=1, column=3)
         c2 = ws.cell(row=2, column=3, value=5)
         assert ws["C"] == (c1, c2)
 
     @pytest.mark.parametrize("key", [2, "2", "2:2"])
-    def test_get_row(self, Worksheet, key):
-        ws = Worksheet(Workbook())
+    def test_get_row(self, worksheet, key):
+        ws = worksheet(Workbook())
         a2 = ws.cell(row=2, column=1)
         b2 = ws.cell(row=2, column=2)
         c2 = ws.cell(row=2, column=3, value=5)
         assert ws[key] == (a2, b2, c2)
 
-    def test_freeze(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_freeze(self, worksheet):
+        ws = worksheet(Workbook())
         ws.freeze_panes = ws["b2"]
         assert ws.freeze_panes == "B2"
-
         ws.freeze_panes = ""
         assert ws.freeze_panes is None
-
         ws.freeze_panes = "C5"
         assert ws.freeze_panes == "C5"
-
         ws.freeze_panes = ws["A1"]
         assert ws.freeze_panes is None
 
-    def test_merged_cells_lookup(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_merged_cells_lookup(self, worksheet):
+        ws = worksheet(Workbook())
         ws.merge_cells("A1:N50")
         merged = ws.merged_cells
         assert "A1" in merged
@@ -323,12 +272,12 @@ class TestWorksheet:
         assert "A51" not in merged
         assert "O1" not in merged
 
-    def test_merged_cell_ranges(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_merged_cell_ranges(self, worksheet):
+        ws = worksheet(Workbook())
         assert ws.merged_cells.ranges == set()
 
-    def test_merge_range_string(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_merge_range_string(self, worksheet):
+        ws = worksheet(Workbook())
         ws["A1"] = 1
         ws["D4"] = 16
         assert (4, 4) in ws._cells
@@ -337,29 +286,29 @@ class TestWorksheet:
         assert ws.cell(4, 4).__class__.__name__ == "MergedCell"
         assert (1, 1) in ws._cells
 
-    def test_merge_coordinate(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_merge_coordinate(self, worksheet):
+        ws = worksheet(Workbook())
         ws.merge_cells(start_row=1, start_column=1, end_row=4, end_column=4)
         assert ws.merged_cells == "A1:D4"
 
-    def test_merge_more_columns_than_rows(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_merge_more_columns_than_rows(self, worksheet):
+        ws = worksheet(Workbook())
         ws.merge_cells(start_row=1, start_column=1, end_row=2, end_column=4)
         assert ws.merged_cells == "A1:D2"
 
-    def test_merge_more_rows_than_columns(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_merge_more_rows_than_columns(self, worksheet):
+        ws = worksheet(Workbook())
         ws.merge_cells(start_row=1, start_column=1, end_row=4, end_column=2)
         assert ws.merged_cells == "A1:B4"
 
-    def test_unmerge_range_string(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_unmerge_range_string(self, worksheet):
+        ws = worksheet(Workbook())
         ws.merge_cells("A1:D4")
         ws.unmerge_cells("A1:D4")
         assert ws.merged_cells == ""
 
-    def test_unmerge_coordinate(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_unmerge_coordinate(self, worksheet):
+        ws = worksheet(Workbook())
         ws.merge_cells("A1:D4")
         ws.unmerge_cells(start_row=1, start_column=1, end_row=4, end_column=4)
         assert ws.merged_cells == ""
@@ -395,102 +344,90 @@ class TestWorksheet:
         ws.print_area = cell_range
         assert ws.print_area == result
 
-    def test_active_cell(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_active_cell(self, worksheet):
+        ws = worksheet(Workbook())
         assert ws.active_cell == "A1"
 
-    def test_selected_cell(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_selected_cell(self, worksheet):
+        ws = worksheet(Workbook())
         assert ws.selected_cell == "A1"
 
-    def test_gridlines(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_gridlines(self, worksheet):
+        ws = worksheet(Workbook())
         assert not ws.show_gridlines
 
-    def test_add_table(self, Worksheet):
-        tbl_ws = Worksheet(Workbook())
+    def test_add_table(self, worksheet):
+        tbl_ws = worksheet(Workbook())
         table1 = Table(displayName="Table1", ref="A1:D10")
         tbl_ws.add_table(table1)
         assert len(tbl_ws._tables) == 1
 
-    def test_column_groups(self, Worksheet):
-        ws = Worksheet(Workbook())
+    def test_column_groups(self, worksheet):
+        ws = worksheet(Workbook())
         ws.column_dimensions["A"]
         ws.column_dimensions["F"]
         ws.column_dimensions.group("F", "K")
-
         assert ws.column_groups == ["F:K"]
 
 
-def test_freeze_panes_horiz(Worksheet):
-    ws = Worksheet(Workbook())
+def test_freeze_panes_horiz(worksheet):
+    ws = worksheet(Workbook())
     ws.freeze_panes = "A4"
-
     view = ws.sheet_view
     assert len(view.selection) == 1
-    assert dict(view.selection[0]) == {
-        "activeCell": "A1",
-        "pane": "bottomLeft",
-        "sqref": "A1",
-    }
-    assert dict(view.pane) == {
+    expected = {"activeCell": "A1", "pane": "bottomLeft", "sqref": "A1"}
+    assert dict(view.selection[0]) == expected
+    expected = {
         "activePane": "bottomLeft",
         "state": "frozen",
         "topLeftCell": "A4",
         "ySplit": "3",
     }
+    assert dict(view.pane) == expected
 
 
-def test_freeze_panes_vert(Worksheet):
-    ws = Worksheet(Workbook())
+def test_freeze_panes_vert(worksheet):
+    ws = worksheet(Workbook())
     ws.freeze_panes = "D1"
-
     view = ws.sheet_view
     assert len(view.selection) == 1
-    assert dict(view.selection[0]) == {
-        "activeCell": "A1",
-        "pane": "topRight",
-        "sqref": "A1",
-    }
-    assert dict(view.pane) == {
+    expected = {"activeCell": "A1", "pane": "topRight", "sqref": "A1"}
+    assert dict(view.selection[0]) == expected
+    expected = {
         "activePane": "topRight",
         "state": "frozen",
         "topLeftCell": "D1",
         "xSplit": "3",
     }
+    assert dict(view.pane) == expected
 
 
-def test_freeze_panes_both(Worksheet):
-    ws = Worksheet(Workbook())
+def test_freeze_panes_both(worksheet):
+    ws = worksheet(Workbook())
     ws.freeze_panes = "D4"
-
     view = ws.sheet_view
     assert len(view.selection) == 3
     assert dict(view.selection[0]) == {"pane": "topRight"}
-    assert dict(view.selection[1]) == {
-        "pane": "bottomLeft",
-    }
-    assert dict(view.selection[2]) == {
-        "activeCell": "A1",
-        "pane": "bottomRight",
-        "sqref": "A1",
-    }
-    assert dict(view.pane) == {
+    assert dict(view.selection[1]) == {"pane": "bottomLeft"}
+    expected = {"activeCell": "A1", "pane": "bottomRight", "sqref": "A1"}
+    assert dict(view.selection[2]) == expected
+    expected = {
         "activePane": "bottomRight",
         "state": "frozen",
         "topLeftCell": "D4",
         "xSplit": "3",
         "ySplit": "3",
     }
+    assert dict(view.pane) == expected
 
 
-def test_min_column(Worksheet):
-    ws = Worksheet(DummyWorkbook())
+def test_min_column(worksheet):
+    ws = worksheet(DummyWorkbook())
     assert ws.min_column == 1
 
 
-def test_max_column(Worksheet):
-    ws = Worksheet(DummyWorkbook())
+def test_max_column(worksheet):
+    ws = worksheet(DummyWorkbook())
     ws["F1"] = 10
     ws["F2"] = 32
     ws["F3"] = "=F1+F2"
@@ -498,13 +435,13 @@ def test_max_column(Worksheet):
     assert ws.max_column == 6
 
 
-def test_min_row(Worksheet):
-    ws = Worksheet(DummyWorkbook())
+def test_min_row(worksheet):
+    ws = worksheet(DummyWorkbook())
     assert ws.min_row == 1
 
 
-def test_max_row(Worksheet):
-    ws = Worksheet(DummyWorkbook())
+def test_max_row(worksheet):
+    ws = worksheet(DummyWorkbook())
     ws.append([])
     ws.append([5])
     ws.append([])
@@ -512,124 +449,101 @@ def test_max_row(Worksheet):
     assert ws.max_row == 4
 
 
-def test_add_chart(Worksheet):
+def test_add_chart(worksheet):
     from openpyxl.chart import BarChart
 
-    ws = Worksheet(DummyWorkbook())
+    ws = worksheet(DummyWorkbook())
     chart = BarChart()
     ws.add_chart(chart, "A1")
     assert chart.anchor == "A1"
 
 
 @pytest.mark.pil_required
-def test_add_image(Worksheet):
+def test_add_image(worksheet):
     from openpyxl.drawing.image import Image
     from PIL.Image import Image as PILImage
 
-    ws = Worksheet(DummyWorkbook())
+    ws = worksheet(DummyWorkbook())
     im = Image(PILImage())
     ws.add_image(im, "D5")
 
 
 @pytest.fixture
-def dummy_worksheet(Worksheet):
+def dummy_worksheet(worksheet):
     """
     Creates a worksheet A1:H6 rows with values the same as cell coordinates
     """
-    ws = Worksheet(DummyWorkbook())
-
+    ws = worksheet(DummyWorkbook())
     for row in ws.iter_rows(max_row=6, max_col=8):
         for cell in row:
             cell.value = cell.coordinate
-
     return ws
 
 
 class TestEditableWorksheet:
-
     def test_move_row_down(self, dummy_worksheet):
         ws = dummy_worksheet
         assert ws.max_row == 6
-
         ws._move_cells(min_row=5, offset=1, row_or_col="row")
-
         assert ws.max_row == 7
         assert [c.value for c in ws[5]] == [None] * 8
 
     def test_move_col_right(self, dummy_worksheet):
         ws = dummy_worksheet
         assert ws.max_column == 8
-
         ws._move_cells(min_col=3, offset=2, row_or_col="column")
-
         assert ws.max_column == 10
         assert [c.value for c in ws["D"]] == [None] * 6
 
     def test_move_row_up(self, dummy_worksheet):
         ws = dummy_worksheet
         assert ws.max_row == 6
-
         ws._move_cells(min_row=4, offset=-1, row_or_col="row")
-
         assert ws.max_row == 5
         assert [c.value for c in ws["A"]] == ["A1", "A2", "A4", "A5", "A6"]
 
     def test_insert_rows(self, dummy_worksheet):
         ws = dummy_worksheet
-
         ws.insert_rows(2, 2)
-
         assert ws.max_row == 8
         assert ws._current_row == 8
         assert [c.value for c in ws[2]] == [None] * 8
 
     def test_insert_cols(self, dummy_worksheet):
         ws = dummy_worksheet
-
         ws.insert_cols(3)
-
         assert ws.max_column == 9
         assert [c.value for c in ws["G"]] == ["F1", "F2", "F3", "F4", "F5", "F6"]
 
     def test_delete_rows(self, dummy_worksheet):
         ws = dummy_worksheet
-
         ws.delete_rows(2, 3)
-
         assert ws.max_row == 3
         assert ws._current_row == 3
         assert [c.value for c in ws["B"]] == ["B1", "B5", "B6"]
 
-    def test_deleta_all_rows(self, dummy_worksheet):
+    def test_delete_all_rows(self, dummy_worksheet):
         ws = dummy_worksheet
-
         ws.delete_rows(1, 6)
-
         assert ws.max_row == 1
         assert ws._current_row == 0
 
     def test_delete_cols(self, dummy_worksheet):
         ws = dummy_worksheet
-
         ws.delete_cols(5, 2)
-
         assert ws.max_column == 6
         assert [c.value for c in ws[3]] == ["A3", "B3", "C3", "D3", "G3", "H3"]
 
     def test_delete_missing_cols(self, dummy_worksheet):
         ws = dummy_worksheet
         del ws["H2"]
-
         ws.delete_cols(7)
-
         assert ws["G2"].value is None
 
     def test_delete_missing_rows(self, dummy_worksheet):
         ws = dummy_worksheet
         del ws["B4"]
-
         ws.delete_rows(3)
-
         assert ws["B3"].value is None
 
     @pytest.mark.parametrize(
@@ -645,7 +559,7 @@ class TestEditableWorksheet:
         ],
     )
     def test_remainder(self, dummy_worksheet, idx, offset, max_val, remainder):
-        from ..worksheet import _gutter
+        from openpyxl.worksheet.worksheet import _gutter
 
         assert set(_gutter(idx, offset, max_val)) == remainder
 
@@ -653,13 +567,13 @@ class TestEditableWorksheet:
         ws = dummy_worksheet
         ws.delete_cols(8)
         assert ws.max_column == 7
-        assert ws["H8"].value == None
+        assert ws["H8"].value is None
 
     def test_delete_last_row(self, dummy_worksheet):
         ws = dummy_worksheet
         ws.delete_rows(6)
         assert ws.max_row == 5
-        assert ws["A6"].value == None
+        assert ws["A6"].value is None
 
     def test_move_cell(self, dummy_worksheet):
         ws = dummy_worksheet
