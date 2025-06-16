@@ -2,62 +2,53 @@
 """
 XML compatibility functions
 """
-# Python stdlib imports
+import functools
 import re
-from functools import partial
+from xml.etree.ElementTree import iterparse
 
-from openpyxl import DEFUSEDXML
-from openpyxl import LXML
+from openpyxl.xml import DEFUSEDXML
+from openpyxl.xml import LXML
+from openpyxl.xml.constants import ACTIVEX_NS
+from openpyxl.xml.constants import CHART_DRAWING_NS
+from openpyxl.xml.constants import CHART_NS
+from openpyxl.xml.constants import COREPROPS_NS
+from openpyxl.xml.constants import CUSTPROPS_NS
+from openpyxl.xml.constants import DCTERMS_NS
+from openpyxl.xml.constants import DCTERMS_PREFIX
+from openpyxl.xml.constants import DRAWING_NS
+from openpyxl.xml.constants import REL_NS
+from openpyxl.xml.constants import SHEET_DRAWING_NS
+from openpyxl.xml.constants import SHEET_MAIN_NS
+from openpyxl.xml.constants import VTYPES_NS
+from openpyxl.xml.constants import XML_NS
 
 if LXML is True:
-    from lxml.etree import (
-        Element,
-        SubElement,
-        register_namespace,
-        QName,
-        xmlfile,
-        XMLParser,
-    )
-    from lxml.etree import fromstring, tostring
+    from lxml.etree import Element
+    from lxml.etree import QName
+    from lxml.etree import SubElement
+    from lxml.etree import XMLParser
+    from lxml.etree import fromstring
+    from lxml.etree import register_namespace
+    from lxml.etree import tostring
+    from lxml.etree import xmlfile
 
     # do not resolve entities
     safe_parser = XMLParser(resolve_entities=False)
-    fromstring = partial(fromstring, parser=safe_parser)
-
+    fromstring = functools.partial(fromstring, parser=safe_parser)
 else:
-    from xml.etree.ElementTree import (
-        Element,
-        SubElement,
-        fromstring,
-        tostring,
-        QName,
-        register_namespace,
-    )
+    from xml.etree.ElementTree import Element
+    from xml.etree.ElementTree import QName
+    from xml.etree.ElementTree import SubElement
+    from xml.etree.ElementTree import fromstring
+    from xml.etree.ElementTree import register_namespace
+    from xml.etree.ElementTree import tostring
+
     from et_xmlfile import xmlfile
 
     if DEFUSEDXML is True:
         from defusedxml.ElementTree import fromstring
-
-from xml.etree.ElementTree import iterparse
-
 if DEFUSEDXML is True:
     from defusedxml.ElementTree import iterparse
-
-from openpyxl.xml.constants import (
-    CHART_NS,
-    DRAWING_NS,
-    SHEET_DRAWING_NS,
-    CHART_DRAWING_NS,
-    SHEET_MAIN_NS,
-    REL_NS,
-    VTYPES_NS,
-    COREPROPS_NS,
-    CUSTPROPS_NS,
-    DCTERMS_NS,
-    DCTERMS_PREFIX,
-    XML_NS,
-    ACTIVEX_NS,
-)
 
 register_namespace(DCTERMS_PREFIX, DCTERMS_NS)
 register_namespace("dcmitype", "http://purl.org/dc/dcmitype/")
@@ -72,10 +63,7 @@ register_namespace("cdr", CHART_DRAWING_NS)
 register_namespace("xml", XML_NS)
 register_namespace("cust", CUSTPROPS_NS)
 register_namespace("ax", ACTIVEX_NS)
-
-
-tostring = partial(tostring, encoding="utf-8")
-
+tostring = functools.partial(tostring, encoding="utf-8")
 NS_REGEX = re.compile("({(?P<namespace>.*)})?(?P<localname>.*)")
 
 
@@ -89,4 +77,4 @@ def localname(node):
 def whitespace(node):
     stripped = node.text.strip()
     if stripped and node.text != stripped:
-        node.set("{%s}space" % XML_NS, "preserve")
+        node.set(f"{{{XML_NS}}}space", "preserve")

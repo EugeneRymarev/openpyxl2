@@ -1,6 +1,9 @@
 # Copyright (c) 2010-2025 openpyxl
-"""Collection of XML resources compatible across different Python versions"""
+"""
+Collection of XML resources compatible across different Python versions
+"""
 import os
+import warnings
 
 
 def lxml_available():
@@ -9,11 +12,8 @@ def lxml_available():
 
         LXML = LXML_VERSION >= (3, 3, 1, 0)
         if not LXML:
-            import warnings
-
-            warnings.warn(
-                "The installed version of lxml is too old to be used with openpyxl"
-            )
+            msg = "The installed version of lxml is too old to be used with openpyxl"
+            warnings.warn(msg)
             return False  # we have it, but too old
         else:
             return True  # we have it, and recent enough
