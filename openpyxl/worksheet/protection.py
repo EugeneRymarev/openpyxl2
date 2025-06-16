@@ -1,11 +1,9 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import String
-from openpyxl.descriptors.excel import (
-    Base64Binary,
-)
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.excel import Base64Binary
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.utils.protection import hash_password
 
@@ -14,19 +12,25 @@ class _Protected:
     _password = None
 
     def set_password(self, value="", already_hashed=False):
-        """Set a password on this sheet."""
+        """
+        Set a password on this sheet
+        """
         if not already_hashed:
             value = hash_password(value)
         self._password = value
 
     @property
     def password(self):
-        """Return the password value, regardless of hash."""
+        """
+        Return the password value, regardless of hash
+        """
         return self._password
 
     @password.setter
     def password(self, value):
-        """Set a password directly, forcing a hash step."""
+        """
+        Set a password directly, forcing a hash step
+        """
         self.set_password(value)
 
 
@@ -38,7 +42,6 @@ class SheetProtection(Serialisable, _Protected):
     """
 
     tagname = "sheetProtection"
-
     sheet = Bool()
     enabled = Alias("sheet")
     objects = Bool()
@@ -60,7 +63,6 @@ class SheetProtection(Serialisable, _Protected):
     spinCount = Integer(allow_none=True)
     algorithmName = String(allow_none=True)
     hashValue = Base64Binary(allow_none=True)
-
     __attrs__ = (
         "selectLockedCells",
         "selectUnlockedCells",

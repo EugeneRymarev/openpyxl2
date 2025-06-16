@@ -1,16 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-"""Worksheet Properties"""
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+"""
+Worksheet Properties
+"""
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.styles.colors import ColorDescriptor
 
 
 class Outline(Serialisable):
-
     tagname = "outlinePr"
-
     applyStyles = Bool(allow_none=True)
     summaryBelow = Bool(allow_none=True)
     summaryRight = Bool(allow_none=True)
@@ -30,9 +30,7 @@ class Outline(Serialisable):
 
 
 class PageSetupProperties(Serialisable):
-
     tagname = "pageSetUpPr"
-
     autoPageBreaks = Bool(allow_none=True)
     fitToPage = Bool(allow_none=True)
 
@@ -42,9 +40,7 @@ class PageSetupProperties(Serialisable):
 
 
 class WorksheetProperties(Serialisable):
-
     tagname = "sheetPr"
-
     codeName = String(allow_none=True)
     enableFormatConditionsCalculation = Bool(allow_none=True)
     filterMode = Bool(allow_none=True)
@@ -57,7 +53,6 @@ class WorksheetProperties(Serialisable):
     tabColor = ColorDescriptor(allow_none=True)
     outlinePr = Typed(expected_type=Outline, allow_none=True)
     pageSetUpPr = Typed(expected_type=PageSetupProperties, allow_none=True)
-
     __elements__ = ("tabColor", "outlinePr", "pageSetUpPr")
 
     def __init__(
@@ -75,7 +70,7 @@ class WorksheetProperties(Serialisable):
         outlinePr=None,
         pageSetUpPr=None,
     ):
-        """Attributes"""
+        # Attributes
         self.codeName = codeName
         self.enableFormatConditionsCalculation = enableFormatConditionsCalculation
         self.filterMode = filterMode
@@ -85,13 +80,12 @@ class WorksheetProperties(Serialisable):
         self.syncVertical = syncVertical
         self.transitionEvaluation = transitionEvaluation
         self.transitionEntry = transitionEntry
-        """ Elements """
+        # Elements
         self.tabColor = tabColor
         if outlinePr is None:
             self.outlinePr = Outline(summaryBelow=True, summaryRight=True)
         else:
             self.outlinePr = outlinePr
-
         if pageSetUpPr is None:
             pageSetUpPr = PageSetupProperties()
         self.pageSetUpPr = pageSetUpPr

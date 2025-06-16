@@ -1,44 +1,40 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
 from openpyxl.descriptors import Descriptor
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import CellRange
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.sequence import NestedSequence
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.utils import range_boundaries
+from openpyxl.utils.cell import range_boundaries
 from openpyxl.utils.escape import escape
 from openpyxl.utils.escape import unescape
+from openpyxl.worksheet.filters import AutoFilter
+from openpyxl.worksheet.filters import SortState
+from openpyxl.worksheet.related import Related
 from openpyxl.xml.constants import REL_NS
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import tostring
 
-from .filters import AutoFilter
-from .filters import SortState
-from .related import Related
-
-TABLESTYLES = tuple(
-    ["TableStyleMedium{0}".format(i) for i in range(1, 29)]
-    + ["TableStyleLight{0}".format(i) for i in range(1, 22)]
-    + ["TableStyleDark{0}".format(i) for i in range(1, 12)]
+TABLESTYLES = (
+    [f"TableStyleMedium{i}" for i in range(1, 29)]
+    + [f"TableStyleLight{i}" for i in range(1, 22)]
+    + [f"TableStyleDark{i}" for i in range(1, 12)],
 )
-
-PIVOTSTYLES = tuple(
-    ["PivotStyleMedium{0}".format(i) for i in range(1, 29)]
-    + ["PivotStyleLight{0}".format(i) for i in range(1, 29)]
-    + ["PivotStyleDark{0}".format(i) for i in range(1, 29)]
+PIVOTSTYLES = (
+    [f"PivotStyleMedium{i}" for i in range(1, 29)]
+    + [f"PivotStyleLight{i}" for i in range(1, 29)]
+    + [f"PivotStyleDark{i}" for i in range(1, 29)],
 )
 
 
 class TableStyleInfo(Serialisable):
-
     tagname = "tableStyleInfo"
-
     name = String(allow_none=True)
     showFirstColumn = Bool(allow_none=True)
     showLastColumn = Bool(allow_none=True)
@@ -61,15 +57,12 @@ class TableStyleInfo(Serialisable):
 
 
 class XMLColumnProps(Serialisable):
-
     tagname = "xmlColumnPr"
-
     mapId = Integer()
     xpath = String()
     denormalized = Bool(allow_none=True)
     xmlDataType = String()
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
     def __init__(
@@ -87,28 +80,19 @@ class XMLColumnProps(Serialisable):
 
 
 class TableFormula(Serialisable):
-
     tagname = "tableFormula"
-
     ## Note formula is stored as the text value
-
     array = Bool(allow_none=True)
     attr_text = Descriptor()
     text = Alias("attr_text")
 
-    def __init__(
-        self,
-        array=None,
-        attr_text=None,
-    ):
+    def __init__(self, array=None, attr_text=None):
         self.array = array
         self.attr_text = attr_text
 
 
 class TableColumn(Serialisable):
-
     tagname = "tableColumn"
-
     id = Integer()
     uniqueName = String(allow_none=True)
     name = String()
@@ -139,7 +123,6 @@ class TableColumn(Serialisable):
     totalsRowFormula = Typed(expected_type=TableFormula, allow_none=True)
     xmlColumnPr = Typed(expected_type=XMLColumnProps, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "calculatedColumnFormula",
         "totalsRowFormula",
@@ -208,14 +191,11 @@ class TableNameDescriptor(String):
 
 
 class Table(Serialisable):
-
+    tagname = "table"
     _path = "/tables/table{0}.xml"
     mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"
     _rel_type = REL_NS + "/table"
     _rel_id = None
-
-    tagname = "table"
-
     id = Integer()
     name = String(allow_none=True)
     displayName = TableNameDescriptor()
@@ -243,7 +223,6 @@ class Table(Serialisable):
     tableColumns = NestedSequence(expected_type=TableColumn, count=True)
     tableStyleInfo = Typed(expected_type=TableStyleInfo, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("autoFilter", "sortState", "tableColumns", "tableStyleInfo")
 
     def __init__(
@@ -315,7 +294,7 @@ class Table(Serialisable):
         """
         Return path within the archive
         """
-        return "/xl" + self._path.format(self.id)
+        return f"/xl{self._path.format(self.id)}"
 
     def _write(self, archive):
         """
@@ -330,10 +309,9 @@ class Table(Serialisable):
         Always set a ref if we have headers (the default)
         Column headings must be strings and must match cells in the worksheet.
         """
-
         min_col, min_row, max_col, max_row = range_boundaries(self.ref)
         for idx in range(min_col, max_col + 1):
-            col = TableColumn(id=idx, name="Column{0}".format(idx))
+            col = TableColumn(id=idx, name=f"Column{idx}")
             self.tableColumns.append(col)
         if self.headerRowCount and not self.autoFilter:
             self.autoFilter = AutoFilter(ref=self.ref)
@@ -344,20 +322,13 @@ class Table(Serialisable):
 
 
 class TablePartList(Serialisable):
-
     tagname = "tableParts"
-
     count = Integer(allow_none=True)
     tablePart = Sequence(expected_type=Related)
-
     __elements__ = ("tablePart",)
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        tablePart=(),
-    ):
+    def __init__(self, count=None, tablePart=()):
         self.tablePart = tablePart
 
     def append(self, part):
@@ -372,7 +343,6 @@ class TablePartList(Serialisable):
 
 
 class TableList(dict):
-
     def add(self, table):
         if not isinstance(table, Table):
             raise TypeError("You can only add tables")
@@ -384,6 +354,7 @@ class TableList(dict):
         for table in self.values():
             if table_range == table.ref:
                 return table
+        return None
 
     def items(self):
         return [(name, table.ref) for name, table in super().items()]

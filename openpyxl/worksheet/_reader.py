@@ -1,84 +1,86 @@
 # Copyright (c) 2010-2025 openpyxl
-"""Reader for a single worksheet."""
-from copy import copy
-from warnings import warn
+"""
+Reader for a single worksheet.
+"""
+import copy
+import warnings
 
-from openpyxl.cell import Cell
-from openpyxl.cell import MergedCell
+from openpyxl.cell.cell import Cell
+from openpyxl.cell.cell import MergedCell
 from openpyxl.cell.rich_text import CellRichText
 from openpyxl.cell.text import Text
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.formatting.formatting import ConditionalFormatting
 from openpyxl.formula.translate import Translator
-from openpyxl.utils import coordinate_to_tuple
-from openpyxl.utils import get_column_letter
+from openpyxl.utils.cell import coordinate_to_tuple
+from openpyxl.utils.cell import get_column_letter
+from openpyxl.utils.datetime import WINDOWS_EPOCH
 from openpyxl.utils.datetime import from_excel
 from openpyxl.utils.datetime import from_ISO8601
-from openpyxl.utils.datetime import WINDOWS_EPOCH
+from openpyxl.worksheet.cell_range import MultiCellRange
+from openpyxl.worksheet.controls import ControlList
+from openpyxl.worksheet.datavalidation import DataValidationList
 from openpyxl.worksheet.dimensions import ColumnDimension
 from openpyxl.worksheet.dimensions import RowDimension
+from openpyxl.worksheet.dimensions import SheetDimension
 from openpyxl.worksheet.dimensions import SheetFormatProperties
+from openpyxl.worksheet.filters import AutoFilter
+from openpyxl.worksheet.formula import ArrayFormula
+from openpyxl.worksheet.formula import DataTableFormula
+from openpyxl.worksheet.header_footer import HeaderFooter
+from openpyxl.worksheet.hyperlink import HyperlinkList
+from openpyxl.worksheet.merge import MergeCells
+from openpyxl.worksheet.merge import MergedCellRange
+from openpyxl.worksheet.page import PageMargins
+from openpyxl.worksheet.page import PrintOptions
+from openpyxl.worksheet.page import PrintPageSetup
+from openpyxl.worksheet.pagebreak import ColBreak
+from openpyxl.worksheet.pagebreak import RowBreak
+from openpyxl.worksheet.properties import WorksheetProperties
+from openpyxl.worksheet.protection import SheetProtection
+from openpyxl.worksheet.related import Related
+from openpyxl.worksheet.scenario import ScenarioList
+from openpyxl.worksheet.table import TablePartList
+from openpyxl.worksheet.views import SheetViewList
 from openpyxl.xml.constants import EXT_TYPES
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import iterparse
 
-from .controls import ControlList
-from .datavalidation import DataValidationList
-from .dimensions import SheetDimension
-from .filters import AutoFilter
-from .formula import ArrayFormula
-from .formula import DataTableFormula
-from .header_footer import HeaderFooter
-from .hyperlink import HyperlinkList
-from .merge import MergeCells
-from .page import PageMargins
-from .page import PrintOptions
-from .page import PrintPageSetup
-from .pagebreak import ColBreak
-from .pagebreak import RowBreak
-from .properties import WorksheetProperties
-from .protection import SheetProtection
-from .related import Related
-from .scenario import ScenarioList
-from .table import TablePartList
-from .views import SheetViewList
-# compatibility imports
-# package imports
-
-
-CELL_TAG = "{%s}c" % SHEET_MAIN_NS
-VALUE_TAG = "{%s}v" % SHEET_MAIN_NS
-FORMULA_TAG = "{%s}f" % SHEET_MAIN_NS
-MERGE_TAG = "{%s}mergeCells" % SHEET_MAIN_NS
-INLINE_STRING = "{%s}is" % SHEET_MAIN_NS
-COL_TAG = "{%s}col" % SHEET_MAIN_NS
-ROW_TAG = "{%s}row" % SHEET_MAIN_NS
-CF_TAG = "{%s}conditionalFormatting" % SHEET_MAIN_NS
-LEGACY_TAG = "{%s}legacyDrawing" % SHEET_MAIN_NS
-PROT_TAG = "{%s}sheetProtection" % SHEET_MAIN_NS
-EXT_TAG = "{%s}extLst" % SHEET_MAIN_NS
-HYPERLINK_TAG = "{%s}hyperlinks" % SHEET_MAIN_NS
-TABLE_TAG = "{%s}tableParts" % SHEET_MAIN_NS
-PRINT_TAG = "{%s}printOptions" % SHEET_MAIN_NS
-MARGINS_TAG = "{%s}pageMargins" % SHEET_MAIN_NS
-PAGE_TAG = "{%s}pageSetup" % SHEET_MAIN_NS
-HEADER_TAG = "{%s}headerFooter" % SHEET_MAIN_NS
-FILTER_TAG = "{%s}autoFilter" % SHEET_MAIN_NS
-VALIDATION_TAG = "{%s}dataValidations" % SHEET_MAIN_NS
-PROPERTIES_TAG = "{%s}sheetPr" % SHEET_MAIN_NS
-VIEWS_TAG = "{%s}sheetViews" % SHEET_MAIN_NS
-FORMAT_TAG = "{%s}sheetFormatPr" % SHEET_MAIN_NS
-ROW_BREAK_TAG = "{%s}rowBreaks" % SHEET_MAIN_NS
-COL_BREAK_TAG = "{%s}colBreaks" % SHEET_MAIN_NS
-SCENARIOS_TAG = "{%s}scenarios" % SHEET_MAIN_NS
-DATA_TAG = "{%s}sheetData" % SHEET_MAIN_NS
-DIMENSION_TAG = "{%s}dimension" % SHEET_MAIN_NS
-CUSTOM_VIEWS_TAG = "{%s}customSheetViews" % SHEET_MAIN_NS
-CONTROLS_TAG = "{%s}controls" % SHEET_MAIN_NS
+CELL_TAG = f"{{{SHEET_MAIN_NS}}}c"
+VALUE_TAG = f"{{{SHEET_MAIN_NS}}}v"
+FORMULA_TAG = f"{{{SHEET_MAIN_NS}}}f"
+MERGE_TAG = f"{{{SHEET_MAIN_NS}}}mergeCells"
+INLINE_STRING = f"{{{SHEET_MAIN_NS}}}is"
+COL_TAG = f"{{{SHEET_MAIN_NS}}}col"
+ROW_TAG = f"{{{SHEET_MAIN_NS}}}row"
+CF_TAG = f"{{{SHEET_MAIN_NS}}}conditionalFormatting"
+LEGACY_TAG = f"{{{SHEET_MAIN_NS}}}legacyDrawing"
+PROT_TAG = f"{{{SHEET_MAIN_NS}}}sheetProtection"
+EXT_TAG = f"{{{SHEET_MAIN_NS}}}extLst"
+HYPERLINK_TAG = f"{{{SHEET_MAIN_NS}}}hyperlinks"
+TABLE_TAG = f"{{{SHEET_MAIN_NS}}}tableParts"
+PRINT_TAG = f"{{{SHEET_MAIN_NS}}}printOptions"
+MARGINS_TAG = f"{{{SHEET_MAIN_NS}}}pageMargins"
+PAGE_TAG = f"{{{SHEET_MAIN_NS}}}pageSetup"
+HEADER_TAG = f"{{{SHEET_MAIN_NS}}}headerFooter"
+FILTER_TAG = f"{{{SHEET_MAIN_NS}}}autoFilter"
+VALIDATION_TAG = f"{{{SHEET_MAIN_NS}}}dataValidations"
+PROPERTIES_TAG = f"{{{SHEET_MAIN_NS}}}sheetPr"
+VIEWS_TAG = f"{{{SHEET_MAIN_NS}}}sheetViews"
+FORMAT_TAG = f"{{{SHEET_MAIN_NS}}}sheetFormatPr"
+ROW_BREAK_TAG = f"{{{SHEET_MAIN_NS}}}rowBreaks"
+COL_BREAK_TAG = f"{{{SHEET_MAIN_NS}}}colBreaks"
+SCENARIOS_TAG = f"{{{SHEET_MAIN_NS}}}scenarios"
+DATA_TAG = f"{{{SHEET_MAIN_NS}}}sheetData"
+DIMENSION_TAG = f"{{{SHEET_MAIN_NS}}}dimension"
+CUSTOM_VIEWS_TAG = f"{{{SHEET_MAIN_NS}}}customSheetViews"
+CONTROLS_TAG = f"{{{SHEET_MAIN_NS}}}controls"
 
 
 def _cast_number(value):
-    "Convert numbers as string to an int or float"
+    """
+    Convert numbers as string to an int or float
+    """
     if "." in value or "E" in value or "e" in value:
         return float(value)
     return int(value)
@@ -95,7 +97,6 @@ def parse_richtext_string(element):
 
 
 class WorkSheetParser:
-
     def __init__(
         self,
         src,
@@ -140,7 +141,6 @@ class WorkSheetParser:
             COL_BREAK_TAG: self.parse_col_breaks,
             CUSTOM_VIEWS_TAG: self.parse_custom_views,
         }
-
         properties = {
             PRINT_TAG: ("print_options", PrintOptions),
             MARGINS_TAG: ("page_margins", PageMargins),
@@ -157,11 +157,8 @@ class WorkSheetParser:
             MERGE_TAG: ("merged_cells", MergeCells),
             CONTROLS_TAG: ("controls", ControlList),
         }
-
-        it = iterparse(
-            self.source
-        )  # add a finaliser to close the source when this becomes possible
-
+        # add a finaliser to close the source when this becomes possible
+        it = iterparse(self.source)
         for _, element in it:
             tag_name = element.tag
             if tag_name in dispatcher:
@@ -182,16 +179,15 @@ class WorkSheetParser:
         Get worksheet dimensions if they are provided.
         """
         it = iterparse(self.source)
-
         for _event, element in it:
             if element.tag == DIMENSION_TAG:
                 dim = SheetDimension.from_tree(element)
                 return dim.boundaries
-
             elif element.tag == DATA_TAG:
                 # Dimensions missing
                 break
             element.clear()
+        return None
 
     def parse_cell(self, element):
         data_type = element.get("t", "n")
@@ -199,23 +195,19 @@ class WorkSheetParser:
         style_id = element.get("s", 0)
         if style_id:
             style_id = int(style_id)
-
         if data_type == "inlineStr":
             value = None
         else:
             value = element.findtext(VALUE_TAG, None) or None
-
         if coordinate:
             row, column = coordinate_to_tuple(coordinate)
             self.col_counter = column
         else:
             self.col_counter += 1
             row, column = self.row_counter, self.col_counter
-
         if not self.data_only and element.find(FORMULA_TAG) is not None:
             data_type = "f"
             value = self.parse_formula(element)
-
         elif value is not None:
             if data_type == "n":
                 value = _cast_number(value)
@@ -228,8 +220,12 @@ class WorkSheetParser:
                             timedelta=style_id in self.timedelta_formats,
                         )
                     except (OverflowError, ValueError):
-                        msg = f"""Cell {coordinate} is marked as a date but the serial value {value} is outside the limits for dates. The cell will be treated as an error."""
-                        warn(msg)
+                        msg = (
+                            f"Cell {coordinate} is marked as a date but the "
+                            f"serial value {value} is outside the limits for "
+                            "dates. The cell will be treated as an error."
+                        )
+                        warnings.warn(msg)
                         data_type = "e"
                         value = "#VALUE!"
             elif data_type == "s":
@@ -240,7 +236,6 @@ class WorkSheetParser:
                 data_type = "s"
             elif data_type == "d":
                 value = from_ISO8601(value)
-
         elif data_type == "inlineStr":
             child = element.find(INLINE_STRING)
             if child is not None:
@@ -249,7 +244,6 @@ class WorkSheetParser:
                     value = parse_richtext_string(child)
                 else:
                     value = Text.from_tree(child).content
-
         return {
             "row": row,
             "column": column,
@@ -268,10 +262,8 @@ class WorkSheetParser:
         value = "="
         if formula.text is not None:
             value += formula.text
-
         if formula_type == "array":
             value = ArrayFormula(ref=formula.get("ref"), text=value)
-
         elif formula_type == "shared":
             idx = formula.get("si")
             if idx in self.shared_formulae:
@@ -279,10 +271,8 @@ class WorkSheetParser:
                 value = trans.translate_formula(coordinate)
             elif value != "=":
                 self.shared_formulae[idx] = Translator(value, coordinate)
-
         elif formula_type == "dataTable":
             value = DataTableFormula(**formula.attrib)
-
         return value
 
     def parse_column_dimensions(self, col):
@@ -293,7 +283,6 @@ class WorkSheetParser:
 
     def parse_row(self, row):
         attrs = dict(row.attrib)
-
         if "r" in attrs:
             try:
                 self.row_counter = int(attrs["r"])
@@ -306,12 +295,10 @@ class WorkSheetParser:
         else:
             self.row_counter += 1
         self.col_counter = 0
-
         keys = {k for k in attrs if not k.startswith("{")}
         if keys - {"r", "spans"}:
             # don't create dimension objects unless they have relevant information
             self.row_dimensions[str(self.row_counter)] = attrs
-
         cells = [self.parse_cell(el) for el in row]
         return self.row_counter, cells
 
@@ -320,8 +307,11 @@ class WorkSheetParser:
             cf = ConditionalFormatting.from_tree(element)
             self.formatting.append(cf)
         except TypeError as e:
-            msg = f"Failed to load a conditional formatting rule. It will be discarded. Cause: {e}"
-            warn(msg)
+            msg = (
+                "Failed to load a conditional formatting "
+                f"rule. It will be discarded. Cause: {e}"
+            )
+            warnings.warn(msg)
 
     def parse_sheet_protection(self, element):
         protection = SheetProtection.from_tree(element)
@@ -334,8 +324,7 @@ class WorkSheetParser:
         extLst = ExtensionList.from_tree(element)
         for e in extLst.ext:
             ext_type = EXT_TYPES.get(e.uri.upper(), "Unknown")
-            msg = "{0} extension is not supported and will be removed".format(ext_type)
-            warn(msg)
+            warnings.warn(f"{ext_type} extension is not supported and will be removed")
 
     def parse_legacy(self, element):
         obj = Related.from_tree(element)
@@ -379,12 +368,14 @@ class WorksheetReader:
             for cell in row:
                 style = self.ws.parent._cell_styles[cell["style_id"]]
                 c = Cell(
-                    self.ws, row=cell["row"], column=cell["column"], style_array=style
+                    self.ws,
+                    row=cell["row"],
+                    column=cell["column"],
+                    style_array=style,
                 )
                 c._value = cell["value"]
                 c.data_type = cell["data_type"]
                 self.ws._cells[(cell["row"], cell["column"])] = c
-
         if self.ws._cells:
             self.ws._current_row = self.ws.max_row  # use cells not row dimensions
 
@@ -401,12 +392,8 @@ class WorksheetReader:
             self.tables.append(rel.Target)
 
     def bind_merged_cells(self):
-        from openpyxl.worksheet.cell_range import MultiCellRange
-        from openpyxl.worksheet.merge import MergedCellRange
-
         if not self.parser.merged_cells:
             return
-
         ranges = []
         for cr in self.parser.merged_cells.mergeCell:
             mcr = MergedCellRange(self.ws, cr.ref)
@@ -424,7 +411,7 @@ class WorksheetReader:
                 for row in self.ws[link.ref]:
                     for cell in row:
                         try:
-                            cell.hyperlink = copy(link)
+                            cell.hyperlink = copy.copy(link)
                         except AttributeError:
                             pass
             else:
@@ -441,6 +428,7 @@ class WorksheetReader:
         for rng in self.ws.merged_cells:
             if coord in rng:
                 return self.ws.cell(*rng.top[0])
+        return None
 
     def bind_col_dimensions(self):
         for col, cd in self.parser.column_dimensions.items():
@@ -457,7 +445,7 @@ class WorksheetReader:
             self.ws.row_dimensions[int(row)] = RowDimension(self.ws, **rd)
 
     def bind_properties(self):
-        for k in (
+        keys = (
             "print_options",
             "page_margins",
             "page_setup",
@@ -473,7 +461,8 @@ class WorksheetReader:
             "legacy_drawing",
             "protection",
             "controls",
-        ):
+        )
+        for k in keys:
             v = getattr(self.parser, k, None)
             if v is not None:
                 setattr(self.ws, k, v)

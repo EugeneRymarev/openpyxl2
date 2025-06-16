@@ -1,20 +1,18 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.drawing.anchor import AnchorMarker
 from openpyxl.xml.constants import SHEET_DRAWING_NS
 
 
 class AnchorMarker(AnchorMarker):
-
     ## XDR namespace for child elements only
-
     col = NestedText(expected_type=int, namespace=SHEET_DRAWING_NS)
     colOff = NestedText(expected_type=int, namespace=SHEET_DRAWING_NS)
     row = NestedText(expected_type=int, namespace=SHEET_DRAWING_NS)
@@ -22,9 +20,7 @@ class AnchorMarker(AnchorMarker):
 
 
 class ObjectAnchor(Serialisable):
-
     tagname = "anchor"
-
     _from = Typed(expected_type=AnchorMarker)
     to = Typed(expected_type=AnchorMarker)
     moveWithCells = Bool(allow_none=True)
@@ -47,9 +43,7 @@ class ObjectAnchor(Serialisable):
 
 
 class ObjectPr(Serialisable):
-
     tagname = "objectPr"
-
     anchor = Typed(expected_type=ObjectAnchor)
     locked = Bool(allow_none=True)
     defaultSize = Bool(allow_none=True)
@@ -62,7 +56,6 @@ class ObjectPr(Serialisable):
     macro = String()
     altText = String(allow_none=True)
     dde = Bool(allow_none=True)
-
     __elements__ = ("anchor",)
 
     def __init__(
@@ -95,9 +88,7 @@ class ObjectPr(Serialisable):
 
 
 class OleObject(Serialisable):
-
     tagname = "oleObject"
-
     objectPr = Typed(expected_type=ObjectPr, allow_none=True)
     progId = String(allow_none=True)
     dvAspect = Set(values=(["DVASPECT_CONTENT", "DVASPECT_ICON"]))
@@ -105,7 +96,6 @@ class OleObject(Serialisable):
     oleUpdate = Set(values=(["OLEUPDATE_ALWAYS", "OLEUPDATE_ONCALL"]))
     autoLoad = Bool(allow_none=True)
     shapeId = Integer()
-
     __elements__ = ("objectPr",)
 
     def __init__(
@@ -128,15 +118,9 @@ class OleObject(Serialisable):
 
 
 class OleObjects(Serialisable):
-
     tagname = "oleObjects"
-
     oleObject = Sequence(expected_type=OleObject)
-
     __elements__ = ("oleObject",)
 
-    def __init__(
-        self,
-        oleObject=(),
-    ):
+    def __init__(self, oleObject=()):
         self.oleObject = oleObject

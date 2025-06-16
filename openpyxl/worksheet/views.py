@@ -1,13 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 
 
@@ -47,10 +47,11 @@ class Selection(Serialisable):
 
 
 class SheetView(Serialisable):
-    """Information about the visible portions of this sheet."""
+    """
+    Information about the visible portions of this sheet
+    """
 
     tagname = "sheetView"
-
     windowProtection = Bool(allow_none=True)
     showFormulas = Bool(allow_none=True)
     showGridLines = Bool(allow_none=True)
@@ -126,21 +127,12 @@ class SheetView(Serialisable):
 
 
 class SheetViewList(Serialisable):
-
     tagname = "sheetViews"
-
-    sheetView = Sequence(
-        expected_type=SheetView,
-    )
+    sheetView = Sequence(expected_type=SheetView)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("sheetView",)
 
-    def __init__(
-        self,
-        sheetView=None,
-        extLst=None,
-    ):
+    def __init__(self, sheetView=None, extLst=None):
         if sheetView is None:
             sheetView = [SheetView()]
         self.sheetView = sheetView

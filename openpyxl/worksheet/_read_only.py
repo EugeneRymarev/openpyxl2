@@ -1,12 +1,13 @@
 # Copyright (c) 2010-2025 openpyxl
-"""Read worksheets on-demand"""
+"""
+Read worksheets on-demand
+"""
 from openpyxl.cell.read_only import EMPTY_CELL
 from openpyxl.cell.read_only import ReadOnlyCell
-from openpyxl.utils import get_column_letter
+from openpyxl.utils.cell import get_column_letter
 from openpyxl.workbook.defined_name import DefinedNameDict
-
-from ._reader import WorkSheetParser
-from .worksheet import Worksheet
+from openpyxl.worksheet._reader import WorkSheetParser
+from openpyxl.worksheet.worksheet import Worksheet
 
 
 def read_dimension(source):
@@ -15,11 +16,9 @@ def read_dimension(source):
 
 
 class ReadOnlyWorksheet:
-
     _min_column = 1
     _min_row = 1
     _max_column = _max_row = None
-
     # from Standard Worksheet
     # Methods from Worksheet
     cell = Worksheet.cell
@@ -42,15 +41,15 @@ class ReadOnlyWorksheet:
     def _get_size(self):
         src = self._get_source()
         parser = WorkSheetParser(src, [])
-        dimensions = parser.parse_dimensions()
+        dmnsns = parser.parse_dimensions()
         src.close()
-        if dimensions is not None:
-            self._min_column, self._min_row, self._max_column, self._max_row = (
-                dimensions
-            )
+        if dmnsns is not None:
+            self._min_column, self._min_row, self._max_column, self._max_row = dmnsns
 
     def _get_source(self):
-        """Parse xml source on demand, must close after use"""
+        """
+        Parse xml source on demand, must close after use
+        """
         return self.parent._archive.open(self._worksheet_path)
 
     def _cells_by_row(self, min_col, min_row, max_col, max_row, values_only=False):
@@ -61,13 +60,11 @@ class ReadOnlyWorksheet:
         filler = EMPTY_CELL
         if values_only:
             filler = None
-
         max_col = max_col or self.max_column
         max_row = max_row or self.max_row
         empty_row = []
         if max_col is not None:
             empty_row = (filler,) * (max_col + 1 - min_col)
-
         counter = min_row
         idx = 1
         with self._get_source() as src:
@@ -83,18 +80,15 @@ class ReadOnlyWorksheet:
             for idx, row in parser.parse():
                 if max_row is not None and idx > max_row:
                     break
-
                 # some rows are missing
                 for _ in range(counter, idx):
                     counter += 1
                     yield empty_row
-
                 # return cells from a row
                 if counter <= idx:
                     row = self._get_row(row, min_col, max_col, values_only)
                     counter += 1
                     yield row
-
         if max_row is not None and max_row < idx:
             for _ in range(counter, max_row + 1):
                 yield empty_row
@@ -103,18 +97,14 @@ class ReadOnlyWorksheet:
         """
         Make sure a row contains always the same number of cells or values
         """
-        if (
-            not row and not max_col
-        ):  # in case someone wants to force rows where there aren't any
-            return ()
-
+        # in case someone wants to force rows where there aren't any
+        if not row and not max_col:
+            return tuple()
         max_col = max_col or row[-1]["column"]
         row_width = max_col + 1 - min_col
-
         new_row = [EMPTY_CELL] * row_width
         if values_only:
             new_row = [None] * row_width
-
         for cell in row:
             counter = cell["column"]
             if min_col <= counter <= max_col:
@@ -122,7 +112,6 @@ class ReadOnlyWorksheet:
                 new_row[idx] = cell["value"]
                 if not values_only:
                     new_row[idx] = ReadOnlyCell(self, **cell)
-
         return tuple(new_row)
 
     def _get_cell(self, row, column):
@@ -137,24 +126,24 @@ class ReadOnlyWorksheet:
             if force:
                 self._calculate_dimension()
             else:
-                raise ValueError(
-                    "Worksheet is unsized, use calculate_dimension(force=True)"
-                )
-        return f"{get_column_letter(self.min_column)}{self.min_row}:{get_column_letter(self.max_column)}{self.max_row}"
+                msg = "Worksheet is unsized, use calculate_dimension(force=True)"
+                raise ValueError(msg)
+        return (
+            f"{get_column_letter(self.min_column)}{self.min_row}:"
+            f"{get_column_letter(self.max_column)}{self.max_row}"
+        )
 
     def _calculate_dimension(self):
         """
         Loop through all the cells to get the size of a worksheet.
         Do this only if it is explicitly requested.
         """
-
         max_col = 0
         for r in self.rows:
             if not r:
                 continue
             cell = r[-1]
             max_col = max(max_col, cell.column)
-
         self._max_row = cell.row
         self._max_column = max_col
 

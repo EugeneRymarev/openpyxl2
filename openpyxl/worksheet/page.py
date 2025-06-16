@@ -1,18 +1,19 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
 from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.excel import UniversalMeasure
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class PrintPageSetup(Serialisable):
-    """Worksheet print page setup"""
+    """
+    Worksheet print page setup
+    """
 
     tagname = "pageSetup"
-
     orientation = NoneSet(values=("default", "portrait", "landscape"))
     paperSize = Integer(allow_none=True)
     scale = Integer(allow_none=True)
@@ -111,7 +112,9 @@ class PrintPageSetup(Serialisable):
 
 
 class PrintOptions(Serialisable):
-    """Worksheet print options"""
+    """
+    Worksheet print options
+    """
 
     tagname = "printOptions"
     horizontalCentered = Bool(allow_none=True)
@@ -148,7 +151,6 @@ class PageMargins(Serialisable):
     """
 
     tagname = "pageMargins"
-
     left = Float()
     right = Float()
     top = Float()

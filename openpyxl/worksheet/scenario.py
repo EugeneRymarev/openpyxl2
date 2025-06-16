@@ -1,32 +1,22 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Convertible
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Convertible
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-
-from .cell_range import MultiCellRange
+from openpyxl.worksheet.cell_range import MultiCellRange
 
 
 class InputCells(Serialisable):
-
     tagname = "inputCells"
-
     r = String()
     deleted = Bool(allow_none=True)
     undone = Bool(allow_none=True)
     val = String()
     numFmtId = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        r=None,
-        deleted=False,
-        undone=False,
-        val=None,
-        numFmtId=None,
-    ):
+    def __init__(self, r=None, deleted=False, undone=False, val=None, numFmtId=None):
         self.r = r
         self.deleted = deleted
         self.undone = undone
@@ -35,16 +25,13 @@ class InputCells(Serialisable):
 
 
 class Scenario(Serialisable):
-
     tagname = "scenario"
-
     inputCells = Sequence(expected_type=InputCells)
     name = String()
     locked = Bool(allow_none=True)
     hidden = Bool(allow_none=True)
     user = String(allow_none=True)
     comment = String(allow_none=True)
-
     __elements__ = ("inputCells",)
     __attrs__ = ("name", "locked", "hidden", "user", "comment", "count")
 
@@ -71,23 +58,14 @@ class Scenario(Serialisable):
 
 
 class ScenarioList(Serialisable):
-
     tagname = "scenarios"
-
     scenario = Sequence(expected_type=Scenario)
     current = Integer(allow_none=True)
     show = Integer(allow_none=True)
     sqref = Convertible(expected_type=MultiCellRange, allow_none=True)
-
     __elements__ = ("scenario",)
 
-    def __init__(
-        self,
-        scenario=(),
-        current=None,
-        show=None,
-        sqref=None,
-    ):
+    def __init__(self, scenario=(), current=None, show=None, sqref=None):
         self.scenario = scenario
         self.current = current
         self.show = show

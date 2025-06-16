@@ -1,32 +1,26 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import Relation
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.packaging.manifest import ManifestObject
-from openpyxl.packaging.relationship import get_rels_path
 from openpyxl.packaging.relationship import Relationship
 from openpyxl.packaging.relationship import RelationshipList
+from openpyxl.packaging.relationship import get_rels_path
+from openpyxl.worksheet.ole import ObjectAnchor
 from openpyxl.xml.constants import ACTIVEX_NS
 from openpyxl.xml.constants import REL_NS
 from openpyxl.xml.constants import XL_2009
 from openpyxl.xml.functions import tostring
 
-from .ole import ObjectAnchor
-
 
 class ControlProperty(Serialisable):
-
     tagname = "controlPr"
-
-    anchor = Typed(
-        expected_type=ObjectAnchor,
-    )
+    anchor = Typed(expected_type=ObjectAnchor)
     locked = Bool(allow_none=True)
     defaultSize = Bool(allow_none=True)
     print = Bool(allow_none=True)
@@ -42,10 +36,9 @@ class ControlProperty(Serialisable):
     listFillRange = String(allow_none=True)
     cf = String(allow_none=True)
     id = Relation(allow_none=True)
-
     __elements__ = ("anchor",)
-
-    image = None  # where a related image is stored, the image data stored as a blob attribute
+    # where a related image is stored, the image data stored as a blob attribute
+    image = None
 
     def __init__(
         self,
@@ -85,25 +78,15 @@ class ControlProperty(Serialisable):
 
 
 class Control(Serialisable):
-
     tagname = "control"
-
     controlPr = Typed(expected_type=ControlProperty, allow_none=True)
     shapeId = Integer()
     name = String(allow_none=True)
     id = Relation()
-
     shape = None  # related element
-
     __elements__ = ("controlPr",)
 
-    def __init__(
-        self,
-        controlPr=None,
-        shapeId=None,
-        name=None,
-        id=None,
-    ):
+    def __init__(self, controlPr=None, shapeId=None, name=None, id=None):
         self.controlPr = controlPr
         self.shapeId = shapeId
         self.name = name
@@ -111,10 +94,11 @@ class Control(Serialisable):
 
 
 class Choice(Serialisable):
-    """Markup compatiblity choice"""
+    """
+    Markup compatiblity choice
+    """
 
     tagname = "choice"
-
     control = Typed(expected_type=Control)
     Requires = String()
 
@@ -123,7 +107,9 @@ class Choice(Serialisable):
 
 
 class AlternateContent(Serialisable):
-    """Markup AlternateContent"""
+    """
+    Markup AlternateContent
+    """
 
     tagname = "AlternateContent"
 
@@ -134,19 +120,12 @@ class AlternateContent(Serialisable):
 
 
 class ControlList(Serialisable):
-
     tagname = "controls"
-
     AlternateContent = Sequence(expected_type=AlternateContent)
     control = Sequence(expected_type=Control)
-
     __elements__ = ("control",)
 
-    def __init__(
-        self,
-        AlternateContent=None,
-        control=(),
-    ):
+    def __init__(self, AlternateContent=None, control=()):
         if AlternateContent:
             control = [ac.Choice.control for ac in AlternateContent]
         self.control = control
@@ -156,14 +135,12 @@ class ControlList(Serialisable):
 
 
 class FormControl(Serialisable):
-
     tagname = "formControlPr"
     mime_type = "application/vnd.ms-excel.controlproperties+xml"
     rel_type = f"{REL_NS}/ctrlProp"
     namespace = XL_2009
     _path = "/xl/ctrlProps/ctrlProp{0}.xml"
     _counter = None
-
     objectType = String(allow_none=True)
     checked = String(allow_none=True)
     colored = Bool()
@@ -195,9 +172,7 @@ class FormControl(Serialisable):
     multiLine = Bool()
     verticalBar = Bool()
     passwordEdit = Bool()
-
     itemLst = Sequence(expected_type=String)
-
     __elements__ = ("itemLst",)
 
     def __init__(
@@ -283,7 +258,6 @@ class FormControl(Serialisable):
 
 
 class ActiveXControl(Serialisable):
-
     namespace = ACTIVEX_NS
     tagname = "ocx"
     mime_type = "application/vnd.ms-office.activeX+xml"
@@ -294,7 +268,6 @@ class ActiveXControl(Serialisable):
     bin_rel_type = (
         "http://schemas.microsoft.com/office/2006/relationships/activeXControlBinary"
     )
-
     id = Relation()
     classid = String(namespace=ACTIVEX_NS)
     persistence = NoneSet(
@@ -306,7 +279,6 @@ class ActiveXControl(Serialisable):
         ],
         namespace=ACTIVEX_NS,
     )
-
     bin = None  # active X binary
     # bin = b"\001"
 
@@ -338,18 +310,14 @@ class ActiveXControl(Serialisable):
         """
         Write the relevant child objects and add links
         """
-
         bin_path = f"/xl/activeX/activeX{self.counter}.bin"
         archive.writestr(bin_path[1:], self.bin)
-
         rels = RelationshipList()
         r = Relationship(Type=self.bin_rel_type, Target=bin_path)
         rels.append(r)
         self.id = r.id
-
         path = get_rels_path(self.path.format(self.counter))
         xml = tostring(rels.to_tree())
         archive.writestr(path[1:], xml)
-
         mo = ManifestObject(bin_path, "application/vnd.ms-office.activeX")
         manifest.append(mo)

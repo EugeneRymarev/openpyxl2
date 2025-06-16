@@ -1,15 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-from copy import copy
-from operator import attrgetter
+import copy
+import itertools
+import operator
 
-from openpyxl.descriptors import MinMax
 from openpyxl.descriptors import Strict
+from openpyxl.descriptors.base import MinMax
 from openpyxl.descriptors.sequence import UniqueSequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.utils import get_column_letter
-from openpyxl.utils import quote_sheetname
-from openpyxl.utils import range_boundaries
-from openpyxl.utils import range_to_tuple
+from openpyxl.utils.cell import get_column_letter
+from openpyxl.utils.cell import quote_sheetname
+from openpyxl.utils.cell import range_boundaries
+from openpyxl.utils.cell import range_to_tuple
 
 
 class CellRange(Serialisable):
@@ -52,24 +53,19 @@ class CellRange(Serialisable):
     ):
         if range_string is not None:
             if "!" in range_string:
-                title, (min_col, min_row, max_col, max_row) = range_to_tuple(
-                    range_string
-                )
+                title, range_ = range_to_tuple(range_string)
+                min_col, min_row, max_col, max_row = range_
             else:
                 min_col, min_row, max_col, max_row = range_boundaries(range_string)
-
         self.min_col = min_col
         self.min_row = min_row
         self.max_col = max_col
         self.max_row = max_row
         self.title = title
-
         if min_col > max_col:
-            fmt = "{max_col} must be greater than {min_col}"
-            raise ValueError(fmt.format(min_col=min_col, max_col=max_col))
+            raise ValueError(f"{max_col} must be greater than {min_col}")
         if min_row > max_row:
-            fmt = "{max_row} must be greater than {min_row}"
-            raise ValueError(fmt.format(min_row=min_row, max_row=max_row))
+            raise ValueError(f"{max_row} must be greater than {min_row}")
 
     @property
     def bounds(self):
@@ -83,16 +79,13 @@ class CellRange(Serialisable):
         """
         Excel-style representation of the range
         """
-        fmt = "{min_col}{min_row}:{max_col}{max_row}"
-        if self.min_col == self.max_col and self.min_row == self.max_row:
-            fmt = "{min_col}{min_row}"
-
-        return fmt.format(
-            min_col=get_column_letter(self.min_col),
-            min_row=self.min_row,
-            max_col=get_column_letter(self.max_col),
-            max_row=self.max_row,
-        )
+        min_col = get_column_letter(self.min_col)
+        min_row = self.min_row
+        max_col = get_column_letter(self.max_col)
+        max_row = self.max_row
+        if min_col == max_col and min_row == max_row:
+            return f"{min_col}{min_row}"
+        return f"{min_col}{min_row}:{max_col}{max_row}"
 
     @property
     def rows(self):
@@ -112,11 +105,11 @@ class CellRange(Serialisable):
 
     @property
     def cells(self):
-        from itertools import product
-
-        return product(
-            range(self.min_row, self.max_row + 1), range(self.min_col, self.max_col + 1)
+        result = itertools.product(
+            range(self.min_row, self.max_row + 1),
+            range(self.min_col, self.max_col + 1),
         )
+        return result
 
     def _check_title(self, other):
         """
@@ -126,28 +119,27 @@ class CellRange(Serialisable):
         """
         if not isinstance(other, CellRange):
             raise TypeError(repr(type(other)))
-
         if other.title and self.title != other.title:
             raise ValueError("Cannot work with ranges from different worksheets")
 
     def __repr__(self):
-        fmt = "<{cls} {coord}>"
+        cls = self.__class__.__name__
+        title = self.title
+        coord = self.coord
         if self.title:
-            fmt = "<{cls} {title!r}!{coord}>"
-        return fmt.format(
-            cls=self.__class__.__name__, title=self.title, coord=self.coord
-        )
+            return f"<{cls} {title!r}!{coord}>"
+        return f"<{cls} {coord}>"
 
     def __hash__(self):
         return hash((self.min_row, self.min_col, self.max_row, self.max_col))
 
     def __str__(self):
-        fmt = "{coord}"
         title = self.title
+        coord = self.coord
         if title:
-            fmt = "{title}!{coord}"
             title = quote_sheetname(title)
-        return fmt.format(title=title, coord=self.coord)
+            return f"{title}!{coord}"
+        return f"{coord}"
 
     def __copy__(self):
         return self.__class__(
@@ -170,11 +162,7 @@ class CellRange(Serialisable):
         """
 
         if self.min_col + col_shift <= 0 or self.min_row + row_shift <= 0:
-            raise ValueError(
-                "Invalid shift value: col_shift={0}, row_shift={1}".format(
-                    col_shift, row_shift
-                )
-            )
+            raise ValueError(f"Invalid shift value: {col_shift=}, {row_shift=}")
         self.min_col += col_shift
         self.min_row += row_shift
         self.max_col += col_shift
@@ -192,7 +180,6 @@ class CellRange(Serialisable):
             self._check_title(other)
         except ValueError:
             return True
-
         return (
             other.min_row != self.min_row
             or self.max_row != other.max_row
@@ -235,9 +222,9 @@ class CellRange(Serialisable):
         return self.__le__(other) and self.__ne__(other)
 
     def __superset(self, other):
-        return (self.min_row <= other.min_row <= other.max_row <= self.max_row) and (
-            self.min_col <= other.min_col <= other.max_col <= self.max_col
-        )
+        condition1 = self.min_row <= other.min_row <= other.max_row <= self.max_row
+        condition2 = self.min_col <= other.min_col <= other.max_col <= self.max_col
+        return condition1 and condition2
 
     def issuperset(self, other):
         """
@@ -280,16 +267,13 @@ class CellRange(Serialisable):
         :return: ``True`` if the range has no cells in common with other.
         """
         self._check_title(other)
-
         # Sort by top-left vertex
         if self.bounds > other.bounds:
             self, other = other, self
-
-        return (
-            self.max_col < other.min_col
-            or self.max_row < other.min_row
-            or other.max_row < self.min_row
-        )
+        condition1 = self.max_col < other.min_col
+        condition2 = self.max_row < other.min_row
+        condition3 = other.max_row < self.min_row
+        return condition1 or condition2 or condition3
 
     def intersection(self, other):
         """
@@ -302,15 +286,16 @@ class CellRange(Serialisable):
             with this range.
         """
         if self.isdisjoint(other):
-            raise ValueError("Range {0} doesn't intersect {0}".format(self, other))
-
+            raise ValueError(f"Range {self} doesn't intersect {other}")
         min_row = max(self.min_row, other.min_row)
         max_row = min(self.max_row, other.max_row)
         min_col = max(self.min_col, other.min_col)
         max_col = min(self.max_col, other.max_col)
-
         return CellRange(
-            min_col=min_col, min_row=min_row, max_col=max_col, max_row=max_row
+            min_col=min_col,
+            min_row=min_row,
+            max_col=max_col,
+            max_row=max_row,
         )
 
     __and__ = intersection
@@ -326,7 +311,6 @@ class CellRange(Serialisable):
         :return: a ``CellRange`` that is a superset of this and *other*.
         """
         self._check_title(other)
-
         min_row = min(self.min_row, other.min_row)
         max_row = max(self.max_row, other.max_row)
         min_col = min(self.min_col, other.min_col)
@@ -375,12 +359,12 @@ class CellRange(Serialisable):
 
         :type right: int
         :param right: shrink range from the right by this number of cells
-        :type down: int
-        :param down: shrink range from the top by this number of cells
+        :type bottom: int
+        :param bottom: shrink range from the top by this number of cells
         :type left: int
         :param left: shrink range from the left by this number of cells
-        :type up: int
-        :param up: shrink range from the bottom by this number of cells
+        :type top: int
+        :param top: shrink range from the bottom by this number of cells
         """
         self.min_col += left
         self.min_row += top
@@ -389,37 +373,48 @@ class CellRange(Serialisable):
 
     @property
     def size(self):
-        """Return the size of the range as a dictionary of rows and columns."""
+        """
+        Return the size of the range as a dictionary of rows and columns.
+        """
         cols = self.max_col + 1 - self.min_col
         rows = self.max_row + 1 - self.min_row
         return {"columns": cols, "rows": rows}
 
     @property
     def top(self):
-        """A list of cell coordinates that comprise the top of the range"""
+        """
+        A list of cell coordinates that comprise the top of the range
+        """
         return [(self.min_row, col) for col in range(self.min_col, self.max_col + 1)]
 
     @property
     def bottom(self):
-        """A list of cell coordinates that comprise the bottom of the range"""
+        """
+        A list of cell coordinates that comprise the bottom of the range
+        """
         return [(self.max_row, col) for col in range(self.min_col, self.max_col + 1)]
 
     @property
     def left(self):
-        """A list of cell coordinates that comprise the left-side of the range"""
+        """
+        A list of cell coordinates that comprise the left-side of the range
+        """
         return [(row, self.min_col) for row in range(self.min_row, self.max_row + 1)]
 
     @property
     def right(self):
-        """A list of cell coordinates that comprise the right-side of the range"""
+        """
+        A list of cell coordinates that comprise the right-side of the range
+        """
         return [(row, self.max_col) for row in range(self.min_row, self.max_row + 1)]
 
 
 class MultiCellRange(Strict):
-
     ranges = UniqueSequence(expected_type=CellRange)
 
-    def __init__(self, ranges=set()):
+    def __init__(self, ranges=None):
+        if ranges is None:
+            ranges = set()
         if isinstance(ranges, str):
             ranges = [CellRange(r) for r in ranges.split()]
         self.ranges = set(ranges)
@@ -448,7 +443,8 @@ class MultiCellRange(Strict):
         Return a sorted list of items
         """
         return sorted(
-            self.ranges, key=attrgetter("min_col", "min_row", "max_col", "max_row")
+            self.ranges,
+            key=operator.attrgetter("min_col", "min_row", "max_col", "max_row"),
         )
 
     def add(self, coord):
@@ -488,5 +484,5 @@ class MultiCellRange(Strict):
             yield cr
 
     def __copy__(self):
-        ranges = {copy(r) for r in self.ranges}
+        ranges = {copy.copy(r) for r in self.ranges}
         return MultiCellRange(ranges)

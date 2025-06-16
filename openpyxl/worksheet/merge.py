@@ -2,25 +2,19 @@
 import copy
 
 from openpyxl.cell.cell import MergedCell
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.styles.borders import Border
-
-from .cell_range import CellRange
+from openpyxl.worksheet.cell_range import CellRange
 
 
 class MergeCell(CellRange):
-
     tagname = "mergeCell"
     ref = CellRange.coord
-
     __attrs__ = ("ref",)
 
-    def __init__(
-        self,
-        ref=None,
-    ):
+    def __init__(self, ref=None):
         super().__init__(ref)
 
     def __copy__(self):
@@ -28,22 +22,13 @@ class MergeCell(CellRange):
 
 
 class MergeCells(Serialisable):
-
     tagname = "mergeCells"
-
     count = Integer(allow_none=True)
-    mergeCell = Sequence(
-        expected_type=MergeCell,
-    )
-
+    mergeCell = Sequence(expected_type=MergeCell)
     __elements__ = ("mergeCell",)
     __attrs__ = ("count",)
 
-    def __init__(
-        self,
-        count=None,
-        mergeCell=(),
-    ):
+    def __init__(self, count=None, mergeCell=()):
         self.mergeCell = mergeCell
 
     @property
@@ -72,18 +57,15 @@ class MergedCellRange(CellRange):
         The upper left cell gets the border information of the bottom and right
         border from the bottom right cell of the merged cell, if available.
         """
-
         # Top-left cell.
         self.start_cell = self.ws._cells.get((self.min_row, self.min_col))
         if self.start_cell is None:
             self.start_cell = self.ws.cell(row=self.min_row, column=self.min_col)
-
         # Bottom-right cell
         end_cell = self.ws._cells.get((self.max_row, self.max_col))
         if end_cell is not None:
-            self.start_cell.border += Border(
-                right=end_cell.border.right, bottom=end_cell.border.bottom
-            )
+            border = Border(right=end_cell.border.right, bottom=end_cell.border.bottom)
+            self.start_cell.border += border
 
     def format(self):
         """
@@ -98,13 +80,12 @@ class MergedCellRange(CellRange):
          - The left MergedCells get the left border from the top left cell.
          - The right MergedCells get the right border from the top left cell.
         """
-
         names = ["top", "left", "right", "bottom"]
-
         for name in names:
             side = getattr(self.start_cell.border, name)
             if side and side.style is None:
-                continue  # don't need to do anything if there is no border style
+                # don't need to do anything if there is no border style
+                continue
             border = Border(**{name: side})
             for coord in getattr(self, name):
                 cell = self.ws._cells.get(coord)
@@ -113,7 +94,6 @@ class MergedCellRange(CellRange):
                     cell = MergedCell(self.ws, row=row, column=col)
                     self.ws._cells[(cell.row, cell.column)] = cell
                 cell.border += border
-
         protected = self.start_cell.protection is not None
         if protected:
             protection = copy.copy(self.start_cell.protection)
@@ -123,7 +103,6 @@ class MergedCellRange(CellRange):
                 row, col = coord
                 cell = MergedCell(self.ws, row=row, column=col)
                 self.ws._cells[(cell.row, cell.column)] = cell
-
             if protected:
                 cell.protection = protection
 

@@ -1,28 +1,33 @@
 # Copyright (c) 2010-2025 openpyxl
 import re
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import DateTime
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import MinMax
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import DateTime
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MinMax
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import Set
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import CellRange
 from openpyxl.descriptors.excel import ExtensionList
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.sequence import ValueSequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.utils import absolute_coordinate
+from openpyxl.utils.cell import absolute_coordinate
+
+string_format_mapping = {
+    "contains": "*{}*",
+    "startswith": "{}*",
+    "endswith": "*{}",
+    "wildcard": "{}",
+}
 
 
 class SortCondition(Serialisable):
-
     tagname = "sortCondition"
-
     descending = Bool(allow_none=True)
     sortBy = NoneSet(values=(["value", "cellColor", "fontColor", "icon"]))
     ref = CellRange()
@@ -73,16 +78,13 @@ class SortCondition(Serialisable):
 
 
 class SortState(Serialisable):
-
     tagname = "sortState"
-
     columnSort = Bool(allow_none=True)
     caseSensitive = Bool(allow_none=True)
     sortMethod = NoneSet(values=(["stroke", "pinYin"]))
     ref = CellRange()
     sortCondition = Sequence(expected_type=SortCondition, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("sortCondition",)
 
     def __init__(
@@ -105,9 +107,7 @@ class SortState(Serialisable):
 
 
 class IconFilter(Serialisable):
-
     tagname = "iconFilter"
-
     iconSet = Set(
         values=(
             [
@@ -133,35 +133,23 @@ class IconFilter(Serialisable):
     )
     iconId = Integer(allow_none=True)
 
-    def __init__(
-        self,
-        iconSet=None,
-        iconId=None,
-    ):
+    def __init__(self, iconSet=None, iconId=None):
         self.iconSet = iconSet
         self.iconId = iconId
 
 
 class ColorFilter(Serialisable):
-
     tagname = "colorFilter"
-
     dxfId = Integer(allow_none=True)
     cellColor = Bool(allow_none=True)
 
-    def __init__(
-        self,
-        dxfId=None,
-        cellColor=None,
-    ):
+    def __init__(self, dxfId=None, cellColor=None):
         self.dxfId = dxfId
         self.cellColor = cellColor
 
 
 class DynamicFilter(Serialisable):
-
     tagname = "dynamicFilter"
-
     type = Set(
         values=(
             [
@@ -224,9 +212,7 @@ class DynamicFilter(Serialisable):
 
 
 class CustomFilter(Serialisable):
-
     tagname = "customFilter"
-
     val = String()
     operator = Set(
         values=[
@@ -255,11 +241,12 @@ class CustomFilter(Serialisable):
         return subtype
 
     def convert(self):
-        """Convert to more specific filter"""
+        """
+        Convert to more specific filter.
+        """
         typ = self._get_subtype()
         if typ in (BlankFilter, NumberFilter):
             return typ(**dict(self))
-
         operator, term = StringFilter._guess_operator(self.val)
         flt = StringFilter(operator, term)
         if self.operator == "notEqual":
@@ -287,7 +274,6 @@ class BlankFilter(CustomFilter):
 
 
 class NumberFilter(CustomFilter):
-
     operator = Set(
         values=[
             "equal",
@@ -305,16 +291,7 @@ class NumberFilter(CustomFilter):
         self.val = val
 
 
-string_format_mapping = {
-    "contains": "*{}*",
-    "startswith": "{}*",
-    "endswith": "*{}",
-    "wildcard": "{}",
-}
-
-
 class StringFilter(CustomFilter):
-
     operator = Set(values=["contains", "startswith", "endswith", "wildcard"])
     val = String()
     exclude = Bool()
@@ -325,7 +302,9 @@ class StringFilter(CustomFilter):
         self.exclude = exclude
 
     def _escape(self):
-        """Escape wildcards ~, * ? when serialising"""
+        """
+        Escape wildcards ~, * ? when serialising.
+        """
         if self.operator == "wildcard":
             return self.val
         return re.sub(r"~|\*|\?", r"~\g<0>", self.val)
@@ -348,7 +327,6 @@ class StringFilter(CustomFilter):
             m = re.match(pat, value)
             if m:
                 d = m.groupdict()
-
         term = d.pop("term")
         op = list(d)[0]
         return op, term
@@ -362,27 +340,18 @@ class StringFilter(CustomFilter):
 
 
 class CustomFilters(Serialisable):
-
     tagname = "customFilters"
-
     _and = Bool(allow_none=True)
     customFilter = Sequence(expected_type=CustomFilter)  # min 1, max 2
-
     __elements__ = ("customFilter",)
 
-    def __init__(
-        self,
-        _and=None,
-        customFilter=(),
-    ):
+    def __init__(self, _and=None, customFilter=()):
         self._and = _and
         self.customFilter = customFilter
 
 
 class Top10(Serialisable):
-
     tagname = "top10"
-
     top = Bool(allow_none=True)
     percent = Bool(allow_none=True)
     val = Float()
@@ -402,9 +371,7 @@ class Top10(Serialisable):
 
 
 class DateGroupItem(Serialisable):
-
     tagname = "dateGroupItem"
-
     year = Integer()
     month = MinMax(min=1, max=12, allow_none=True)
     day = MinMax(min=1, max=31, allow_none=True)
@@ -412,7 +379,16 @@ class DateGroupItem(Serialisable):
     minute = MinMax(min=0, max=59, allow_none=True)
     second = Integer(min=0, max=59, allow_none=True)
     dateTimeGrouping = Set(
-        values=(["year", "month", "day", "hour", "minute", "second"])
+        values=(
+            [
+                "year",
+                "month",
+                "day",
+                "hour",
+                "minute",
+                "second",
+            ]
+        )
     )
 
     def __init__(
@@ -435,9 +411,7 @@ class DateGroupItem(Serialisable):
 
 
 class Filters(Serialisable):
-
     tagname = "filters"
-
     blank = Bool(allow_none=True)
     calendarType = NoneSet(
         values=[
@@ -458,7 +432,6 @@ class Filters(Serialisable):
     )
     filter = ValueSequence(expected_type=str)
     dateGroupItem = Sequence(expected_type=DateGroupItem, allow_none=True)
-
     __elements__ = ("filter", "dateGroupItem")
 
     def __init__(
@@ -475,9 +448,7 @@ class Filters(Serialisable):
 
 
 class FilterColumn(Serialisable):
-
     tagname = "filterColumn"
-
     colId = Integer()
     col_id = Alias("colId")
     hiddenButton = Bool(allow_none=True)
@@ -490,7 +461,6 @@ class FilterColumn(Serialisable):
     colorFilter = Typed(expected_type=ColorFilter, allow_none=True)
     iconFilter = Typed(expected_type=IconFilter, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = (
         "filters",
         "top10",
@@ -531,14 +501,11 @@ class FilterColumn(Serialisable):
 
 
 class AutoFilter(Serialisable):
-
     tagname = "autoFilter"
-
     ref = CellRange()
     filterColumn = Sequence(expected_type=FilterColumn, allow_none=True)
     sortState = Typed(expected_type=SortState, allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ("filterColumn", "sortState")
 
     def __init__(
@@ -570,7 +537,10 @@ class AutoFilter(Serialisable):
         :type  blank: bool
         """
         self.filterColumn.append(
-            FilterColumn(colId=col_id, filters=Filters(blank=blank, filter=vals))
+            FilterColumn(
+                colId=col_id,
+                filters=Filters(blank=blank, filter=vals),
+            )
         )
 
     def add_sort_condition(self, ref, descending=False):

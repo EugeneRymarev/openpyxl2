@@ -1,9 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.compat import safe_string
+from openpyxl.compat.strings import safe_string
 
 
 class DataTableFormula:
-
     t = "dataTable"
 
     def __init__(
@@ -35,7 +34,6 @@ class DataTableFormula:
 
 
 class ArrayFormula:
-
     t = "array"
 
     def __init__(self, ref, text=None):

@@ -1,10 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
 import atexit
+import collections
+import io
 import os
-from collections import defaultdict
-from io import BytesIO
-from tempfile import NamedTemporaryFile
-from warnings import warn
+import tempfile
+import warnings
 
 from openpyxl.cell._writer import write_cell
 from openpyxl.comments.comment_sheet import CommentRecord
@@ -12,16 +12,14 @@ from openpyxl.drawing.legacy import LegacyDrawing
 from openpyxl.packaging.relationship import Relationship
 from openpyxl.packaging.relationship import RelationshipList
 from openpyxl.styles.differential import DifferentialStyle
+from openpyxl.worksheet.dimensions import SheetDimension
+from openpyxl.worksheet.hyperlink import HyperlinkList
+from openpyxl.worksheet.merge import MergeCell
+from openpyxl.worksheet.merge import MergeCells
+from openpyxl.worksheet.related import Related
+from openpyxl.worksheet.table import TablePartList
 from openpyxl.xml.constants import SHEET_MAIN_NS
 from openpyxl.xml.functions import xmlfile
-
-from .dimensions import SheetDimension
-from .hyperlink import HyperlinkList
-from .merge import MergeCell
-from .merge import MergeCells
-from .related import Related
-from .table import TablePartList
-
 
 ALL_TEMP_FILES = []
 
@@ -34,17 +32,19 @@ def _openpyxl_shutdown():
 
 
 def create_temporary_file(suffix=""):
-    fobj = NamedTemporaryFile(
-        mode="w+", suffix=suffix, prefix="openpyxl.", delete=False
+    file_obj = tempfile.NamedTemporaryFile(
+        mode="w+",
+        suffix=suffix,
+        prefix="openpyxl.",
+        delete=False,
     )
-    filename = fobj.name
-    fobj.close()
+    filename = file_obj.name
+    file_obj.close()
     ALL_TEMP_FILES.append(filename)
     return filename
 
 
 class WorksheetWriter:
-
     def __init__(self, ws, out=None):
         self.ws = ws
         self.ws._hyperlinks = []
@@ -87,11 +87,11 @@ class WorksheetWriter:
     def write_top(self):
         """
         Write all elements up to rows:
-        properties
-        dimensions
-        views
-        format
-        cols
+            properties
+            dimensions
+            views
+            format
+            cols
         """
         self.write_properties()
         self.write_dimensions()
@@ -100,34 +100,30 @@ class WorksheetWriter:
         self.write_cols()
 
     def rows(self):
-        """Return all rows, and any cells that they contain"""
+        """
+        Return all rows, and any cells that they contain
+        """
         # order cells by row
-        rows = defaultdict(list)
+        rows = collections.defaultdict(list)
         for (row, col), cell in sorted(self.ws._cells.items()):
             rows[row].append(cell)
-
         # add empty rows if styling has been applied
         for row in self.ws.row_dimensions.keys() - rows.keys():
             rows[row] = []
-
         return sorted(rows.items())
 
     def write_rows(self):
         xf = self.xf.send(True)
-
         with xf.element("sheetData"):
             for row_idx, row in self.rows():
                 self.write_row(xf, row, row_idx)
-
         self.xf.send(None)  # return control to generator
 
     def write_row(self, xf, row, row_idx):
         attrs = {"r": f"{row_idx}"}
         dims = self.ws.row_dimensions
         attrs.update(dims.get(row_idx, {}))
-
         with xf.element("row", attrs):
-
             for cell in row:
                 if cell._comment is not None:
                     comment = CommentRecord.from_cell(cell)
@@ -153,7 +149,8 @@ class WorksheetWriter:
 
     def write_sort(self):
         """
-        As per discusion with the OOXML Working Group global sort state is not required.
+        As per discusion with the OOXML Working Group
+        global sort state is not required.
         openpyxl never reads it from existing files
         """
         pass
@@ -179,17 +176,16 @@ class WorksheetWriter:
             self.xf.send(dv.to_tree())
 
     def write_hyperlinks(self):
-
         links = self.ws._hyperlinks
-
         for link in links:
             if link.target:
                 rel = Relationship(
-                    type="hyperlink", TargetMode="External", Target=link.target
+                    type="hyperlink",
+                    TargetMode="External",
+                    Target=link.target,
                 )
                 self._rels.append(rel)
                 link.id = rel.id
-
         if links:
             self.xf.send(HyperlinkList(links).to_tree())
 
@@ -214,8 +210,8 @@ class WorksheetWriter:
             self.xf.send(hf.to_tree())
 
     def write_breaks(self):
-        brks = (self.ws.row_breaks, self.ws.col_breaks)
-        for brk in brks:
+        breaks = (self.ws.row_breaks, self.ws.col_breaks)
+        for brk in breaks:
             if brk:
                 self.xf.send(brk.to_tree())
 
@@ -236,7 +232,6 @@ class WorksheetWriter:
             return
         if not self.ws.legacy_drawing:
             self.ws.legacy_drawing = LegacyDrawing(vml=None)
-
         rel = Relationship(type="vmlDrawing", Target="")
         self._rels.append(rel)
         legacy = Related(id=rel.id)
@@ -247,7 +242,6 @@ class WorksheetWriter:
         controls = self.ws.controls
         if not controls:
             return
-
         targets = []
         for ctrl in controls.control:
             shape = ctrl.shape  # ActiveX or CtrlProp
@@ -257,7 +251,6 @@ class WorksheetWriter:
             ctrl.id = rel.id
             shape._rel_id = rel.id
             embedded = getattr(ctrl.controlPr, "image", None)
-
             if embedded:
                 embedded.id = None
                 if embedded.Target not in targets:
@@ -265,12 +258,12 @@ class WorksheetWriter:
                     self._rels.append(embedded)
                     targets.append(embedded.Target)
                 ctrl.controlPr.id = embedded.id
-
         self.xf.send(controls.to_tree())
 
     def write_tables(self):
+        msg1 = "File may not be readable: column headings must be strings."
+        msg2 = "Column headings are missing, file may not be readable"
         tables = TablePartList()
-
         for table in self.ws.tables.values():
             if not table.tableColumns:
                 table._initialise_columns()
@@ -279,17 +272,14 @@ class WorksheetWriter:
                         row = self.ws[table.ref][0]
                         for cell, col in zip(row, table.tableColumns):
                             if cell.data_type != "s":
-                                warn(
-                                    "File may not be readable: column headings must be strings."
-                                )
+                                warnings.warn(msg1)
                             col.name = str(cell.value)
                     except TypeError:
-                        warn("Column headings are missing, file may not be readable")
+                        warnings.warn(msg2)
             rel = Relationship(Type=table._rel_type, Target="")
             self._rels.append(rel)
             table._rel_id = rel.Id
             tables.append(Related(id=rel.Id))
-
         if tables:
             self.xf.send(tables.to_tree())
 
@@ -311,36 +301,36 @@ class WorksheetWriter:
     def write_tail(self):
         """
         Write all elements after the rows
-        calc properties
-        protection
-        protected ranges #
-        scenarios
-        filters
-        sorts # always ignored
-        data consolidation #
-        custom views #
-        merged cells
-        phonetic properties #
-        conditional formatting
-        data validation
-        hyperlinks
-        print options
-        page margins
-        page setup
-        header
-        row breaks
-        col breaks
-        custom properties #
-        cell watches #
-        ignored errors #
-        smart tags #
-        drawing
-        drawingHF #
-        background #
-        OLE objects #
-        controls #
-        web publishing #
-        tables
+            calc properties
+            protection
+            protected ranges #
+            scenarios
+            filters
+            sorts # always ignored
+            data consolidation #
+            custom views #
+            merged cells
+            phonetic properties #
+            conditional formatting
+            data validation
+            hyperlinks
+            print options
+            page margins
+            page setup
+            header
+            row breaks
+            col breaks
+            custom properties #
+            cell watches #
+            ignored errors #
+            smart tags #
+            drawing
+            drawingHF #
+            background #
+            OLE objects #
+            controls #
+            web publishing #
+            tables
         """
         self.write_protection()
         self.write_scenarios()
@@ -380,11 +370,10 @@ class WorksheetWriter:
         Close the context manager and return serialised XML
         """
         self.close()
-        if isinstance(self.out, BytesIO):
+        if isinstance(self.out, io.BytesIO):
             return self.out.getvalue()
         with open(self.out, "rb") as src:
             out = src.read()
-
         return out
 
     def cleanup(self):

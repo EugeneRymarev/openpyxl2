@@ -1,14 +1,12 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class Break(Serialisable):
-
     tagname = "brk"
-
     id = Integer(allow_none=True)
     min = Integer(allow_none=True)
     max = Integer(allow_none=True)
@@ -31,25 +29,14 @@ class Break(Serialisable):
 
 
 class RowBreak(Serialisable):
-
     tagname = "rowBreaks"
-
     count = Integer(allow_none=True)
     manualBreakCount = Integer(allow_none=True)
     brk = Sequence(expected_type=Break, allow_none=True)
-
     __elements__ = ("brk",)
-    __attrs__ = (
-        "count",
-        "manualBreakCount",
-    )
+    __attrs__ = ("count", "manualBreakCount")
 
-    def __init__(
-        self,
-        count=None,
-        manualBreakCount=None,
-        brk=(),
-    ):
+    def __init__(self, count=None, manualBreakCount=None, brk=()):
         self.brk = brk
 
     def __bool__(self):
@@ -81,11 +68,8 @@ PageBreak = RowBreak
 
 
 class ColBreak(RowBreak):
-
     tagname = "colBreaks"
-
     count = RowBreak.count
     manualBreakCount = RowBreak.manualBreakCount
     brk = RowBreak.brk
-
     __attrs__ = RowBreak.__attrs__

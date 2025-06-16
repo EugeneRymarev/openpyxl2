@@ -1,15 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-"""Write worksheets to xml representations in an optimized way"""
-from inspect import isgenerator
+"""
+Write worksheets to xml representations in an optimized way
+"""
+import inspect
 
-from openpyxl.cell import Cell
-from openpyxl.cell import WriteOnlyCell
+from openpyxl.cell.cell import Cell
+from openpyxl.cell.cell import WriteOnlyCell
 from openpyxl.cell.coordinate import Coordinate
 from openpyxl.utils.exceptions import WorkbookAlreadySaved
 from openpyxl.workbook.child import _WorkbookChild
-
-from ._writer import WorksheetWriter
-from .worksheet import Worksheet
+from openpyxl.worksheet._writer import WorksheetWriter
+from openpyxl.worksheet.worksheet import Worksheet
 
 
 class WriteOnlyWorksheet(_WorkbookChild):
@@ -26,7 +27,6 @@ class WriteOnlyWorksheet(_WorkbookChild):
     _rel_type = Worksheet._rel_type
     _path = Worksheet._path
     mime_type = Worksheet.mime_type
-
     # copy methods from Standard worksheet
     _add_row = Worksheet._add_row
     _add_column = Worksheet._add_column
@@ -60,7 +60,6 @@ class WriteOnlyWorksheet(_WorkbookChild):
             xf = self._writer.xf.send(True)
         except StopIteration:
             self._already_saved()
-
         with xf.element("sheetData"):
             row_idx = 1
             try:
@@ -71,7 +70,6 @@ class WriteOnlyWorksheet(_WorkbookChild):
                     row_idx += 1
             except GeneratorExit:
                 pass
-
         self._writer.xf.send(None)
 
     def _get_writer(self):
@@ -82,16 +80,12 @@ class WriteOnlyWorksheet(_WorkbookChild):
     def close(self):
         if self.__saved:
             self._already_saved()
-
         self._get_writer()
-
         if self._rows is None:
             self._writer.write_rows()
         else:
             self._rows.close()
-
         self._writer.write_tail()
-
         self._writer.close()
         self.__saved = True
 
@@ -100,16 +94,12 @@ class WriteOnlyWorksheet(_WorkbookChild):
         :param row: iterable containing values to append
         :type row: iterable
         """
-
-        if not isgenerator(row) and not isinstance(row, (list, tuple, range)):
+        if not inspect.isgenerator(row) and not isinstance(row, (list, tuple, range)):
             self._invalid_row(row)
-
         self._get_writer()
-
         if self._rows is None:
             self._rows = self._write_rows()
             next(self._rows)
-
         self._rows.send(row)
 
     def _values_to_row(self, values, row_idx):
@@ -117,7 +107,6 @@ class WriteOnlyWorksheet(_WorkbookChild):
         Convert whatever has been appended into a form suitable for work_rows
         """
         cell = WriteOnlyCell(self)
-
         for col_idx, value in enumerate(values, 1):
             if value is None:
                 continue
@@ -128,26 +117,21 @@ class WriteOnlyWorksheet(_WorkbookChild):
                     cell = value
                 else:
                     raise ValueError
-
             cell._coord = Coordinate(row_idx, col_idx)
-
             if cell.hyperlink is not None:
                 cell.hyperlink.ref = cell.coordinate
-
             yield cell
-
             # reset cell if style applied
             if cell.has_style or cell.hyperlink:
                 cell = WriteOnlyCell(self)
 
     def _already_saved(self):
-        raise WorkbookAlreadySaved(
-            "Workbook has already been saved and cannot be modified or saved anymore."
-        )
+        msg = "Workbook has already been saved and cannot be modified or saved anymore."
+        raise WorkbookAlreadySaved(msg)
 
     def _invalid_row(self, iterable):
-        raise TypeError(
-            "Value must be a list, tuple, range or a generator Supplied value is {0}".format(
-                type(iterable)
-            )
+        msg = (
+            "Value must be a list, tuple, range or a generator"
+            f" Supplied value is {type(iterable)}"
         )
+        raise TypeError(msg)

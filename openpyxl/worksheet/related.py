@@ -4,7 +4,6 @@ from openpyxl.descriptors.serialisable import Serialisable
 
 
 class Related(Serialisable):
-
     id = Relation()
 
     def __init__(self, id=None):

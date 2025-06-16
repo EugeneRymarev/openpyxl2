@@ -1,20 +1,21 @@
 # Copyright (c) 2010-2025 openpyxl
-from collections import defaultdict
-from itertools import chain
-from operator import itemgetter
+import collections
+import itertools
+import operator
 
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Convertible
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Convertible
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.nested import NestedText
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.utils import coordinate_to_tuple
-from openpyxl.utils import get_column_letter
-from openpyxl.utils import rows_from_range
+from openpyxl.utils.cell import coordinate_to_tuple
+from openpyxl.utils.cell import get_column_letter
+from openpyxl.utils.cell import rows_from_range
+from openpyxl.worksheet.cell_range import MultiCellRange
 
 
 def collapse_cell_addresses(cells, input_ranges=()):
@@ -27,26 +28,22 @@ def collapse_cell_addresses(cells, input_ranges=()):
     Currently only collapsing contiguous vertical ranges (i.e. above
     example results in A1:A3 B1:B3).
     """
-
     ranges = list(input_ranges)
-
     # convert cell into row, col tuple
     raw_coords = (coordinate_to_tuple(cell) for cell in cells)
-
     # group by column in order
-    grouped_coords = defaultdict(list)
-    for row, col in sorted(raw_coords, key=itemgetter(1)):
+    grouped_coords = collections.defaultdict(list)
+    for row, col in sorted(raw_coords, key=operator.itemgetter(1)):
         grouped_coords[col].append(row)
-
     # create range string from first and last row in column
     for col, cells in grouped_coords.items():
         col = get_column_letter(col)
-        fmt = "{0}{1}:{2}{3}"
+        min_cell = min(cells)
+        max_cell = max(cells)
         if len(cells) == 1:
-            fmt = "{0}{1}"
-        r = fmt.format(col, min(cells), col, max(cells))
-        ranges.append(r)
-
+            ranges.append(f"{col}{min_cell}")
+        else:
+            ranges.append(f"{col}{min_cell}:{col}{max_cell}")
     return " ".join(ranges)
 
 
@@ -58,37 +55,37 @@ def expand_cell_ranges(range_string):
     """
     # expand ranges to rows and then flatten
     rows = (rows_from_range(rs) for rs in range_string.split())  # list of rows
-    cells = (chain(*row) for row in rows)  # flatten rows
-    return set(chain(*cells))
-
-
-from .cell_range import MultiCellRange
+    cells = (itertools.chain(*row) for row in rows)  # flatten rows
+    return set(itertools.chain(*cells))
 
 
 class DataValidation(Serialisable):
-
     tagname = "dataValidation"
-
     sqref = Convertible(expected_type=MultiCellRange)
     cells = Alias("sqref")
     ranges = Alias("sqref")
-
     showDropDown = Bool(allow_none=True)
     hide_drop_down = Alias("showDropDown")
     showInputMessage = Bool(allow_none=True)
     showErrorMessage = Bool(allow_none=True)
     allowBlank = Bool(allow_none=True)
     allow_blank = Alias("allowBlank")
-
     errorTitle = String(allow_none=True)
     error = String(allow_none=True)
     promptTitle = String(allow_none=True)
     prompt = String(allow_none=True)
     formula1 = NestedText(allow_none=True, expected_type=str)
     formula2 = NestedText(allow_none=True, expected_type=str)
-
     type = NoneSet(
-        values=("whole", "decimal", "list", "date", "time", "textLength", "custom")
+        values=(
+            "whole",
+            "decimal",
+            "list",
+            "date",
+            "time",
+            "textLength",
+            "custom",
+        )
     )
     errorStyle = NoneSet(values=("stop", "warning", "information"))
     imeMode = NoneSet(
@@ -158,7 +155,9 @@ class DataValidation(Serialisable):
         self.errorTitle = errorTitle
 
     def add(self, cell):
-        """Adds a cell or cell coordinate to this validator"""
+        """
+        Adds a cell or cell coordinate to this validator
+        """
         if hasattr(cell, "coordinate"):
             cell = cell.coordinate
         self.sqref += cell
@@ -170,14 +169,11 @@ class DataValidation(Serialisable):
 
 
 class DataValidationList(Serialisable):
-
     tagname = "dataValidations"
-
     disablePrompts = Bool(allow_none=True)
     xWindow = Integer(allow_none=True)
     yWindow = Integer(allow_none=True)
     dataValidation = Sequence(expected_type=DataValidation)
-
     __elements__ = ("dataValidation",)
     __attrs__ = ("disablePrompts", "xWindow", "yWindow", "count")
 
