@@ -1,7 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
-from io import BytesIO
-from tempfile import NamedTemporaryFile
-from zipfile import ZipFile
+import tempfile
+import zipfile
 
 import pytest
 from openpyxl.packaging.manifest import Manifest
@@ -15,7 +14,7 @@ from openpyxl.xml.functions import fromstring
 
 
 def check_content_type(workbook_type, fname):
-    archive = ZipFile(fname)
+    archive = zipfile.ZipFile(fname)
     src = archive.read(ARC_CONTENT_TYPES)
     node = fromstring(src)
     package = Manifest.from_tree(node)
@@ -33,7 +32,6 @@ def check_content_type(workbook_type, fname):
 )
 def test_workbook_is_template(datadir, tmpl, is_template):
     datadir.chdir()
-
     wb = load_workbook(tmpl)
     assert wb.template is is_template
 
@@ -49,7 +47,6 @@ def test_workbook_is_template(datadir, tmpl, is_template):
 )
 def test_xl_content_type(datadir, tmpl, wb_type):
     datadir.chdir()
-
     check_content_type(wb_type, tmpl)
 
 
@@ -64,12 +61,11 @@ def test_xl_content_type(datadir, tmpl, wb_type):
 )
 def test_save_xl_as_no_template(datadir, tmpl, keep_vba, wb_type):
     datadir.chdir()
-
     wb = load_workbook(tmpl)
     wb.template = False
     if keep_vba:
         wb._vba = b"blob"
-    tmp = NamedTemporaryFile()
+    tmp = tempfile.NamedTemporaryFile()
     wb.save(tmp)
     check_content_type(wb_type, tmp)
 
@@ -85,11 +81,10 @@ def test_save_xl_as_no_template(datadir, tmpl, keep_vba, wb_type):
 )
 def test_save_xl_as_template(datadir, tmpl, keep_vba, wb_type):
     datadir.chdir()
-
     wb = load_workbook(tmpl)
     wb.template = True
     if keep_vba:
         wb._vba = b"blob"
-    tmp = NamedTemporaryFile()
+    tmp = tempfile.NamedTemporaryFile()
     wb.save(tmp)
     check_content_type(wb_type, tmp)
