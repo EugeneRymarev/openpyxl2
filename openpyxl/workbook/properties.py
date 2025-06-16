@@ -1,18 +1,15 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Float
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.excel import Guid
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class WorkbookProperties(Serialisable):
-
     tagname = "workbookPr"
-
     date1904 = Bool(allow_none=True)
     dateCompatibility = Bool(allow_none=True)
     showObjects = NoneSet(values=(["all", "placeholders"]))
@@ -77,9 +74,7 @@ class WorkbookProperties(Serialisable):
 
 
 class CalcProperties(Serialisable):
-
     tagname = "calcPr"
-
     calcId = Integer()
     calcMode = NoneSet(values=(["manual", "auto", "autoNoTable"]))
     fullCalcOnLoad = Bool(allow_none=True)
@@ -126,9 +121,7 @@ class CalcProperties(Serialisable):
 
 
 class FileVersion(Serialisable):
-
     tagname = "fileVersion"
-
     appName = String(allow_none=True)
     lastEdited = String(allow_none=True)
     lowestEdited = String(allow_none=True)

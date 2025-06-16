@@ -1,16 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
+import collections
 import re
-from collections import defaultdict
 
-from openpyxl.compat import safe_string
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
+from openpyxl.compat.strings import safe_string
 from openpyxl.descriptors import Descriptor
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
-from openpyxl.formula import Tokenizer
+from openpyxl.formula.tokenizer import Tokenizer
 from openpyxl.utils.cell import SHEETRANGE_RE
 
 RESERVED = frozenset(
@@ -24,15 +24,12 @@ RESERVED = frozenset(
         "Sheet_Title",
     ]
 )
-
 _names = "|".join(RESERVED)
-RESERVED_REGEX = re.compile(r"^_xlnm\.(?P<name>{0})".format(_names))
+RESERVED_REGEX = re.compile(rf"^_xlnm\.(?P<name>{_names})")
 
 
 class DefinedName(Serialisable):
-
     tagname = "definedName"
-
     name = String()  # unique per workbook/worksheet
     comment = String(allow_none=True)
     customMenu = String(allow_none=True)
@@ -110,6 +107,7 @@ class DefinedName(Serialisable):
         m = RESERVED_REGEX.match(self.name)
         if m:
             return m.group("name")
+        return None
 
     @property
     def is_external(self):
@@ -122,7 +120,7 @@ class DefinedName(Serialisable):
             v = getattr(self, key)
             if v is not None:
                 if v in RESERVED:
-                    v = "_xlnm." + v
+                    v = f"_xlnm.{v}"
                 yield key, safe_string(v)
 
 
@@ -147,9 +145,7 @@ class DefinedNameDict(dict):
 
 
 class DefinedNameList(Serialisable):
-
     tagname = "definedNames"
-
     definedName = Sequence(expected_type=DefinedName)
 
     def __init__(self, definedName=()):
@@ -159,14 +155,15 @@ class DefinedNameList(Serialisable):
         """
         Break names down into sheet locals and globals
         """
-        names = defaultdict(DefinedNameDict)
+        names = collections.defaultdict(DefinedNameDict)
         for defn in self.definedName:
             if defn.localSheetId is None:
-                if defn.name in (
+                names_ = (
                     "_xlnm.Print_Titles",
                     "_xlnm.Print_Area",
                     "_xlnm._FilterDatabase",
-                ):
+                )
+                if defn.name in names_:
                     continue
                 names["global"][defn.name] = defn
             else:
@@ -182,6 +179,7 @@ class DefinedNameList(Serialisable):
         for d in self.definedName:
             if d.name == defn.name and d.localSheetId == defn.localSheetId:
                 return True
+        return False
 
     def __len__(self):
         return len(self.definedName)

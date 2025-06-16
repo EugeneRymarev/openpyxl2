@@ -1,21 +1,16 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.excel import ExtensionList
 from openpyxl.descriptors.excel import Guid
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class BookView(Serialisable):
-
     tagname = "workbookView"
-
     visibility = NoneSet(values=(["visible", "hidden", "veryHidden"]))
     minimized = Bool(allow_none=True)
     showHorizontalScroll = Bool(allow_none=True)
@@ -30,7 +25,6 @@ class BookView(Serialisable):
     activeTab = Integer(allow_none=True)
     autoFilterDateGrouping = Bool(allow_none=True)
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
     def __init__(
@@ -66,9 +60,7 @@ class BookView(Serialisable):
 
 
 class CustomWorkbookView(Serialisable):
-
     tagname = "customWorkbookView"
-
     name = String()
     guid = Guid()
     autoUpdate = Bool(allow_none=True)
@@ -94,7 +86,6 @@ class CustomWorkbookView(Serialisable):
     showComments = NoneSet(values=(["commNone", "commIndicator", "commIndAndComment"]))
     showObjects = NoneSet(values=(["all", "placeholders"]))
     extLst = Typed(expected_type=ExtensionList, allow_none=True)
-
     __elements__ = ()
 
     def __init__(

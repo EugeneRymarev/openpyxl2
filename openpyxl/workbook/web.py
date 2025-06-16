@@ -1,18 +1,14 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Sequence
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import NoneSet
+from openpyxl.descriptors.base import String
+from openpyxl.descriptors.sequence import Sequence
 from openpyxl.descriptors.serialisable import Serialisable
 
 
 class WebPublishObject(Serialisable):
-
     tagname = "webPublishingObject"
-
     id = Integer()
     divId = String()
     sourceObject = String(allow_none=True)
@@ -38,19 +34,12 @@ class WebPublishObject(Serialisable):
 
 
 class WebPublishObjectList(Serialisable):
-
     tagname = "webPublishingObjects"
-
     count = Integer(allow_none=True)
     webPublishObject = Sequence(expected_type=WebPublishObject)
-
     __elements__ = ("webPublishObject",)
 
-    def __init__(
-        self,
-        count=None,
-        webPublishObject=(),
-    ):
+    def __init__(self, count=None, webPublishObject=()):
         self.webPublishObject = webPublishObject
 
     @property
@@ -59,9 +48,7 @@ class WebPublishObjectList(Serialisable):
 
 
 class WebPublishing(Serialisable):
-
     tagname = "webPublishing"
-
     css = Bool(allow_none=True)
     thicket = Bool(allow_none=True)
     longFileNames = Bool(allow_none=True)

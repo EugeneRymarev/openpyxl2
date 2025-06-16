@@ -1,27 +1,17 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.descriptors import Alias
-from openpyxl.descriptors import Bool
-from openpyxl.descriptors import Float
-from openpyxl.descriptors import Integer
-from openpyxl.descriptors import NoneSet
-from openpyxl.descriptors import Set
-from openpyxl.descriptors import String
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Alias
+from openpyxl.descriptors.base import Bool
+from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import String
 from openpyxl.descriptors.excel import Base64Binary
-from openpyxl.descriptors.excel import ExtensionList
-from openpyxl.descriptors.excel import Guid
 from openpyxl.descriptors.excel import HexBinary
-from openpyxl.descriptors.excel import Relation
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.utils.protection import hash_password
 
 
 class WorkbookProtection(Serialisable):
-
     _workbook_password, _revisions_password = None, None
-
     tagname = "workbookPr"
-
     workbook_password = Alias("workbookPassword")
     workbookPasswordCharacterSet = String(allow_none=True)
     revision_password = Alias("revisionsPassword")
@@ -40,7 +30,6 @@ class WorkbookProtection(Serialisable):
     workbookHashValue = Base64Binary(allow_none=True)
     workbookSaltValue = Base64Binary(allow_none=True)
     workbookSpinCount = Integer(allow_none=True)
-
     __attrs__ = (
         "workbookPassword",
         "workbookPasswordCharacterSet",
@@ -96,48 +85,64 @@ class WorkbookProtection(Serialisable):
         self.workbookSpinCount = workbookSpinCount
 
     def set_workbook_password(self, value="", already_hashed=False):
-        """Set a password on this workbook."""
+        """
+        Set a password on this workbook.
+        """
         if not already_hashed:
             value = hash_password(value)
         self._workbook_password = value
 
     @property
     def workbookPassword(self):
-        """Return the workbook password value, regardless of hash."""
+        """
+        Return the workbook password value, regardless of hash.
+        """
         return self._workbook_password
 
     @workbookPassword.setter
     def workbookPassword(self, value):
-        """Set a workbook password directly, forcing a hash step."""
+        """
+        Set a workbook password directly, forcing a hash step.
+        """
         self.set_workbook_password(value)
 
     def set_revisions_password(self, value="", already_hashed=False):
-        """Set a revision password on this workbook."""
+        """
+        Set a revision password on this workbook.
+        """
         if not already_hashed:
             value = hash_password(value)
         self._revisions_password = value
 
     @property
     def revisionsPassword(self):
-        """Return the revisions password value, regardless of hash."""
+        """
+        Return the revisions password value, regardless of hash.
+        """
         return self._revisions_password
 
     @revisionsPassword.setter
     def revisionsPassword(self, value):
-        """Set a revisions password directly, forcing a hash step."""
+        """
+        Set a revisions password directly, forcing a hash step.
+        """
         self.set_revisions_password(value)
 
     @classmethod
     def from_tree(cls, node):
-        """Don't hash passwords when deserialising from XML"""
+        """
+        Don't hash passwords when deserialising from XML.
+        """
         self = super().from_tree(node)
         if self.workbookPassword:
             self.set_workbook_password(
-                node.get("workbookPassword"), already_hashed=True
+                node.get("workbookPassword"),
+                already_hashed=True,
             )
         if self.revisionsPassword:
             self.set_revisions_password(
-                node.get("revisionsPassword"), already_hashed=True
+                node.get("revisionsPassword"),
+                already_hashed=True,
             )
         return self
 
@@ -147,9 +152,7 @@ DocumentSecurity = WorkbookProtection
 
 
 class FileSharing(Serialisable):
-
     tagname = "fileSharing"
-
     readOnlyRecommended = Bool(allow_none=True)
     userName = String(allow_none=True)
     reservationPassword = HexBinary(allow_none=True)

@@ -1,8 +1,10 @@
 # Copyright (c) 2010-2025 openpyxl
-"""Workbook is the top-level container for all document information."""
-from copy import copy
+"""
+Workbook is the top-level container for all document information.
+"""
+import copy
 
-from openpyxl.chartsheet import Chartsheet
+from openpyxl.chartsheet.chartsheet import Chartsheet
 from openpyxl.compat import deprecated
 from openpyxl.packaging.core import DocumentProperties
 from openpyxl.packaging.custom import CustomPropertyList
@@ -19,11 +21,17 @@ from openpyxl.styles.named_styles import NamedStyle
 from openpyxl.styles.named_styles import NamedStyleList
 from openpyxl.styles.protection import Protection
 from openpyxl.styles.table import TableStyleList
-from openpyxl.utils import quote_sheetname
+from openpyxl.utils.cell import quote_sheetname
 from openpyxl.utils.datetime import MAC_EPOCH
 from openpyxl.utils.datetime import WINDOWS_EPOCH
 from openpyxl.utils.exceptions import ReadOnlyWorkbookException
 from openpyxl.utils.indexed_list import IndexedList
+from openpyxl.workbook.child import _WorkbookChild
+from openpyxl.workbook.defined_name import DefinedName
+from openpyxl.workbook.defined_name import DefinedNameDict
+from openpyxl.workbook.properties import CalcProperties
+from openpyxl.workbook.protection import DocumentSecurity
+from openpyxl.workbook.views import BookView
 from openpyxl.worksheet._read_only import ReadOnlyWorksheet
 from openpyxl.worksheet._write_only import WriteOnlyWorksheet
 from openpyxl.worksheet.copier import WorksheetCopy
@@ -34,29 +42,20 @@ from openpyxl.xml.constants import XLSX
 from openpyxl.xml.constants import XLTM
 from openpyxl.xml.constants import XLTX
 
-from .child import _WorkbookChild
-from .defined_name import DefinedName
-from .defined_name import DefinedNameDict
-from .properties import CalcProperties
-from .protection import DocumentSecurity
-from .views import BookView
-
 INTEGER_TYPES = (int,)
 
 
 class Workbook:
-    """Workbook is the container for all other parts of the document."""
+    """
+    Workbook is the container for all other parts of the document.
+    """
 
     _read_only = False
     _data_only = False
     template = False
     path = "/xl/workbook.xml"
 
-    def __init__(
-        self,
-        write_only=False,
-        iso_dates=True,
-    ):
+    def __init__(self, write_only=False, iso_dates=True):
         self._sheets = []
         self._pivots = []
         self._active_sheet_index = 0
@@ -67,9 +66,7 @@ class Workbook:
         self.security = DocumentSecurity()
         self.__write_only = write_only
         self.shared_strings = IndexedList()
-
         self._setup_styles()
-
         self.loaded_theme = None
         self.vba_archive = None
         self._vba = None
@@ -78,10 +75,8 @@ class Workbook:
         self.epoch = WINDOWS_EPOCH
         self.encoding = "utf-8"
         self.iso_dates = iso_dates
-
         if not self.write_only:
             self._sheets.append(Worksheet(self))
-
         self.rels = RelationshipList()
         self.calculation = CalcProperties()
         self.views = [BookView()]
@@ -89,32 +84,29 @@ class Workbook:
         self._connections = None
 
     def _setup_styles(self):
-        """Bootstrap styles"""
-
+        """
+        Bootstrap styles
+        """
         self._fonts = IndexedList()
         self._fonts.add(DEFAULT_FONT)
-
         self._alignments = IndexedList([Alignment()])
-
         self._borders = IndexedList()
         self._borders.add(DEFAULT_BORDER)
-
         self._fills = IndexedList()
         self._fills.add(DEFAULT_EMPTY_FILL)
         self._fills.add(DEFAULT_GRAY_FILL)
-
         self._number_formats = IndexedList()
         self._date_formats = {}
         self._timedelta_formats = {}
-
         self._protections = IndexedList([Protection()])
-
         self._colors = COLOR_INDEX
         self._cell_styles = IndexedList([StyleArray()])
         self._named_styles = NamedStyleList()
         self.add_named_style(
             NamedStyle(
-                font=copy(DEFAULT_FONT), border=copy(DEFAULT_BORDER), builtinId=0
+                font=copy.copy(DEFAULT_FONT),
+                border=copy.copy(DEFAULT_BORDER),
+                builtinId=0,
             )
         )
         self._table_styles = TableStyleList()
@@ -150,7 +142,8 @@ class Workbook:
 
     @property
     def active(self):
-        """Get the currently active sheet or None
+        """
+        Get the currently active sheet or None
 
         :type: :class:`openpyxl.worksheet.worksheet.Worksheet`
         """
@@ -161,11 +154,12 @@ class Workbook:
 
     @active.setter
     def active(self, value):
-        """Set the active sheet"""
+        """
+        Set the active sheet
+        """
         if not isinstance(value, (_WorkbookChild, INTEGER_TYPES)):
-            raise TypeError(
-                "Value must be either a worksheet, chartsheet or numerical index"
-            )
+            msg = "Value must be either a worksheet, chartsheet or numerical index"
+            raise TypeError(msg)
         if isinstance(value, INTEGER_TYPES):
             self._active_sheet_index = value
             return
@@ -177,41 +171,36 @@ class Workbook:
             raise ValueError("Worksheet is not in the workbook")
         if value.sheet_state != "visible":
             raise ValueError("Only visible sheets can be made active")
-
         idx = self._sheets.index(value)
         self._active_sheet_index = idx
 
     def create_sheet(self, title=None, index=None):
-        """Create a worksheet (at an optional index).
+        """
+        Create a worksheet (at an optional index).
 
         :param title: optional title of the sheet
         :type title: str
         :param index: optional position at which the sheet will be inserted
         :type index: int
-
         """
         if self.read_only:
-            raise ReadOnlyWorkbookException(
-                "Cannot create new sheet in a read-only workbook"
-            )
-
+            msg = "Cannot create new sheet in a read-only workbook"
+            raise ReadOnlyWorkbookException(msg)
         if self.write_only:
             new_ws = WriteOnlyWorksheet(parent=self, title=title)
         else:
             new_ws = Worksheet(parent=self, title=title)
-
         self._add_sheet(sheet=new_ws, index=index)
         return new_ws
 
     def _add_sheet(self, sheet, index=None):
-        """Add an worksheet (at an optional index)."""
-
+        """
+        Add a worksheet (at an optional index).
+        """
         if not isinstance(sheet, (Worksheet, WriteOnlyWorksheet, Chartsheet)):
             raise TypeError("Cannot be added to a workbook")
-
         if sheet.parent != self:
             raise ValueError("You cannot add worksheets from another workbook.")
-
         if index is None:
             self._sheets.append(sheet)
         else:
@@ -229,32 +218,34 @@ class Workbook:
         self._sheets.insert(new_pos, sheet)
 
     def remove(self, worksheet):
-        """Remove `worksheet` from this workbook."""
+        """
+        Remove `worksheet` from this workbook.
+        """
         idx = self._sheets.index(worksheet)
         self._sheets.remove(worksheet)
 
     @deprecated("Use wb.remove(worksheet) or del wb[sheetname]")
     def remove_sheet(self, worksheet):
-        """Remove `worksheet` from this workbook."""
+        """
+        Remove `worksheet` from this workbook.
+        """
         self.remove(worksheet)
 
     def create_chartsheet(self, title=None, index=None):
         if self.read_only:
-            raise ReadOnlyWorkbookException(
-                "Cannot create new sheet in a read-only workbook"
-            )
+            msg = "Cannot create new sheet in a read-only workbook"
+            raise ReadOnlyWorkbookException(msg)
         cs = Chartsheet(parent=self, title=title)
-
         self._add_sheet(cs, index)
         return cs
 
     @deprecated("Use wb[sheetname]")
     def get_sheet_by_name(self, name):
-        """Returns a worksheet by its name.
+        """
+        Returns a worksheet by its name.
 
         :param name: the name of the worksheet to look for
         :type name: string
-
         """
         return self[name]
 
@@ -262,25 +253,29 @@ class Workbook:
         return key in self.sheetnames
 
     def index(self, worksheet):
-        """Return the index of a worksheet."""
+        """
+        Return the index of a worksheet.
+        """
         return self.worksheets.index(worksheet)
 
     @deprecated("Use wb.index(worksheet)")
     def get_index(self, worksheet):
-        """Return the index of the worksheet."""
+        """
+        Return the index of the worksheet.
+        """
         return self.index(worksheet)
 
     def __getitem__(self, key):
-        """Returns a worksheet by its name.
+        """
+        Returns a worksheet by its name.
 
         :param name: the name of the worksheet to look for
         :type name: string
-
         """
         for sheet in self.worksheets + self.chartsheets:
             if sheet.title == key:
                 return sheet
-        raise KeyError("Worksheet {0} does not exist.".format(key))
+        raise KeyError(f"Worksheet {key} does not exist.")
 
     def __delitem__(self, key):
         sheet = self[key]
@@ -295,7 +290,8 @@ class Workbook:
 
     @property
     def worksheets(self):
-        """A list of sheets in this workbook
+        """
+        A list of sheets in this workbook
 
         :type: list of :class:`openpyxl.worksheet.worksheet.Worksheet`
         """
@@ -307,7 +303,8 @@ class Workbook:
 
     @property
     def chartsheets(self):
-        """A list of Chartsheets in this workbook
+        """
+        A list of Chartsheets in this workbook
 
         :type: list of :class:`openpyxl.chartsheet.chartsheet.Chartsheet`
         """
@@ -315,26 +312,27 @@ class Workbook:
 
     @property
     def sheetnames(self):
-        """Returns the list of the names of worksheets in this workbook.
-
+        """
+        Returns the list of the names of worksheets in this workbook.
         Names are returned in the worksheets order.
 
         :type: list of strings
-
         """
         return [s.title for s in self._sheets]
 
     @deprecated(
-        "Assign scoped named ranges directly to worksheets or global ones to the workbook. Deprecated in 3.1"
+        "Assign scoped named ranges directly to worksheets "
+        "or global ones to the workbook. Deprecated in 3.1"
     )
     def create_named_range(self, name, worksheet=None, value=None, scope=None):
-        """Create a new named_range on a worksheet"""
+        """
+        Create a new named_range on a worksheet
+        """
         defn = DefinedName(name=name)
         if worksheet is not None:
-            defn.value = "{0}!{1}".format(quote_sheetname(worksheet.title), value)
+            defn.value = f"{quote_sheetname(worksheet.title)}!{value}"
         else:
             defn.value = value
-
         self.defined_names[name] = defn
 
     def add_named_style(self, style):
@@ -364,7 +362,8 @@ class Workbook:
         return ct
 
     def save(self, filename):
-        """Save the current workbook under the given `filename`.
+        """
+        Save the current workbook under the given `filename`.
         Use this function instead of using an `ExcelWriter`.
 
         .. warning::
@@ -386,7 +385,8 @@ class Workbook:
         return [s.name for s in self._named_styles]
 
     def copy_worksheet(self, from_worksheet):
-        """Copy an existing worksheet in the current workbook
+        """
+        Copy an existing worksheet in the current workbook
 
         .. warning::
             This function cannot copy worksheets between workbooks.
@@ -397,11 +397,11 @@ class Workbook:
         """
         if self.__write_only or self._read_only:
             raise ValueError("Cannot copy worksheets in read-only or write-only mode")
-
-        new_title = "{0} Copy".format(from_worksheet.title)
+        new_title = f"{from_worksheet.title} Copy"
         to_worksheet = self.create_sheet(title=new_title)
         cp = WorksheetCopy(
-            source_worksheet=from_worksheet, target_worksheet=to_worksheet
+            source_worksheet=from_worksheet,
+            target_worksheet=to_worksheet,
         )
         cp.copy_worksheet()
         return to_worksheet
@@ -416,13 +416,13 @@ class Workbook:
     def _duplicate_name(self, name):
         """
         Check for duplicate name in defined name list and table list of each worksheet.
-        Names are not case sensitive.
+        Names are not case-sensitive.
         """
         name = name.lower()
         for sheet in self.worksheets:
             for t in sheet.tables:
                 if name == t.lower():
                     return True
-
         if name in self.defined_names:
             return True
+        return False
