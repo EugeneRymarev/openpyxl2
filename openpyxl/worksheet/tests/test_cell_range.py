@@ -3,6 +3,8 @@ import copy
 
 import pytest
 
+from openpyxl.utils.exceptions import CellNotMergedException
+
 
 @pytest.fixture
 def cell_range():
@@ -323,3 +325,8 @@ class TestMultiCellRange:
         r1 = multi_cell_range("A1")
         r2 = copy.copy(r1)
         assert list(r1)[0] is not list(r2)[0]
+
+    def test_get_item(self, multi_cell_range, cell_range):
+        # TODO
+        with pytest.raises(CellNotMergedException) as e:
+            raise CellNotMergedException

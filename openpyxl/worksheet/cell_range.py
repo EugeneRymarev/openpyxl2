@@ -11,6 +11,7 @@ from openpyxl.utils.cell import get_column_letter
 from openpyxl.utils.cell import quote_sheetname
 from openpyxl.utils.cell import range_boundaries
 from openpyxl.utils.cell import range_to_tuple
+from openpyxl.utils.exceptions import CellNotMergedException
 
 
 class CellRange(Serialisable):
@@ -486,3 +487,11 @@ class MultiCellRange(Strict):
     def __copy__(self):
         ranges = {copy.copy(r) for r in self.ranges}
         return MultiCellRange(ranges)
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            item = CellRange(item)
+        for r in self.ranges:
+            if item <= r:
+                return r.coord
+        raise CellNotMergedException(f'There are no merged cells that include {item}')
