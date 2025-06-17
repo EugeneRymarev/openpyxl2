@@ -49,7 +49,9 @@ class PhoneticText(Serialisable):
 
 class InlineFont(Font):
     """
-    Font for inline text because, yes what you need are different objects with the same elements but different constraints.
+    Font for inline text because, yes what
+    you need are different objects with the
+    same elements but different constraints.
     """
 
     tagname = "RPrElt"

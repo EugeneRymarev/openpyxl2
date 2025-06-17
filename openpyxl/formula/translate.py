@@ -99,7 +99,7 @@ class Translator:
         """
         if "!" in range_str:
             sheet, range_str = range_str.rsplit("!", 1)
-            return sheet + "!", range_str
+            return f"{sheet}!", range_str
         return "", range_str
 
     @classmethod

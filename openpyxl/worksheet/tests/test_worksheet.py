@@ -450,7 +450,7 @@ def test_max_row(worksheet):
 
 
 def test_add_chart(worksheet):
-    from openpyxl.chart import BarChart
+    from openpyxl.chart.bar_chart import BarChart
 
     ws = worksheet(DummyWorkbook())
     chart = BarChart()

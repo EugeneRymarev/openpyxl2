@@ -52,7 +52,7 @@ def _convert(expected_type, value):
         try:
             value = expected_type(value)
         except:
-            raise TypeError("expected " + str(expected_type))
+            raise TypeError(f"expected {expected_type}")
     return value
 
 

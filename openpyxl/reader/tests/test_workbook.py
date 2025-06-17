@@ -39,7 +39,7 @@ class TestWorkbookParser:
         archive = zipfile.ZipFile(io.BytesIO(), "a")
         with open("workbook_1904.xml") as src:
             archive.writestr(ARC_WORKBOOK, src.read())
-        archive.writestr(ARC_WORKBOOK_RELS, b"<root />")
+        archive.writestr(ARC_WORKBOOK_RELS, b"<root/>")
         parser = workbook_parser(archive, ARC_WORKBOOK)
         assert parser.wb.epoch == CALENDAR_WINDOWS_1900
         parser.parse()
@@ -70,7 +70,7 @@ class TestWorkbookParser:
         wb = WorkbookPackage.from_tree(node)
         archive = zipfile.ZipFile(io.BytesIO(), "a")
         archive.write("workbook_links.xml", ARC_WORKBOOK)
-        archive.writestr(ARC_WORKBOOK_RELS, b"<root />")
+        archive.writestr(ARC_WORKBOOK_RELS, b"<root/>")
         parser = workbook_parser(archive, ARC_WORKBOOK)
         parser.sheets = wb.sheets
         sheets = parser.find_sheets()
@@ -139,7 +139,7 @@ class TestWorkbookParser:
         archive = zipfile.ZipFile(io.BytesIO(), "a")
         with open("workbook_links.xml") as src:
             archive.writestr(ARC_WORKBOOK, src.read())
-        archive.writestr(ARC_WORKBOOK_RELS, b"<root />")
+        archive.writestr(ARC_WORKBOOK_RELS, b"<root/>")
         parser = workbook_parser(archive, ARC_WORKBOOK)
         assert parser.wb._external_links == []
 

@@ -231,7 +231,7 @@ class Tokenizer:
             self.assert_empty_token()
             token = Token.make_subexp("{")
         elif self.token:
-            token_value = "".join(self.token) + "("
+            token_value = f'{"".join(self.token)}('
             del self.token[:]
             token = Token.make_subexp(token_value)
         else:
@@ -325,7 +325,7 @@ class Tokenizer:
             return ""
         elif self.items[0].type == Token.LITERAL:
             return self.items[0].value
-        return "=" + "".join(token.value for token in self.items)
+        return f'={"".join(token.value for token in self.items)}'
 
 
 class Token:

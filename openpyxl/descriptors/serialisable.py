@@ -53,7 +53,7 @@ class Serialisable(metaclass=MetaSerialisable):
             if key.startswith("{"):
                 del attrib[key]
             elif key in KEYWORDS:
-                attrib["_" + key] = attrib[key]
+                attrib[f"_{key}"] = attrib[key]
                 del attrib[key]
             elif "-" in key:
                 n = key.replace("-", "_")
@@ -64,7 +64,7 @@ class Serialisable(metaclass=MetaSerialisable):
         for el in node:
             tag = localname(el)
             if tag in KEYWORDS:
-                tag = "_" + tag
+                tag = f"_{tag}"
             desc = getattr(cls, tag, None)
             if desc is None or isinstance(desc, property):
                 continue

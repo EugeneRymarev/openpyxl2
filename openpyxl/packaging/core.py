@@ -23,7 +23,7 @@ class NestedDateTime(DateTime, NestedText):
         el = Element(tagname)
         if value is not None:
             value = value.replace(tzinfo=None)
-            el.text = value.isoformat(timespec="seconds") + "Z"
+            el.text = f'{value.isoformat(timespec="seconds")}Z'
             return el
         return None
 

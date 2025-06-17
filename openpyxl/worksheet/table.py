@@ -194,7 +194,7 @@ class Table(Serialisable):
     tagname = "table"
     _path = "/tables/table{0}.xml"
     mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"
-    _rel_type = REL_NS + "/table"
+    _rel_type = f"{REL_NS}/table"
     _rel_id = None
     id = Integer()
     name = String(allow_none=True)

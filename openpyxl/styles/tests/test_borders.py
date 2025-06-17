@@ -41,8 +41,8 @@ class TestBorder:
         bd = border.from_tree(xml)
         assert bd.left.style == "thin"
         assert bd.right.color.value == "FF006600"
-        assert bd.bottom.style == None
-        assert bd.diagonal == None
+        assert bd.bottom.style is None
+        assert bd.diagonal is None
 
     def test_serialise(self, border, side):
         medium_blue = side(border_style="medium", color=Color(BLUE))

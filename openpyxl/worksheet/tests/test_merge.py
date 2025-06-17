@@ -83,7 +83,7 @@ class TestMergedCellRange:
         ws = Workbook().active
         ws["A1"].border = Border(top=thick_border(), left=thick_border())
         ws[end].border = Border(right=thin_border(), bottom=double_border())
-        mcr = merged_cell_range(ws, "A1:" + end)
+        mcr = merged_cell_range(ws, f"A1:{end}")
         assert mcr.start_cell.coordinate == "A1"
         assert mcr.start_cell.border == start_border()
 

@@ -105,7 +105,7 @@ def lxml_write_cell(xf, worksheet, cell, styled=False):
                     if isinstance(value, str):
                         attrs = {}
                         if value != value.strip():
-                            attrs["{%s}space" % XML_NS] = "preserve"
+                            attrs[f"{{{XML_NS}}}space"] = "preserve"
                         el = Element("t", attrs)  # lxml can't handle xml-ns
                         el.text = value
                         xf.write(el)

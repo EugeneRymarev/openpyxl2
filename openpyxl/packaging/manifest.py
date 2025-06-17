@@ -54,8 +54,8 @@ DEFAULT_TYPES = [
 ]
 
 DEFAULT_OVERRIDE = [
-    Override("/" + ARC_STYLE, STYLES_TYPE),  # Styles
-    Override("/" + ARC_THEME, THEME_TYPE),  # Theme
+    Override(f"/{ARC_STYLE}", STYLES_TYPE),  # Styles
+    Override(f"/{ARC_THEME}", THEME_TYPE),  # Theme
     Override(
         "/docProps/core.xml",
         "application/vnd.openxmlformats-package.core-properties+xml",

@@ -106,7 +106,7 @@ class RGB(Typed):
             if m is None:
                 raise ValueError("Colors must be aRGB hex values")
             if len(value) == 6:
-                value = "00" + value
+                value = f"00{value}"
         super().__set__(instance, value)
 
 

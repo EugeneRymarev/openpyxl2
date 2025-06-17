@@ -236,7 +236,7 @@ class NumericAxis(_BaseAxis):
         Special case value axes with no gridlines
         """
         self = super().from_tree(node)
-        gridlines = node.find("{%s}majorGridlines" % CHART_NS)
+        gridlines = node.find(f"{{{CHART_NS}}}majorGridlines")
         if gridlines is None:
             self.majorGridlines = None
         return self

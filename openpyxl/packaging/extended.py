@@ -1,6 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 from openpyxl import __version__
-from openpyxl.descriptors import Typed
+from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.nested import NestedText
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.xml.constants import XPROPS_NS

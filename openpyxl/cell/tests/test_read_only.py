@@ -59,7 +59,7 @@ class TestStyle:
 
     def test_font(self, dummy_sheet):
         cell = ReadOnlyCell(dummy_sheet, None, None, None)
-        assert cell.font == None
+        assert cell.font is None
 
     def test_has_style(self, dummy_cell):
         assert dummy_cell.has_style

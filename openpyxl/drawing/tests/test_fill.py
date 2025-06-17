@@ -251,7 +251,7 @@ class TestBlipFillProperties:
         xml = tostring(fill.to_tree())
         expected = """
         <blipFill xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-            <a:stretch >
+            <a:stretch>
                 <a:fillRect/>
             </a:stretch>
         </blipFill>

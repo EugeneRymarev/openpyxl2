@@ -2,7 +2,7 @@
 """
 List of builtin formulae
 """
-from openpyxl.formula import Tokenizer
+from openpyxl.formula.tokenizer import Tokenizer
 
 FORMULAE = (
     "CUBEKPIMEMBER",

@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from py.path import local as LocalPath
+from py.path import LocalPath
 
 
 @pytest.fixture

@@ -89,7 +89,7 @@ class Reference(Strict):
         """
         Return and remove the first cell
         """
-        cell = "{0}{1}".format(get_column_letter(self.min_col), self.min_row)
+        cell = f"{get_column_letter(self.min_col)}{self.min_row}"
         if self.min_row == self.max_row:
             self.min_col += 1
         else:

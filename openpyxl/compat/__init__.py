@@ -35,7 +35,7 @@ def deprecated(reason):
                 return func1(*args, **kwargs)
 
             # Enhance docstring with a deprecation note
-            deprecationNote = "\n\n.. note::\n    Deprecated: " + reason
+            deprecationNote = f"\n\n.. note::\n    Deprecated: {reason}"
             if new_func1.__doc__:
                 new_func1.__doc__ += deprecationNote
             else:

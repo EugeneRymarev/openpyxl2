@@ -58,7 +58,7 @@ def test_load_workbook_from_fileobj(datadir, load_workbook_):
     [
         (ct, name)
         for ct in [XLSX, XLSM, XLTX, XLTM]
-        for name in ["/" + ARC_WORKBOOK, "/xl/spqr.xml"]
+        for name in [f"/{ARC_WORKBOOK}", "/xl/spqr.xml"]
     ],
 )
 def test_find_standard_workbook_part(datadir, wb_type, wb_name):

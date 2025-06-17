@@ -237,7 +237,7 @@ def test_table_formula(worksheet, write_cell_implementation):
         write_cell(xf, ws, cell)
     expected = """
     <c r="A1">
-        <f t="dataTable" ref="A1:B10" />
+        <f t="dataTable" ref="A1:B10"/>
         <v/>
     </c>
     """

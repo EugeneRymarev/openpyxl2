@@ -1,5 +1,5 @@
 # Copyright (c) 2010-2025 openpyxl
-from openpyxl.utils import coordinate_to_tuple
+from openpyxl.utils.cell import coordinate_to_tuple
 from openpyxl.xml.functions import fromstring
 from openpyxl.xml.functions import tostring
 
