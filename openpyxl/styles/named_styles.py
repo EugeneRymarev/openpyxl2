@@ -18,6 +18,7 @@ from openpyxl.styles.numbers import BUILTIN_FORMATS_MAX_SIZE
 from openpyxl.styles.numbers import BUILTIN_FORMATS_REVERSE
 from openpyxl.styles.numbers import NumberFormatDescriptor
 from openpyxl.styles.protection import Protection
+from openpyxl.utils.exceptions import NotNamedStyleOrStrException
 
 
 class NamedStyle(Serialisable):
@@ -125,6 +126,14 @@ class NamedStyle(Serialisable):
             xfId=self._style.xfId,
         )
         return named
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
+        elif isinstance(other, NamedStyle):
+            return self.name == other.name
+        raise NotNamedStyleOrStrException("Right argument must be NamedStyle or str")
+
 
 
 class NamedStyleList(list):

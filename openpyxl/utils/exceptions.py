@@ -46,3 +46,7 @@ class WorkbookAlreadySaved(Exception):
     Error when attempting to perform operations on a
     dump workbook while it has already been dumped once
     """
+
+
+class NotNamedStyleOrStrException(Exception):
+    """Error while trying to compare NamedStyle not another NamedStyle or str"""
