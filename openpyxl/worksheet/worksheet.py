@@ -757,7 +757,43 @@ class Worksheet(_WorkbookChild):
         """
         Insert column or columns before col==idx
         """
+        source_col_idx = idx - 1
+        has_source_col_style = source_col_idx >= 1
+
+        # Get the current maximum row before moving cells
+        # This helps define the height of the new columns to be styled.
+        # Using self.max_row should be fine as it reflects current content height.
+        current_max_row = self.max_row
+        # If sheet is empty, max_row can be 1, but we might want to insert cells for a few rows anyway.
+        # However, styling based on "nothing" to the left means they'll be default.
+        # Let's consider min_row as well to define the range of rows to populate.
+        current_min_row = self.min_row
+
+
         self._move_cells(min_col=idx, offset=amount, row_or_col="column")
+
+        # Add new cells with default style for the inserted columns
+        source_col_dim_style = None
+        if has_source_col_style:
+            source_col_letter = get_column_letter(source_col_idx)
+            if source_col_letter in self.column_dimensions and self.column_dimensions[source_col_letter].has_style:
+                source_col_dim_style = self.column_dimensions[source_col_letter].style
+
+        for col_idx in range(idx, idx + amount):
+            for row_idx in range(current_min_row, current_max_row + 1): # Iterate through existing row range
+                new_cell = self._get_cell(row_idx, col_idx)
+
+                if new_cell.value is None and not new_cell.has_style:
+                    style_applied = False
+                    if has_source_col_style:
+                        source_cell_left = self._cells.get((row_idx, source_col_idx))
+                        if source_cell_left and source_cell_left.has_style:
+                            new_cell.style = source_cell_left.style
+                            style_applied = True
+
+                    if not style_applied and source_col_dim_style:
+                        new_cell.style = source_col_dim_style
+                    # else: new_cell retains its default workbook style
 
     def delete_rows(self, idx, amount=1):
         """
