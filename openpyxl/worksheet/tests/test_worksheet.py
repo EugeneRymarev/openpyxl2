@@ -3,6 +3,7 @@ import itertools
 
 import pytest
 from openpyxl.cell.cell import Cell, MergedCell
+from openpyxl.utils import get_column_letter # Added for test_delete_rows_data_integrity_untouched_cells
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.table import Table
@@ -15,11 +16,36 @@ def worksheet():
     return Worksheet
 
 
+from openpyxl.styles.stylesheet import Stylesheet
+
 class DummyWorkbook:
     encoding = "UTF-8"
 
     def __init__(self):
         self.sheetnames = []
+        # Mimic real Workbook's style-related attributes needed by Cell.style access
+        # The NamedStyleDescriptor (and others) access e.g. instance.parent.parent._named_styles
+        # A Stylesheet object conveniently holds all these.
+        _stylesheet = Stylesheet()
+        self._fonts = _stylesheet.fonts # StyleArray
+        self._fills = _stylesheet.fills # StyleArray
+        self._borders = _stylesheet.borders # StyleArray
+
+        # Needed by NumberFormatDescriptor (via cell.number_format)
+        self._number_formats = _stylesheet.number_formats # This is an IndexedList of format strings
+        # Needed by Stylesheet._normalise_numbers if it were called on DummyWorkbook's sheet (not typical)
+        self.numFmts = _stylesheet.numFmts # This is the NumberFormatList object
+
+        self._protections = _stylesheet.protections # StyleArray
+
+        # Needed by NamedStyleDescriptor (via cell.style = "Named Style Name")
+        # NamedStyleDescriptor expects workbook._named_styles to be a list of NamedStyle objects
+        self._named_styles = _stylesheet.named_styles # This IS the NamedStyleList (a list of NamedStyle objects)
+
+        # Needed by StyleDescriptor (via cell.style_id or cell.style = StyleObject)
+        # This should be the CellStyleList (StyleArray of XF objects)
+        self._styles = _stylesheet.cellXfs
+        self._cell_styles = self._styles # Alias often used
 
 
 class TestWorksheet:
@@ -962,6 +988,283 @@ class TestInsertRowsWithStyles(TestEditableWorksheet): # Inherit to use dummy_wo
         # it would also inherit body_style. When moved to E5, _move_cell would copy this
         # explicit style (which was implicit before) to E5.
         # This is covered by ws['A5'].style == body_style.name.
+
+    def test_insert_rows_expands_straddling_merged_cell(self, worksheet):
+        ws = worksheet(Workbook())
+        # Register styles if they'll be used on the merged cell
+        if body_style.name not in ws.parent.style_names:
+            ws.parent.add_named_style(body_style)
+
+        # Merged cell A2:B5, style it
+        ws.merge_cells('A2:B5')
+        ws['A2'].style = body_style
+        ws['A2'] = "Straddling Merge"
+
+        # Some other cell outside the merge to check it moves correctly
+        ws['C6'] = "Below"
+        ws['C1'] = "Above" # Cell above merge
+
+        # Insert 2 rows at idx=4 (i.e., before original row 4, which is inside the A2:B5 merge)
+        # mcr.min_row=2, mcr.max_row=5. idx=4.
+        # Condition: mcr.min_row < idx <= mcr.max_row  =>  2 < 4 <= 5 is TRUE.
+        # So, A2:B5 should expand by 2 rows downwards.
+        # It should become A2:B(5+2) = A2:B7
+        ws.insert_rows(idx=4, amount=2)
+
+        assert ws['C1'].value == "Above" # Should be untouched
+
+        assert 'A2:B7' in ws.merged_cells # Check expanded
+        assert 'A2:B5' not in ws.merged_cells # Original should be gone
+        assert ws['A2'].value == "Straddling Merge" # Anchor value
+        assert ws['A2'].style == body_style.name  # Anchor style
+
+        # Check some cells within the expanded merge are MergedCell instances
+        assert isinstance(ws['A3'], MergedCell) # Was part of original merge
+        assert isinstance(ws['A4'], MergedCell) # New row, should be part of merge
+        assert isinstance(ws['A5'], MergedCell) # New row, should be part of merge
+        assert isinstance(ws['A6'], MergedCell) # Was row 4 of original merge, now row 6
+        assert isinstance(ws['B7'], MergedCell) # Bottom-right of new merge
+
+        # Check the cell below also moved correctly (original C6 is now C(6+2)=C8)
+        assert ws['C8'].value == "Below"
+
+        # Max row check: A2:B7 means row 7. C8 means row 8.
+        # _current_row should be updated by _add_cell when C8 is created or moved.
+        # Max row calculated from _cells should be 8.
+        assert ws.max_row == 8
+
+
+    # --- Tests for delete_rows ---
+
+    def test_delete_rows_moves_styles(self, worksheet):
+        ws = worksheet(Workbook())
+        for style in [header_style, body_style, highlight_style]:
+            if style.name not in ws.parent.style_names:
+                ws.parent.add_named_style(style)
+
+        ws['A1'].style = header_style; ws['A1'] = "Row 1"
+        ws['A2'].style = body_style; ws['A2'] = "Row 2 to delete"
+        ws['A3'].style = body_style; ws['A3'] = "Row 3 to delete"
+        ws['A4'].style = highlight_style; ws['A4'] = "Row 4 becomes 2"
+        ws['A5'].style = header_style; ws['A5'] = "Row 5 becomes 3"
+
+        ws.delete_rows(idx=2, amount=2) # Delete Row 2 and Row 3
+
+        assert ws['A1'].value == "Row 1"
+        assert ws['A1'].style == header_style.name
+
+        assert ws['A2'].value == "Row 4 becomes 2" # Original A4
+        assert ws['A2'].style == highlight_style.name
+
+        assert ws['A3'].value == "Row 5 becomes 3" # Original A5
+        assert ws['A3'].style == header_style.name
+
+        # Check that cells from deleted rows are gone / overwritten
+        assert ws._cells.get((4,1)) is None # Original A4 location should be empty or cell moved
+        assert ws._cells.get((5,1)) is None # Original A5 location
+
+        assert ws.max_row == 3
+
+
+    def test_delete_rows_merged_cell_fully_contained(self, worksheet):
+        ws = worksheet(Workbook())
+        ws.merge_cells('A2:B3')
+        ws['A2'] = "Merged A2:B3"
+
+        ws.delete_rows(idx=2, amount=2) # Delete rows 2 and 3
+
+        assert 'A2:B3' not in ws.merged_cells
+        assert ws.max_row == 0 # Assuming no other data
+
+    def test_delete_rows_merged_cell_cut_bottom(self, worksheet):
+        ws = worksheet(Workbook())
+        ws['A1'] = "Unaffected"
+        ws.merge_cells('B2:C5') # Merged B2:C5
+        ws['B2'] = "Merged B2:C5"
+        ws['B2'].style = header_style
+        if header_style.name not in ws.parent.style_names: ws.parent.add_named_style(header_style)
+
+        ws.delete_rows(idx=4, amount=2) # Delete rows 4 and 5
+
+        assert 'B2:C3' in ws.merged_cells
+        assert 'B2:C5' not in ws.merged_cells
+        assert ws['B2'].value == "Merged B2:C5"
+        assert ws['B2'].style == header_style.name
+        assert ws.max_row == 3 # B2:C3 is highest content
+
+    def test_delete_rows_merged_cell_cut_top_anchor(self, worksheet):
+        ws = worksheet(Workbook())
+        ws.merge_cells('B2:C5')
+        ws['B2'] = "Merged B2:C5"
+        ws['D6'] = "Unaffected below"
+
+        ws.delete_rows(idx=2, amount=2) # Delete rows 2 and 3 (original anchor B2 is gone)
+
+        assert 'B2:C5' not in ws.merged_cells # Original should be gone
+        # Based on current logic, it should be unmerged.
+        # Any remaining part (orig B4:C5 -> now B2:C3) would not be a valid merge from original.
+        # Check that D6 moved to D4
+        assert ws['D4'].value == "Unaffected below"
+        assert ws.max_row == 4
+
+
+    def test_delete_rows_merged_cell_cut_middle(self, worksheet):
+        ws = worksheet(Workbook())
+        ws.merge_cells('A1:B5') # A1:B5
+        ws['A1'] = "Large Merge"
+        ws['A1'].style = body_style
+        if body_style.name not in ws.parent.style_names: ws.parent.add_named_style(body_style)
+
+        ws.delete_rows(idx=3, amount=1) # Delete row 3 (from middle)
+
+        assert 'A1:B4' in ws.merged_cells # Should shrink to A1:B4
+        assert 'A1:B5' not in ws.merged_cells
+        assert ws['A1'].value == "Large Merge"
+        assert ws['A1'].style == body_style.name
+        assert ws.max_row == 4
+
+    def test_delete_rows_moves_merged_cell_above(self, worksheet):
+        ws = worksheet(Workbook())
+        if highlight_style.name not in ws.parent.style_names: ws.parent.add_named_style(highlight_style)
+        ws['A1'] = "Row 1"
+        ws.merge_cells('B3:C4')
+        ws['B3'].style = highlight_style
+        ws['B3'] = "Merged B3:C4"
+
+        ws.delete_rows(idx=1, amount=1) # Delete row 1
+
+        assert 'B2:C3' in ws.merged_cells # Moved from B3:C4 to B2:C3
+        assert ws['B2'].value == "Merged B3:C4"
+        assert ws['B2'].style == highlight_style.name
+        assert ws.max_row == 3
+
+    def test_delete_rows_updates_max_row(self, worksheet):
+        ws = worksheet(Workbook())
+        for i in range(1, 6): # A1 to A5
+            ws[f'A{i}'] = f"Val{i}"
+
+        assert ws.max_row == 5
+        ws.delete_rows(idx=4, amount=2) # Delete A4, A5
+        assert ws.max_row == 3
+
+        ws.delete_rows(idx=1, amount=1) # Delete A1
+        assert ws.max_row == 2 # A2,A3 remain, now A1,A2
+        assert ws['A1'].value == "Val2"
+
+        ws.delete_rows(idx=1, amount=2) # Delete remaining A1, A2
+        assert ws.max_row == 0 # openpyxl behavior for empty sheet max_row is 0
+        assert ws._current_row == 0
+
+
+    def test_delete_rows_updates_row_dimensions(self, worksheet):
+        ws = worksheet(Workbook())
+        ws['A1'] = 1; ws['A2'] = 2; ws['A3'] = 3; ws['A4'] = 4; ws['A5'] = 5
+        ws.row_dimensions[2].height = 30
+        ws.row_dimensions[4].height = 40
+        # Applying style to a row dimension directly is tricky.
+        # RowDimension.s (style_id) would need to be set.
+        # For now, we'll check height and existence.
+
+        ws.delete_rows(idx=3, amount=1) # Delete row 3
+
+        assert 2 in ws.row_dimensions and ws.row_dimensions[2].height == 30
+        assert 3 in ws.row_dimensions and ws.row_dimensions[3].height == 40 # Row 4 moved to 3
+        assert 4 not in ws.row_dimensions # Original Row 4 dim is now for row 3
+        assert ws.row_dimensions.get(5) is None # Original Row 5 dim also moved up, now for row 4
+
+        ws.delete_rows(idx=1, amount=1) # Delete current row 1 (original row 1)
+        # Original row 2 (height 30) is now row 1
+        # Original row 4 (height 40, became row 3) is now row 2
+        assert 1 in ws.row_dimensions and ws.row_dimensions[1].height == 30
+        assert 2 in ws.row_dimensions and ws.row_dimensions[2].height == 40
+        assert 3 not in ws.row_dimensions
+
+    def test_delete_rows_from_start(self, worksheet):
+        ws = worksheet(Workbook())
+        for i in range(1, 5): ws[f'A{i}'] = f"Val{i}"; ws[f'A{i}'].style = header_style
+        if header_style.name not in ws.parent.style_names: ws.parent.add_named_style(header_style)
+
+        ws.delete_rows(idx=1, amount=2) # Delete A1, A2
+
+        assert ws.max_row == 2
+        assert ws['A1'].value == "Val3"
+        assert ws['A1'].style == header_style.name
+        assert ws['A2'].value == "Val4"
+        assert ws['A2'].style == header_style.name
+
+    def test_delete_rows_to_end(self, worksheet):
+        ws = worksheet(Workbook())
+        for i in range(1, 5): ws[f'A{i}'] = f"Val{i}"; ws[f'A{i}'].style = body_style
+        if body_style.name not in ws.parent.style_names: ws.parent.add_named_style(body_style)
+
+        ws.delete_rows(idx=3, amount=2) # Delete A3, A4
+        assert ws.max_row == 2
+        assert ws['A1'].value == "Val1"; assert ws['A1'].style == body_style.name
+        assert ws['A2'].value == "Val2"; assert ws['A2'].style == body_style.name
+        assert ws._cells.get((3,1)) is None
+        assert ws._cells.get((4,1)) is None
+
+
+    def test_delete_more_rows_than_exist(self, worksheet):
+        ws = worksheet(Workbook())
+        ws['A1'] = "Val1"; ws['A2'] = "Val2"
+
+        ws.delete_rows(idx=1, amount=5)
+        assert ws.max_row == 1 # max_row property returns 1 if _cells is empty
+        assert ws._current_row == 0
+        assert not ws._cells
+
+    def test_delete_zero_rows(self, worksheet):
+        ws = worksheet(Workbook())
+        ws['A1'].style = header_style; ws['A1'] = "A1"
+        ws['A2'].style = body_style; ws['A2'] = "A2"
+        if header_style.name not in ws.parent.style_names: ws.parent.add_named_style(header_style)
+        if body_style.name not in ws.parent.style_names: ws.parent.add_named_style(body_style)
+
+        original_cells = dict(ws._cells)
+        original_merged_cells = set(ws.merged_cells.ranges)
+        original_row_dims = {k: (v.height, v.style) for k,v in ws.row_dimensions.items()}
+
+
+        ws.delete_rows(idx=1, amount=0)
+
+        assert ws._cells == original_cells
+        assert ws.merged_cells.ranges == original_merged_cells
+        assert {k: (v.height, v.style) for k,v in ws.row_dimensions.items()} == original_row_dims
+        assert ws['A1'].value == "A1"; assert ws['A1'].style == header_style.name
+
+    def test_delete_rows_data_integrity_untouched_cells(self, worksheet):
+        ws = worksheet(Workbook())
+        # Setup 5x3 grid
+        for r_idx in range(1, 6): # Rows 1-5
+            for c_idx in range(1, 4): # Cols A-C
+                val = f"{get_column_letter(c_idx)}{r_idx}"
+                ws.cell(row=r_idx, column=c_idx, value=val)
+                if c_idx == 1: ws.cell(row=r_idx, column=c_idx).style = header_style
+                elif c_idx == 2: ws.cell(row=r_idx, column=c_idx).style = body_style
+                else: ws.cell(row=r_idx, column=c_idx).style = highlight_style
+        if header_style.name not in ws.parent.style_names: ws.parent.add_named_style(header_style)
+        if body_style.name not in ws.parent.style_names: ws.parent.add_named_style(body_style)
+        if highlight_style.name not in ws.parent.style_names: ws.parent.add_named_style(highlight_style)
+
+        ws.delete_rows(idx=2, amount=2) # Delete rows 2 and 3
+
+        # Row 1 (A1, B1, C1) should be untouched
+        assert ws['A1'].value == "A1"; assert ws['A1'].style == header_style.name
+        assert ws['B1'].value == "B1"; assert ws['B1'].style == body_style.name
+        assert ws['C1'].value == "C1"; assert ws['C1'].style == highlight_style.name
+
+        # Original Row 4 (A4, B4, C4) should now be Row 2
+        assert ws['A2'].value == "A4"; assert ws['A2'].style == header_style.name
+        assert ws['B2'].value == "B4"; assert ws['B2'].style == body_style.name
+        assert ws['C2'].value == "C4"; assert ws['C2'].style == highlight_style.name
+
+        # Original Row 5 (A5, B5, C5) should now be Row 3
+        assert ws['A3'].value == "A5"; assert ws['A3'].style == header_style.name
+        assert ws['B3'].value == "B5"; assert ws['B3'].style == body_style.name
+        assert ws['C3'].value == "C5"; assert ws['C3'].style == highlight_style.name
+
+        assert ws.max_row == 3
 
     # --- Tests for insert_cols ---
 

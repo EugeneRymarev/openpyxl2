@@ -80,8 +80,19 @@ class NamedStyleDescriptor:
         if not getattr(instance, "_style"):
             instance._style = StyleArray()
         idx = getattr(instance._style, self.key)
-        coll = getattr(instance.parent.parent, self.collection)
-        return coll.names[idx]
+        coll = getattr(instance.parent.parent, self.collection) # This is workbook._named_styles (list of NamedStyle)
+        try:
+            return coll[idx].name # Get the name of the NamedStyle object at this index
+        except IndexError:
+            # Fallback or error if idx is out of bounds (e.g., style not found, or default handling)
+            # This might happen if a style ID points to a non-named style or is invalid.
+            # Defaulting to "Normal" or raising an error might be options.
+            # For now, let's see if simply accessing .name works when idx is valid.
+            # If workbook._named_styles is empty and idx is 0, this will still fail.
+            # Stylesheet ensures "Normal" (idx 0) is always present in a real workbook's list.
+            if idx == 0 and not coll: # Special case for unstyled cell potentially with idx 0 but empty named_styles list
+                return "Normal" # Default style name
+            raise # Re-raise if it's a different IndexError or idx is not 0 for an empty list
 
 
 class StyleArrayDescriptor:

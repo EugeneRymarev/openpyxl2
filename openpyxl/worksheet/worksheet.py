@@ -315,20 +315,19 @@ class Worksheet(_WorkbookChild):
         """
         min_row = 1
         if self._cells:
-            min_row = min(self._cells)[0]
+            min_row = min(coord[0] for coord in self._cells)
         return min_row
 
     @property
     def max_row(self):
         """
-        The maximum row index containing data (1-based)
-
-        :type: int
+        The maximum row index containing data (1-based).
+        Returns 0 if the sheet is entirely empty.
         """
-        max_row = 1
-        if self._cells:
-            max_row = max(self._cells)[0]
-        return max_row
+        if not self._cells:
+            return 0
+        return self._current_row # Relies on _current_row being correctly maintained
+
 
     @property
     def min_column(self):
@@ -339,7 +338,7 @@ class Worksheet(_WorkbookChild):
         """
         min_col = 1
         if self._cells:
-            min_col = min(c[1] for c in self._cells)
+            min_col = min(coord[1] for coord in self._cells)
         return min_col
 
     @property
@@ -351,7 +350,7 @@ class Worksheet(_WorkbookChild):
         """
         max_col = 1
         if self._cells:
-            max_col = max(c[1] for c in self._cells)
+            max_col = max(coord[1] for coord in self._cells)
         return max_col
 
     def calculate_dimension(self):
@@ -361,18 +360,30 @@ class Worksheet(_WorkbookChild):
 
         :rtype: string
         """
-        if self._cells:
-            rows = set()
-            cols = set()
-            for row, col in self._cells:
-                rows.add(row)
-                cols.add(col)
-            max_row = max(rows)
-            max_col = max(cols)
-            min_col = min(cols)
-            min_row = min(rows)
-        else:
-            return "A1:A1"
+        if not self._cells: # Check if the sheet is empty
+             return "A1:A1" # Default for empty sheet
+        rows = set()
+        cols = set()
+        # Only consider cells that are actual Cell instances (not MergedCell placeholders)
+        # and have some content or explicit style.
+        for (r, c), cell_obj in self._cells.items():
+            if isinstance(cell_obj, Cell) and (cell_obj.value is not None or cell_obj.has_style):
+                rows.add(r)
+                cols.add(c)
+
+        if not rows or not cols: # If all cells are empty and unstyled
+            # Try to find any cell object to determine at least a single cell dimension
+            if self._cells:
+                first_coord = next(iter(self._cells.keys()))
+                min_row = max_row = first_coord[0]
+                min_col = max_col = first_coord[1]
+                return f"{get_column_letter(min_col)}{min_row}:{get_column_letter(max_col)}{max_row}"
+            return "A1:A1" # Fallback if truly no cell objects (should not happen if _cells is not empty)
+
+        max_row = max(rows)
+        max_col = max(cols)
+        min_col = min(cols)
+        min_row = min(rows)
         return f"{get_column_letter(min_col)}{min_row}:{get_column_letter(max_col)}{max_row}"
 
     @property
@@ -415,12 +426,20 @@ class Worksheet(_WorkbookChild):
 
         :rtype: generator
         """
-        if self._current_row == 0 and not any([min_col, min_row, max_col, max_row]):
-            return iter(())
+        if self._current_row == 0 and not any([min_col, min_row, max_col, max_row]): # Use _current_row for check
+             if not self._cells and not any([min_col, min_row, max_col, max_row]): # More robust empty check
+                 return iter(())
+
         min_col = min_col or 1
         min_row = min_row or 1
+        # Use self.max_column and self.max_row which now depend on _current_row (indirectly for max_row)
+        # or direct calculation for max_column
         max_col = max_col or self.max_column
-        max_row = max_row or self.max_row
+        max_row = max_row or self.max_row # This uses the property that relies on _current_row
+
+        if max_row == 0: # If sheet is empty, max_row property returns 0
+            return iter(())
+
         return self._cells_by_row(min_col, min_row, max_col, max_row, values_only)
 
     def _cells_by_row(self, min_col, min_row, max_col, max_row, values_only=False):
@@ -484,13 +503,18 @@ class Worksheet(_WorkbookChild):
 
         :rtype: generator
         """
+        if self._current_row == 0 and not any([min_col, min_row, max_col, max_row]): # Use _current_row
+            if not self._cells and not any([min_col, min_row, max_col, max_row]):
+                return iter(())
 
-        if self._current_row == 0 and not any([min_col, min_row, max_col, max_row]):
-            return iter(())
         min_col = min_col or 1
         min_row = min_row or 1
         max_col = max_col or self.max_column
         max_row = max_row or self.max_row
+
+        if max_row == 0: # If sheet is empty
+            return iter(())
+
         return self._cells_by_col(min_col, min_row, max_col, max_row, values_only)
 
     def _cells_by_col(self, min_col, min_row, max_col, max_row, values_only=False):
@@ -697,17 +721,36 @@ class Worksheet(_WorkbookChild):
         col_offset = 0
         # need to make affected ranges contiguous
         if row_or_col == "row":
-            cells = self.iter_rows(min_row=min_row)
+            # cells = self.iter_rows(min_row=min_row) # This was unused
             row_offset = offset
             key = 0
         else:
-            cells = self.iter_cols(min_col=min_col)
+            # cells = self.iter_cols(min_col=min_col) # This was unused
             col_offset = offset
             key = 1
-        # TODO: WTF?
-        cells = list(cells)
-        cells = sorted(self._cells, key=operator.itemgetter(key), reverse=reverse)
-        for row, column in cells:
+        # TODO: WTF? -> This comment was in original code, refers to `cells = list(cells)` line
+        # cells = list(cells) # This line was part of the "WTF" and potentially buggy if iter_rows/cols is large
+
+        # Iterate over a snapshot of coordinates to avoid issues with modifying _cells during iteration
+        # Sort order depends on whether we are inserting (positive offset, reverse sort)
+        # or deleting (negative offset, forward sort) to avoid overwriting cells prematurely.
+        # When deleting rows (negative offset), process from top to bottom.
+        # When inserting rows (positive offset), process from bottom to top.
+        # When deleting columns (negative offset), process from left to right.
+        # When inserting columns (positive offset), process from right to left.
+
+        # For row operations, key is 0 (row index).
+        # For column operations, key is 1 (column index).
+        # `reverse` is True if offset > 0 (inserting), False if offset < 0 (deleting).
+        # So for deleting rows (offset < 0), reverse is False (sort ascending by row).
+        # For deleting columns (offset < 0), reverse is False (sort ascending by col).
+        sorted_cell_coords = sorted(self._cells.keys(), key=operator.itemgetter(key), reverse=reverse)
+
+        for row, column in sorted_cell_coords:
+            # Check if the cell is still in its original place (it might have been moved already if it was part of a merge anchor)
+            if (row,column) not in self._cells:
+                continue
+
             if min_row and row < min_row:
                 continue
             elif min_col and column < min_col:
@@ -718,40 +761,82 @@ class Worksheet(_WorkbookChild):
         """
         Insert row or rows before row==idx
         """
+        # Get the current maximum column before moving cells or adjusting merges
+        # This helps define the width of the new rows to be styled later.
+        # It must be captured before merged cells are expanded, as expansion might change max_column.
+        current_max_col = self.max_column if self._cells else 0
+
+
+        # Adjust merged cells
+        # Iterate over a copy of the merged_cells set as it might be modified
+        for mcr in list(self.merged_cells):
+            if mcr.min_row < idx <= mcr.max_row:
+                # Insertion point is within this merged range (but not before it starts).
+                # Expand the merged cell range downwards.
+                mcr.expand(down=amount)
+            elif mcr.min_row >= idx:
+                # Merged range starts at or after the insertion point.
+                # These will be shifted entirely by _move_cells.
+                # Their coordinates are updated within _move_cell when the anchor moves.
+                pass # No direct modification here, _move_cell handles it.
+
         # Determine the styling source row (row above the insertion point)
         source_row_idx = idx -1
         has_source_row_style = source_row_idx >= 1
-
-        # Get the current maximum column before moving cells
-        # This helps define the width of the new rows to be styled
-        current_max_col = self.max_column
 
         self._move_cells(min_row=idx, offset=amount, row_or_col="row")
 
         # Add new cells with default style for the inserted rows
         source_row_dim_style = None
-        if has_source_row_style and self.row_dimensions[source_row_idx].has_style:
+        # Check if source_row_idx is valid and exists in row_dimensions
+        if has_source_row_style and source_row_idx in self.row_dimensions and self.row_dimensions[source_row_idx].has_style:
             source_row_dim_style = self.row_dimensions[source_row_idx].style
 
-        for row_idx in range(idx, idx + amount):
-            for col_idx in range(1, current_max_col + 1):
-                new_cell = self._get_cell(row_idx, col_idx) # Creates cell if it doesn't exist
+        # If current_max_col was 0 (empty sheet), make it 1 so new rows get at least one cell if amount > 0
+        # otherwise range(1, current_max_col + 1) would be empty.
+        # However, typically an empty sheet has max_column=1 due to A1 existing or being default.
+        # Let's rely on the initial current_max_col. If it was 0, no cells are styled, which is fine.
+        # If sheet was empty, max_column property is 1.
+        # If sheet has cells, max_column is calculated.
+        # If inserting into B2, current_max_col could be 1 if only A1 exists. Styling new row 2, col 1. Correct.
+
+        for row_idx_new in range(idx, idx + amount):
+            # If the sheet was empty, current_max_col could be 1 (from 'A1' default).
+            # If it had data up to col C, current_max_col would be 3.
+            # We iterate up to the determined current_max_col.
+            for col_idx_new in range(1, current_max_col + 1): # Iterate up to original max_column
+                new_cell = self._get_cell(row_idx_new, col_idx_new) # Creates cell if it doesn't exist
 
                 # Apply style only if the cell is genuinely new (no value, no pre-existing style)
-                # This condition might need adjustment if _get_cell itself applies a default style
+                # This means it wasn't a cell that was moved into this position by _move_cells
                 if new_cell.value is None and not new_cell.has_style:
                     style_applied = False
                     if has_source_row_style:
-                        source_cell_above = self._cells.get((source_row_idx, col_idx))
+                        # Try to get style from cell directly above in the original sheet layout
+                        source_cell_above = self._cells.get((source_row_idx, col_idx_new))
                         if source_cell_above and source_cell_above.has_style:
-                            new_cell.style = source_cell_above.style
-                            style_applied = True
+                            # Ensure we are not copying from a MergedCell placeholder that might have been
+                            # left behind if its anchor moved from source_row_idx.
+                            # Accessing .style on a MergedCell should delegate to its anchor's style.
+                            if not isinstance(source_cell_above, MergedCell) or source_cell_above.coordinate == (source_row_idx, col_idx_new):
+                                new_cell.style = source_cell_above.style
+                                style_applied = True
 
                     if not style_applied and source_row_dim_style:
                         new_cell.style = source_row_dim_style
                     # else: new_cell retains its default style (from workbook's perspective)
 
-        self._current_row = self.max_row
+        # Update worksheet's current row pointer (cached max_row)
+        # This needs to be accurate for subsequent operations.
+        # self.max_row property relies on _current_row.
+        # _current_row should be the highest row index with a cell.
+        # _move_cells updates _current_row if cells move beyond current max.
+        # Creating new cells in insert_rows also updates _current_row via _add_cell.
+        # So, explicitly find the max row among all cells.
+        if self._cells:
+            self._current_row = max(r for r, c in self._cells.keys())
+        else:
+            self._current_row = 0
 
     def insert_cols(self, idx, amount=1):
         """
@@ -759,20 +844,11 @@ class Worksheet(_WorkbookChild):
         """
         source_col_idx = idx - 1
         has_source_col_style = source_col_idx >= 1
-
-        # Get the current maximum row before moving cells
-        # This helps define the height of the new columns to be styled.
-        # Using self.max_row should be fine as it reflects current content height.
         current_max_row = self.max_row
-        # If sheet is empty, max_row can be 1, but we might want to insert cells for a few rows anyway.
-        # However, styling based on "nothing" to the left means they'll be default.
-        # Let's consider min_row as well to define the range of rows to populate.
         current_min_row = self.min_row
-
 
         self._move_cells(min_col=idx, offset=amount, row_or_col="column")
 
-        # Add new cells with default style for the inserted columns
         source_col_dim_style = None
         if has_source_col_style:
             source_col_letter = get_column_letter(source_col_idx)
@@ -780,9 +856,8 @@ class Worksheet(_WorkbookChild):
                 source_col_dim_style = self.column_dimensions[source_col_letter].style
 
         for col_idx in range(idx, idx + amount):
-            for row_idx in range(current_min_row, current_max_row + 1): # Iterate through existing row range
+            for row_idx in range(current_min_row, current_max_row + 1):
                 new_cell = self._get_cell(row_idx, col_idx)
-
                 if new_cell.value is None and not new_cell.has_style:
                     style_applied = False
                     if has_source_col_style:
@@ -793,24 +868,89 @@ class Worksheet(_WorkbookChild):
 
                     if not style_applied and source_col_dim_style:
                         new_cell.style = source_col_dim_style
-                    # else: new_cell retains its default workbook style
+        # self._current_row is not directly affected by col insertion in terms of max row index
+        # self.max_column will be implicitly updated if new cells are added beyond current max_column.
 
     def delete_rows(self, idx, amount=1):
         """
         Delete row or rows from row==idx
         """
-        remainder = _gutter(idx, amount, self.max_row)
+        if amount == 0:
+            return
+        if not isinstance(amount, int) or amount < 0: # Ensure amount is positive integer
+            raise ValueError("Amount must be a positive integer")
+
+        old_max_row = self.max_row
+        old_max_col = self.max_column if self._cells else 0
+
+
+        # Adjust and unmerge cells
+        for mcr in list(self.merged_cells): # Iterate over a copy
+            deleted_block_min_row = idx
+            deleted_block_max_row = idx + amount - 1
+
+            if mcr.min_row >= deleted_block_min_row and mcr.max_row <= deleted_block_max_row:
+                # Case 1: Merged range is entirely within the deleted rows.
+                if mcr.coord in self.merged_cells: self.unmerge_cells(mcr.coord)
+            elif mcr.min_row < deleted_block_min_row and mcr.max_row >= deleted_block_min_row and mcr.max_row <= deleted_block_max_row:
+                # Case 2: Merged range's bottom part is cut off. Shrink from bottom.
+                shrink_amount_bottom = mcr.max_row - (deleted_block_min_row - 1)
+                if shrink_amount_bottom > 0 :
+                    mcr.shrink(bottom=shrink_amount_bottom)
+                    if mcr.min_row > mcr.max_row or mcr.min_col > mcr.max_col: # Check validity
+                        if mcr.coord in self.merged_cells: self.unmerge_cells(mcr.coord)
+            elif mcr.min_row >= deleted_block_min_row and mcr.min_row <= deleted_block_max_row and mcr.max_row > deleted_block_max_row:
+                # Case 3: Merged range's top part is cut off (anchor is effectively deleted). Unmerge.
+                if mcr.coord in self.merged_cells: self.unmerge_cells(mcr.coord)
+            elif mcr.min_row < deleted_block_min_row and mcr.max_row > deleted_block_max_row:
+                # Case 4: Deletion occurs in the middle of the merged range. Shrink height.
+                mcr.shrink(bottom=amount)
+                if mcr.min_row > mcr.max_row or mcr.min_col > mcr.max_col: # Check validity
+                     if mcr.coord in self.merged_cells: self.unmerge_cells(mcr.coord)
+            # Cases 5 & 6 (entirely above or below) are handled by _move_cells or untouched.
+
         self._move_cells(min_row=idx + amount, offset=-amount, row_or_col="row")
-        # calculating min and max col is an expensive operation, do it only once
-        min_col = self.min_column
-        max_col = self.max_column + 1
-        for row in remainder:
-            for col in range(min_col, max_col):
-                if (row, col) in self._cells:
-                    del self._cells[row, col]
-        self._current_row = self.max_row
-        if not self._cells:
-            self._current_row = 0
+
+        # Explicitly delete cells from the deleted rows range that were not overwritten by _move_cells
+        # This is important for rows that are at the end of the data or become empty.
+        for r_del_idx in range(idx, idx + amount):
+            for c_del_idx in range(1, old_max_col + 1): # Iterate up to the original max column
+                self._cells.pop((r_del_idx, c_del_idx), None)
+
+        new_max_r = 0 # Max row after moves and explicit delete of original deleted block
+        if self._cells:
+            row_indices = [coord[0] for coord, c_obj in self._cells.items() if isinstance(c_obj, Cell)]
+            if row_indices:
+                new_max_r = max(row_indices)
+
+        # Clean up any remaining cells that are now beyond the new data extent (new_max_r)
+        # up to the original data extent (old_max_row).
+        cols_to_scan = list(range(1, old_max_col + 2))
+        for r_idx_to_clean in range(new_max_r + 1, old_max_row + 1):
+            for c_idx_to_clean in cols_to_scan:
+                self._cells.pop((r_idx_to_clean, c_idx_to_clean), None)
+
+        # Update Row Dimensions
+        new_dimensions = DimensionHolder(worksheet=self, default_factory=self._add_row)
+        for r_idx, dim in self.row_dimensions.items():
+            if r_idx < idx:
+                new_dimensions[r_idx] = dim
+            elif r_idx >= idx + amount:
+                new_idx = r_idx - amount
+                dim.index = new_idx
+                new_dimensions[new_idx] = dim
+        self.row_dimensions = new_dimensions
+
+        # Update worksheet's current row pointer (cached max_row)
+        self._current_row = 0
+        if self._cells:
+            # Base _current_row on the highest row index that actually has a cell object in _cells.
+            # This ensures max_row property (which uses _current_row) is accurate.
+            all_cell_row_indices = [coord[0] for coord in self._cells.keys()]
+            if all_cell_row_indices:
+                self._current_row = max(all_cell_row_indices)
+        # If sheet becomes empty, _current_row remains 0. Max_row property will return 0.
+
 
     def delete_cols(self, idx, amount=1):
         """
@@ -820,11 +960,15 @@ class Worksheet(_WorkbookChild):
         self._move_cells(min_col=idx + amount, offset=-amount, row_or_col="column")
         # calculating min and max row is an expensive operation, do it only once
         min_row = self.min_row
-        max_row = self.max_row + 1
+        max_row = self.max_row + 1 # max_row property now relies on _current_row
+        if self._current_row == 0 and not self._cells : # if sheet is empty
+             max_row = 1 # default for loop range if sheet is empty.
+
         for col in remainder:
             for row in range(min_row, max_row):
                 if (row, col) in self._cells:
                     del self._cells[row, col]
+        # Update _max_col? No, max_column property will recalculate.
 
     def move_range(self, cell_range, rows=0, cols=0, translate=False):
         """
@@ -857,11 +1001,22 @@ class Worksheet(_WorkbookChild):
         Delete at old index
         Rebase coordinate
         """
-        cell = self._get_cell(row, column)
-        new_row = cell.row + row_offset
-        new_col = cell.column + col_offset
+        # original_cell_obj = self._get_cell(row, column) # This is the cell we are moving
+        # The line above is redundant as self._cells.pop below will get the object if needed,
+        # or _get_cell is called again for the same (row,column) if it's an anchor.
+        # The key is that cell.value, cell.style are read *before* it might be deleted or overwritten
+        # if (row,column) is also a target for another cell.
+        # The current sorted iteration in _move_cells should handle this correctly.
 
-        original_cell_obj = self._get_cell(row, column) # This is the cell we are moving
+        current_cell_obj = self._cells.get((row,column)) # Get direct object if it exists
+        if current_cell_obj is None: # Should not happen if iterating self._cells.keys()
+            return
+
+        val = current_cell_obj.value
+        sty = current_cell_obj.style
+        has_sty = current_cell_obj.has_style
+        data_type = current_cell_obj.data_type # Needed for formula translation
+
         target_row, target_col = row + row_offset, column + col_offset
 
         # Determine if the cell being moved is a top-left anchor of an existing merge
@@ -874,71 +1029,53 @@ class Worksheet(_WorkbookChild):
                 break
 
         if is_moving_top_left_anchor:
-            # Moving the anchor of a merged range
-            val = original_cell_obj.value
-            sty = original_cell_obj.style # This could be style name or object
-            has_sty = original_cell_obj.has_style
-
             # Unmerge the original range. This clears associated MergedCell objects from _cells.
             if original_merge_range_obj.coord in self.merged_cells:
                 self.unmerge_cells(range_string=original_merge_range_obj.coord)
 
             # Remove the original anchor cell from its old position in _cells
+            # This is done *after* potentially using its value/style for the new anchor
             self._cells.pop((row, column), None)
 
             # Get/create cell at the new anchor position.
-            # After unmerging, this should provide a fresh Cell or an unrelated one.
             new_anchor_cell = self._get_cell(target_row, target_col)
 
-            # If new_anchor_cell was somehow part of ANOTHER merge, this could be an issue.
-            # For now, assume it's a normal cell or becomes one.
             if isinstance(new_anchor_cell, MergedCell):
-                 # This implies target_row, target_col is part of some *other* unrelated merge.
-                 # This scenario is complex: moving a merged range to overwrite another?
-                 # Current behavior: do not modify the unrelated merge.
-                 # Perhaps log a warning or raise error if strict=True?
-                 # For now, if target is part of another merge, we can't make it an anchor.
-                 # The original cell effectively disappears if its target is an unwriteable MergedCell.
-                 pass # Cannot place new anchor here.
+                 # Target is part of some *other* unrelated merge. Cannot place new anchor here.
+                 pass
             else:
                 new_anchor_cell.value = val
                 if has_sty:
                     new_anchor_cell.style = sty
 
-                # Re-merge at the new location
                 new_range_coord = f"{get_column_letter(target_col)}{target_row}:{get_column_letter(target_col + original_merge_range_obj.max_col - original_merge_range_obj.min_col)}{target_row + original_merge_range_obj.max_row - original_merge_range_obj.min_row}"
                 self.merge_cells(range_string=new_range_coord)
 
-                if translate and new_anchor_cell.data_type == 'f':
+                if translate and data_type == 'f': # Use original data_type
                     t = Translator(new_anchor_cell.value, new_anchor_cell.coordinate)
                     new_anchor_cell.value = t.translate_formula(row_delta=row_offset, col_delta=col_offset)
+        else:
+            # Moving a simple cell (not a merge anchor) or a non-anchor part of a merge (which are MergedCell objects)
+            # If original_cell_obj was a MergedCell, its .value and .style properties delegate to its anchor.
+            # These have been captured in val, sty, has_sty.
 
-        else: # Moving a simple cell (not a merge anchor) or a non-anchor part of a merge
-            # If original_cell_obj is a MergedCell object (i.e., it's a non-anchor part of a merge)
-            # its value/style are derived from its anchor. We effectively "copy" this derived value/style.
-            # If it's a normal cell, we copy its direct value/style.
+            # Important: Pop the original cell from _cells *before* getting/setting the target cell
+            # to handle cases where cell moves to a location that was part of its own old merged range.
+            self._cells.pop((row, column), None)
 
             current_target_cell = self._get_cell(target_row, target_col)
 
             if isinstance(current_target_cell, MergedCell):
                 # Target is part of an existing merge. Do not overwrite.
-                # The original cell effectively disappears if its target is an unwriteable MergedCell.
                 pass
             else:
-                current_target_cell.value = original_cell_obj.value # Works for Cell and MergedCell due to @property
-                if original_cell_obj.has_style:
-                    current_target_cell.style = original_cell_obj.style # Works for Cell and MergedCell
+                current_target_cell.value = val
+                if has_sty:
+                    current_target_cell.style = sty
 
-                if translate and current_target_cell.data_type == 'f':
+                if translate and data_type == 'f': # Use original data_type
                     t = Translator(current_target_cell.value, current_target_cell.coordinate)
                     current_target_cell.value = t.translate_formula(row_delta=row_offset, col_delta=col_offset)
-
-            # Remove the original cell from its old position in _cells
-            # This applies if it was a normal cell or a MergedCell object (if they are stored in _cells)
-            self._cells.pop((row, column), None)
-
-        # Formula translation is handled within the respective blocks for new_anchor_cell and current_target_cell.
-        # The old common line for `new_cell` (which is now out of scope) is removed.
 
     def _invalid_row(self, iterable):
         msg = (
