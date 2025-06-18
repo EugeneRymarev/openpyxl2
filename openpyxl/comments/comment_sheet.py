@@ -33,7 +33,7 @@ class Properties(Serialisable):
     autoScale = Bool(allow_none=True)
     rowHidden = Bool(allow_none=True)
     colHidden = Bool(allow_none=True)
-    # anchor = Typed(expected_type=ObjectAnchor, )
+    # anchor = Typed(expected_type=ObjectAnchor)
     __elements__ = ("anchor",)
 
     def __init__(
