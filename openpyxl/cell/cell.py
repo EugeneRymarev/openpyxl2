@@ -204,7 +204,7 @@ class Cell(StyleableObject):
     def hyperlink(self, val):
         """Set value and display for hyperlinks in a cell.
         Automatically sets the `value` of the cell with link text,
-        but you can modify it afterwards by setting the `value`
+        but you can modify it afterward by setting the `value`
         property, and the hyperlink will remain.
         Hyperlink is removed if set to ``None``."""
         if val is None:

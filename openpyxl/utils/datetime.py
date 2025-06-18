@@ -98,7 +98,7 @@ def to_excel(dt, epoch=WINDOWS_EPOCH):
 def from_excel(value, epoch=WINDOWS_EPOCH, timedelta=False):
     """Convert Excel serial to Python datetime
     Excel considers 1900-02-29 to be a legitimate date with the ordinal 60
-    This will raise an exception as an it is an invalid date
+    This will raise an exception as an is an invalid date
     """
     if value is None:
         return None

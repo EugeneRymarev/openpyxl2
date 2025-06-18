@@ -314,7 +314,7 @@ def CellIsRule(
     """
     Conditional formatting rule based on cell contents.
     """
-    # Excel doesn't use >, >=, etc, but allow for ease of python development
+    # Excel doesn't use >, >=, etc., but allow for ease of python development
     expand = {
         ">": "greaterThan",
         ">=": "greaterThanOrEqual",

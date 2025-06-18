@@ -63,7 +63,7 @@ class CellRichText(list):
     it also supports the + and += operators between rich text strings
     There are no user methods for this class
 
-    operations which modify the string will generally call an optimization pass afterwards,
+    operations which modify the string will generally call an optimization pass afterward,
     that merges text blocks with identical formats, consecutive pure text strings,
     and remove empty strings and empty text blocks
     """

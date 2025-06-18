@@ -38,7 +38,7 @@ class SheetProtection(Serialisable, _Protected):
     """
     Information about protection of various aspects of a sheet. True values
     mean that protection for the object or action is active This is the
-    **default** when protection is active, ie. users cannot do something
+    **default** when protection is active, i.e. users cannot do something
     """
 
     tagname = "sheetProtection"

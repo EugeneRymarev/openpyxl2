@@ -532,7 +532,7 @@ class ConditionalFormatList(Serialisable):
         fmts = self.by_priority()
         # sort by priority in order, keeping the highest numerical priority, least when
         # actually applied
-        # this is not documented but it's what Excel is happy with
+        # this is not documented, but it's what Excel is happy with
         fmts = sorted(fmts.items(), reverse=True)
         fmts = {field: fmt for (field, priority), fmt in fmts}
         # fmts = {field:fmt for (field, priority), fmt in fmts.items()}

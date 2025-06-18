@@ -21,7 +21,7 @@ class Descriptor:
 
 
 class Typed(Descriptor):
-    """Values must of a particular type"""
+    """Values most of a particular type"""
 
     expected_type = type(None)
     allow_none = False
@@ -202,8 +202,8 @@ class Default(Typed):
 class Alias(Descriptor):
     """
     Aliases can be used when either the desired attribute name is not allowed
-    or confusing in Python (eg. "type") or a more descriptive name is desired
-    (eg. "underline" for "u")
+    or confusing in Python (e.g. "type") or a more descriptive name is desired
+    (e.g. "underline" for "u")
     """
 
     def __init__(self, alias):

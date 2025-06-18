@@ -269,8 +269,8 @@ class Workbook:
         """
         Returns a worksheet by its name.
 
-        :param name: the name of the worksheet to look for
-        :type name: string
+        :param key: the name of the worksheet to look for
+        :type key: string
         """
         for sheet in self.worksheets + self.chartsheets:
             if sheet.title == key:

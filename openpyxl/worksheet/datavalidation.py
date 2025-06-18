@@ -51,7 +51,7 @@ def expand_cell_ranges(range_string):
     """
     Expand cell ranges to a sequence of addresses.
     Reverse of collapse_cell_addresses
-    Eg. converts "A1:A2 B1:B2" to (A1, A2, B1, B2)
+    E.g. converts "A1:A2 B1:B2" to (A1, A2, B1, B2)
     """
     # expand ranges to rows and then flatten
     rows = (rows_from_range(rs) for rs in range_string.split())  # list of rows

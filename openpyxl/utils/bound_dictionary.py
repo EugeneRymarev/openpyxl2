@@ -10,7 +10,7 @@ class BoundDictionary(collections.defaultdict):
 
     If a reference attribute is assigned then child objects will have the key assigned to this.
 
-    Otherwise it's just a defaultdict.
+    Otherwise, it's just a defaultdict.
     """
 
     def __init__(self, reference=None, *args, **kw):

@@ -265,7 +265,7 @@ class CellRange(Serialisable):
 
         :type other: openpyxl.worksheet.cell_range.CellRange
         :param other: Other sheet range.
-        :return: ``True`` if the range has no cells in common with other.
+        :return: ``True`` if the range has no cells in common with others.
         """
         self._check_title(other)
         # Sort by top-left vertex

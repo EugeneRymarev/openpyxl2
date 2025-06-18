@@ -1,6 +1,7 @@
 # Copyright (c) 2010-2025 openpyxl
-"""Read an xlsx file into Python"""
-# Python stdlib
+"""
+Read a xlsx file into Python
+"""
 import io
 import os
 import warnings
@@ -62,8 +63,8 @@ def _validate_archive(filename):
     object. If it is a string representing a filename, a check is done
     for supported formats by checking the given file-extension. If the
     file-extension is not in SUPPORTED_FORMATS an InvalidFileException
-    will raised. Otherwise the filename (resp. file-like object) will
-    forwarded to zipfile.ZipFile returning a ZipFile-Instance.
+    will raise. Otherwise, the filename (resp. file-like object) will
+    be forwarded to zipfile.ZipFile returning a ZipFile-Instance.
     """
     is_file_like = hasattr(filename, "read")
     if not is_file_like:

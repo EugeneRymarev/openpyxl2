@@ -28,7 +28,7 @@ class Image:
     anchor = "A1"
     format = "PNG"
     rel_type = IMAGE_NS
-    # Also know as Alt Text, but the xml tag refers to 'descr'
+    # Also known as Alt Text, but the xml tag refers to 'descr'
     desc = None
 
     def __init__(self, img, desc=None):

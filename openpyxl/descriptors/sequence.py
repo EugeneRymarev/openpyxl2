@@ -70,7 +70,7 @@ class ValueSequence(Sequence):
 
 class NestedSequence(Sequence):
     """
-    Wrap a sequence in an containing object
+    Wrap a sequence in a containing object
     """
 
     count = False

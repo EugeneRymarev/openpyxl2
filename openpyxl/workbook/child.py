@@ -15,7 +15,7 @@ def avoid_duplicate_name(names, value):
     """
     Naive check to see whether name already exists.
     If name does exist suggest a name using an incrementer
-    Duplicates are case insensitive
+    Duplicates are case-insensitive
     """
     # Check for an absolute match in which case we need to find an alternative
     match = [n for n in names if n.lower() == value.lower()]

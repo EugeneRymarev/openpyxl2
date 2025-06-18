@@ -124,7 +124,7 @@ class SpreadsheetDrawing(Serialisable):
 
     def _write(self):
         """
-        create required structure and the serialise
+        create required structure and to serialise
         """
         anchors = []
         for idx, obj in enumerate(self.charts + self.images + self.shapes, 1):

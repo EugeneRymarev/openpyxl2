@@ -80,7 +80,7 @@ def workbook():
 @pytest.fixture
 def work_sheet_parser():
     """
-    Setup a parser instance with an empty source
+    Set up a parser instance with an empty source
     """
     from openpyxl.worksheet._reader import WorkSheetParser
 

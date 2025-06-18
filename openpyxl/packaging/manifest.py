@@ -185,7 +185,7 @@ class Manifest(Serialisable):
 
 class ManifestObject:
     """
-    API for anything that gets added to to the manifest
+    API for anything that gets added to the manifest
     """
 
     path = None  # absolute path within zip archive

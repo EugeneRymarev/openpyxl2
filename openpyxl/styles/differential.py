@@ -55,7 +55,7 @@ class DifferentialStyleList(Serialisable):
 
     def append(self, dxf):
         """
-        Check to see whether style already exists and append it if does not.
+        Check to see whether style already exists and append it if it does not.
         """
         if not isinstance(dxf, DifferentialStyle):
             raise TypeError(f"expected {DifferentialStyle}")
