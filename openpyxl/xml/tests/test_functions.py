@@ -5,7 +5,7 @@ import pytest
 from openpyxl.xml.functions import XML_NS
 from openpyxl.xml.functions import Element
 from openpyxl.xml.functions import fromstring
-from openpyxl.xml.functions import iterparse
+from xml.etree.ElementTree import iterparse
 from openpyxl.xml.functions import whitespace
 
 

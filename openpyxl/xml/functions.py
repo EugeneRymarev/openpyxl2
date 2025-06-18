@@ -4,7 +4,6 @@ XML compatibility functions
 """
 import functools
 import re
-from xml.etree.ElementTree import iterparse
 
 from openpyxl.xml import DEFUSEDXML
 from openpyxl.xml import LXML

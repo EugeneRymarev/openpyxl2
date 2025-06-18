@@ -2,7 +2,7 @@
 from openpyxl.cell.rich_text import CellRichText
 from openpyxl.cell.text import Text
 from openpyxl.xml.constants import SHEET_MAIN_NS
-from openpyxl.xml.functions import iterparse
+from xml.etree.ElementTree import iterparse
 
 
 def read_string_table(xml_source):

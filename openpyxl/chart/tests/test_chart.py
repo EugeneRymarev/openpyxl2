@@ -1,8 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
-from openpyxl.chart.chartspace import PlotArea
 from openpyxl.chart.pivot import PivotFormat
 from openpyxl.chart.pivot import PivotSource
+from openpyxl.chart.plotarea import PlotArea
 from openpyxl.chart.series import Series
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.functions import tostring

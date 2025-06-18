@@ -4,6 +4,7 @@ Reader for a single worksheet.
 """
 import copy
 import warnings
+from xml.etree.ElementTree import iterparse
 
 from openpyxl.cell.cell import Cell
 from openpyxl.cell.cell import MergedCell
@@ -44,7 +45,6 @@ from openpyxl.worksheet.table import TablePartList
 from openpyxl.worksheet.views import SheetViewList
 from openpyxl.xml.constants import EXT_TYPES
 from openpyxl.xml.constants import SHEET_MAIN_NS
-from openpyxl.xml.functions import iterparse
 
 CELL_TAG = f"{{{SHEET_MAIN_NS}}}c"
 VALUE_TAG = f"{{{SHEET_MAIN_NS}}}v"
