@@ -642,7 +642,7 @@ class Worksheet(_WorkbookChild):
         cells = cr.cells
         next(cells)  # skip first cell
         for row, col in cells:
-            del self._cells[(row, col)]
+            self._cells.pop((row, col), None) # Use pop to avoid KeyError
 
     def append(self, iterable):
         """
@@ -718,7 +718,39 @@ class Worksheet(_WorkbookChild):
         """
         Insert row or rows before row==idx
         """
+        # Determine the styling source row (row above the insertion point)
+        source_row_idx = idx -1
+        has_source_row_style = source_row_idx >= 1
+
+        # Get the current maximum column before moving cells
+        # This helps define the width of the new rows to be styled
+        current_max_col = self.max_column
+
         self._move_cells(min_row=idx, offset=amount, row_or_col="row")
+
+        # Add new cells with default style for the inserted rows
+        source_row_dim_style = None
+        if has_source_row_style and self.row_dimensions[source_row_idx].has_style:
+            source_row_dim_style = self.row_dimensions[source_row_idx].style
+
+        for row_idx in range(idx, idx + amount):
+            for col_idx in range(1, current_max_col + 1):
+                new_cell = self._get_cell(row_idx, col_idx) # Creates cell if it doesn't exist
+
+                # Apply style only if the cell is genuinely new (no value, no pre-existing style)
+                # This condition might need adjustment if _get_cell itself applies a default style
+                if new_cell.value is None and not new_cell.has_style:
+                    style_applied = False
+                    if has_source_row_style:
+                        source_cell_above = self._cells.get((source_row_idx, col_idx))
+                        if source_cell_above and source_cell_above.has_style:
+                            new_cell.style = source_cell_above.style
+                            style_applied = True
+
+                    if not style_applied and source_row_dim_style:
+                        new_cell.style = source_row_dim_style
+                    # else: new_cell retains its default style (from workbook's perspective)
+
         self._current_row = self.max_row
 
     def insert_cols(self, idx, amount=1):
@@ -792,12 +824,85 @@ class Worksheet(_WorkbookChild):
         cell = self._get_cell(row, column)
         new_row = cell.row + row_offset
         new_col = cell.column + col_offset
-        self._cells[new_row, new_col] = cell
-        del self._cells[(cell.row, cell.column)]
-        cell._coord = Coordinate(new_row, new_col)
-        if translate and cell.data_type == "f":
-            t = Translator(cell.value, cell.coordinate)
-            cell.value = t.translate_formula(row_delta=row_offset, col_delta=col_offset)
+
+        original_cell_obj = self._get_cell(row, column) # This is the cell we are moving
+        target_row, target_col = row + row_offset, column + col_offset
+
+        # Determine if the cell being moved is a top-left anchor of an existing merge
+        is_moving_top_left_anchor = False
+        original_merge_range_obj = None
+        for mcr_iter in self.merged_cells:
+            if mcr_iter.min_row == row and mcr_iter.min_col == column:
+                is_moving_top_left_anchor = True
+                original_merge_range_obj = mcr_iter
+                break
+
+        if is_moving_top_left_anchor:
+            # Moving the anchor of a merged range
+            val = original_cell_obj.value
+            sty = original_cell_obj.style # This could be style name or object
+            has_sty = original_cell_obj.has_style
+
+            # Unmerge the original range. This clears associated MergedCell objects from _cells.
+            if original_merge_range_obj.coord in self.merged_cells:
+                self.unmerge_cells(range_string=original_merge_range_obj.coord)
+
+            # Remove the original anchor cell from its old position in _cells
+            self._cells.pop((row, column), None)
+
+            # Get/create cell at the new anchor position.
+            # After unmerging, this should provide a fresh Cell or an unrelated one.
+            new_anchor_cell = self._get_cell(target_row, target_col)
+
+            # If new_anchor_cell was somehow part of ANOTHER merge, this could be an issue.
+            # For now, assume it's a normal cell or becomes one.
+            if isinstance(new_anchor_cell, MergedCell):
+                 # This implies target_row, target_col is part of some *other* unrelated merge.
+                 # This scenario is complex: moving a merged range to overwrite another?
+                 # Current behavior: do not modify the unrelated merge.
+                 # Perhaps log a warning or raise error if strict=True?
+                 # For now, if target is part of another merge, we can't make it an anchor.
+                 # The original cell effectively disappears if its target is an unwriteable MergedCell.
+                 pass # Cannot place new anchor here.
+            else:
+                new_anchor_cell.value = val
+                if has_sty:
+                    new_anchor_cell.style = sty
+
+                # Re-merge at the new location
+                new_range_coord = f"{get_column_letter(target_col)}{target_row}:{get_column_letter(target_col + original_merge_range_obj.max_col - original_merge_range_obj.min_col)}{target_row + original_merge_range_obj.max_row - original_merge_range_obj.min_row}"
+                self.merge_cells(range_string=new_range_coord)
+
+                if translate and new_anchor_cell.data_type == 'f':
+                    t = Translator(new_anchor_cell.value, new_anchor_cell.coordinate)
+                    new_anchor_cell.value = t.translate_formula(row_delta=row_offset, col_delta=col_offset)
+
+        else: # Moving a simple cell (not a merge anchor) or a non-anchor part of a merge
+            # If original_cell_obj is a MergedCell object (i.e., it's a non-anchor part of a merge)
+            # its value/style are derived from its anchor. We effectively "copy" this derived value/style.
+            # If it's a normal cell, we copy its direct value/style.
+
+            current_target_cell = self._get_cell(target_row, target_col)
+
+            if isinstance(current_target_cell, MergedCell):
+                # Target is part of an existing merge. Do not overwrite.
+                # The original cell effectively disappears if its target is an unwriteable MergedCell.
+                pass
+            else:
+                current_target_cell.value = original_cell_obj.value # Works for Cell and MergedCell due to @property
+                if original_cell_obj.has_style:
+                    current_target_cell.style = original_cell_obj.style # Works for Cell and MergedCell
+
+                if translate and current_target_cell.data_type == 'f':
+                    t = Translator(current_target_cell.value, current_target_cell.coordinate)
+                    current_target_cell.value = t.translate_formula(row_delta=row_offset, col_delta=col_offset)
+
+            # Remove the original cell from its old position in _cells
+            # This applies if it was a normal cell or a MergedCell object (if they are stored in _cells)
+            self._cells.pop((row, column), None)
+
+        # Formula translation is handled within the respective blocks for new_anchor_cell and current_target_cell.
+        # The old common line for `new_cell` (which is now out of scope) is removed.
 
     def _invalid_row(self, iterable):
         msg = (
