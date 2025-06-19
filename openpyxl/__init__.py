@@ -3,7 +3,8 @@
 DEBUG = False
 
 from openpyxl.compat.numbers import NUMPY
-from openpyxl.xml import DEFUSEDXML, LXML
+from openpyxl.xml import DEFUSEDXML
+from openpyxl.xml import LXML
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.reader.excel import load_workbook as open
 from openpyxl.reader.excel import load_workbook
