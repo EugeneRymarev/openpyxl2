@@ -642,7 +642,8 @@ class Worksheet(_WorkbookChild):
         cells = cr.cells
         next(cells)  # skip first cell
         for row, col in cells:
-            del self._cells[(row, col)]
+            # Use pop to avoid KeyError
+            self._cells.pop((row, col), None)
 
     def append(self, iterable):
         """
