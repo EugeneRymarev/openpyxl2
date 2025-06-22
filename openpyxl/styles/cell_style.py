@@ -40,7 +40,9 @@ class StyleArray(array.array):
     quotePrefix = ArrayDescriptor(7)
     xfId = ArrayDescriptor(8)
 
-    def __new__(cls, args=[0] * 9):
+    def __new__(cls, args=None):
+        if args is None:
+            args = [0] * 9
         return array.array.__new__(cls, "i", args)
 
     def __hash__(self):

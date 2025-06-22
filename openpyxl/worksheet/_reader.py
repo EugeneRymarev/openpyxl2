@@ -103,10 +103,14 @@ class WorkSheetParser:
         shared_strings,
         data_only=False,
         epoch=WINDOWS_EPOCH,
-        date_formats=set(),
-        timedelta_formats=set(),
+        date_formats=None,
+        timedelta_formats=None,
         rich_text=False,
     ):
+        if timedelta_formats is None:
+            timedelta_formats = set()
+        if date_formats is None:
+            date_formats = set()
         self.min_row = self.min_col = None
         self.epoch = epoch
         self.source = src
