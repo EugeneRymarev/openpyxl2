@@ -34,7 +34,7 @@ class IndexedList(list):
             self._rebuild_dict()
         return value in self._dict
 
-    def index(self, value):
+    def index(self, value, **kwargs):
         if value in self:
             return self._dict[value]
         raise ValueError

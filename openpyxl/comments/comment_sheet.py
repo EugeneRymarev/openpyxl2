@@ -148,7 +148,7 @@ class CommentSheet(Serialisable):
         self.authors = authors
         self.commentList = commentList
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         tree = super().to_tree()
         tree.set("xmlns", SHEET_MAIN_NS)
         return tree

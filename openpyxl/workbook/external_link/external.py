@@ -115,7 +115,7 @@ class ExternalLink(Serialisable):
         self.externalBook = externalBook
         # ignore other items for the moment.
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         node = super().to_tree()
         node.set("xmlns", SHEET_MAIN_NS)
         return node

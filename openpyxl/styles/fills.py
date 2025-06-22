@@ -110,7 +110,7 @@ class PatternFill(Fill):
             attrib[desc] = Color.from_tree(child)
         return cls(**attrib)
 
-    def to_tree(self, tagname=None, idx=None):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         parent = Element("fill")
         el = Element(self.tagname)
         if self.patternType is not None:

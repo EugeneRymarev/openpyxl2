@@ -60,7 +60,7 @@ class RecordList(Serialisable):
     def count(self):
         return len(self.r)
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         tree = super().to_tree()
         tree.set("xmlns", SHEET_MAIN_NS)
         return tree

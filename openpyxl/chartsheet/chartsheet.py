@@ -98,7 +98,7 @@ class Chartsheet(_WorkbookChild, Serialisable):
         chart.anchor = AbsoluteAnchor()
         self._charts.append(chart)
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         self._drawing = SpreadsheetDrawing()
         self._drawing.charts = self._charts
         tree = super().to_tree()

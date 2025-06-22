@@ -857,7 +857,7 @@ class CacheDefinition(Serialisable):
         self.maps = maps
         self.id = id
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         node = super().to_tree()
         node.set("xmlns", SHEET_MAIN_NS)
         return node

@@ -125,7 +125,7 @@ class ExtendedProperties(Serialisable):
         self.AppVersion = ".".join(__version__.split(".")[:-1])
         self.DocSecurity = DocSecurity
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         tree = super().to_tree()
         tree.set("xmlns", XPROPS_NS)
         return tree

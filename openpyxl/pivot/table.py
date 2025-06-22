@@ -543,7 +543,7 @@ class ConditionalFormatList(Serialisable):
     def count(self):
         return len(self.conditionalFormat)
 
-    def to_tree(self, tagname=None):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         self._dedupe()
         return super().to_tree(tagname)
 
@@ -1245,7 +1245,7 @@ class TableDefinition(Serialisable):
         self.extLst = extLst
         self.id = id
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         tree = super().to_tree()
         tree.set("xmlns", SHEET_MAIN_NS)
         return tree

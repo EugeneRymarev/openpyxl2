@@ -210,7 +210,7 @@ class Series(Serialisable):
         self.smooth = smooth
         self.explosion = explosion
 
-    def to_tree(self, tagname=None, idx=None):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         """The index can need rebasing"""
         if idx is not None:
             if self.order == self.idx:

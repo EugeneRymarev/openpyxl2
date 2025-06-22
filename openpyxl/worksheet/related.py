@@ -9,5 +9,5 @@ class Related(Serialisable):
     def __init__(self, id=None):
         self.id = id
 
-    def to_tree(self, tagname, idx=None):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         return super().to_tree(tagname)

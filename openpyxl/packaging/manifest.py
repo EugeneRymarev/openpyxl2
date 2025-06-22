@@ -97,7 +97,7 @@ class Manifest(Serialisable):
             (ext[1:], mimetypes.types_map[True][ext]) for ext in sorted(exts) if ext
         ]
 
-    def to_tree(self):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         """
         Custom serialisation method to allow setting a default namespace
         """

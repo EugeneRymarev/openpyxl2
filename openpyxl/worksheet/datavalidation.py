@@ -200,7 +200,7 @@ class DataValidationList(Serialisable):
     def append(self, dv):
         self.dataValidation.append(dv)
 
-    def to_tree(self, tagname=None):
+    def to_tree(self, tagname=None, idx=None, namespace=None):
         """
         Need to skip validations that have no cell ranges
         """
