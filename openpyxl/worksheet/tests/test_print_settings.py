@@ -78,7 +78,7 @@ class TestPrintTitles:
             ["'Sheet1'!$1:$2,$A:$A", "'Sheet1'!$1:$2,'Sheet1'!$A:$A"],
             ["'Sheet 1'!$A:$A", "'Sheet 1'!$A:$A"],
             ["Sheet1!$5:$17", "'Sheet1'!$5:$17"],
-            ["Tabelle1!$J:$J,Tabelle1!$10:$10", "'Tabelle1'!$10:$10,'Tabelle1'!$J:$J"],
+            ["Table1!$J:$J,Table1!$10:$10", "'Table1'!$10:$10,'Table1'!$J:$J"],
         ],
     )
     def test_from_string(self, print_titles, value, expected):

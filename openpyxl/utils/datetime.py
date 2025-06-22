@@ -41,7 +41,7 @@ def from_ISO8601(formatted_string):
     Times B.1.2 and B.2.2
     Datetimes B.1.3 and B.2.3
 
-    There is no concept of timedeltas in the specification, but Excel
+    There is no concept of time deltas in the specification, but Excel
     writes them (in strict OOXML mode), so these are also understood.
     """
     if not formatted_string:

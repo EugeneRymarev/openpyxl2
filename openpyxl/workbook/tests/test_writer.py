@@ -271,7 +271,7 @@ class TestWorkbookWriter:
         diff = compare_xml(xml, expected)
         assert diff is None, diff
 
-    def test_defined_name_locall(self, unicode_workbook, workbook_writer):
+    def test_defined_name_local(self, unicode_workbook, workbook_writer):
         wb = unicode_workbook
         ws = wb.active
         ref = f"{quote_sheetname(ws.title)}!$A$1:$A$10"

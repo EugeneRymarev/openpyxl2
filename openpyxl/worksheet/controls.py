@@ -95,7 +95,7 @@ class Control(Serialisable):
 
 class Choice(Serialisable):
     """
-    Markup compatiblity choice
+    Markup compatibility choice
     """
 
     tagname = "choice"

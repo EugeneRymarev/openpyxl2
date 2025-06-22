@@ -114,7 +114,7 @@ class TestCustomDocumentProperty:
         assert diff is None, diff
 
 
-class TestCustomDocumentProperyList:
+class TestCustomDocumentPropertyList:
     def test_ctor(self, custom_document_property_list, custom_document_property):
         prop1 = custom_document_property(
             name="PropName1",

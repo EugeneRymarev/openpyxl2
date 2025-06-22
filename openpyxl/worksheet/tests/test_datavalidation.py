@@ -133,7 +133,7 @@ class TestDataValidation:
                 error="Value must be between 1 and 3!"
                 errorTitle="An Error Message"
                 promptTitle="Multiplier"
-                prompt="for monthly or quartely reports"
+                prompt="for monthly or quarterly reports"
                 sqref="H6">
         </dataValidation>
         """
@@ -143,7 +143,7 @@ class TestDataValidation:
             error="Value must be between 1 and 3!",
             errorStyle="warning",
             errorTitle="An Error Message",
-            prompt="for monthly or quartely reports",
+            prompt="for monthly or quarterly reports",
             promptTitle="Multiplier",
             type="list",
             allowBlank="1",

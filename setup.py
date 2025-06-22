@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-"""Setup script for packaging openpyxl.
+"""
+Setup script for packaging openpyxl.
 
 To build a package for distribution:
     python setup.py sdist
@@ -10,8 +11,7 @@ and upload it to the PyPI with:
 Install a link for development work:
     pip install -e .
 
-Thee manifest.in file is used for data files.
-
+The manifest.in file is used for data files.
 """
 
 import os

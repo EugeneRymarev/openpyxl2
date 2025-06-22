@@ -78,7 +78,7 @@ class _CustomDocumentProperty(Serialisable):
 
 class _CustomDocumentPropertyList(Serialisable):
     """
-    Parses and seriliases property lists but is not used directly
+    Parses and serializes property lists but is not used directly
     """
 
     tagname = "Properties"
@@ -221,7 +221,7 @@ class CustomPropertyList(Strict):
 
     def __delitem__(self, name):
         """
-        Delete a propery by name
+        Delete a property by name
         """
         for idx, p in enumerate(self.props):
             if p.name == name:

@@ -508,7 +508,7 @@ class ConditionalFormatList(Serialisable):
         Group formats by field index and priority.
         Sorted to match sorting and grouping for corresponding worksheet formats
 
-        The implemtenters notes contain significant deviance from the OOXML
+        The implementers notes contain significant deviance from the OOXML
         specification, in particular how conditional formats in tables relate to
         those defined in corresponding worksheets and how to determine which
         format applies to which fields.
@@ -523,7 +523,7 @@ class ConditionalFormatList(Serialisable):
         * Data fields are referenced by the 0-index reference.x.v value
 
         Things are made more complicated by the fact that field items behave
-        diffently if the parent is a reference or shared item: "In Office if the
+        differently if the parent is a reference or shared item: "In Office if the
         parent is the reference element, then restrictions of this value are
         defined by reference@field. If the parent is the tables element, then
         this value specifies the index into the table tag position in @url."

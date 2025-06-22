@@ -91,9 +91,9 @@ class TestDefinition:
                 "TEXT",
             ),
             (
-                """<definedName name="THE_GREAT_ANSWER">'My Sheeet with a , and '''!$U$16:$U$24,'My Sheeet with a , and '''!$V$28:$V$36</definedName>""",
+                """<definedName name="THE_GREAT_ANSWER">'My Sheet with a , and '''!$U$16:$U$24,'My Sheet with a , and '''!$V$28:$V$36</definedName>""",
                 "THE_GREAT_ANSWER",
-                "'My Sheeet with a , and '''!$U$16:$U$24,'My Sheeet with a , and '''!$V$28:$V$36",
+                "'My Sheet with a , and '''!$U$16:$U$24,'My Sheet with a , and '''!$V$28:$V$36",
                 "RANGE",
             ),
         ],

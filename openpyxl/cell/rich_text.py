@@ -31,7 +31,9 @@ class TextBlock(Strict):
         return self.text == other.text and self.font == other.font
 
     def __str__(self):
-        """Just retun the text"""
+        """
+        Just return the text
+        """
         return self.text
 
     def __repr__(self):

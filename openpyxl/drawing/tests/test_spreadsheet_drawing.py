@@ -344,7 +344,7 @@ class TestSpreadsheetDrawing:
         assert blip_rels[0].anchor is not None
 
     def test_ignore_external_blip(self, spreadsheet_drawing, datadir):
-        with open("spreasheet_drawing_external_image.xml") as src:
+        with open("spreadsheet_drawing_external_image.xml") as src:
             xml = src.read()
         node = fromstring(xml)
         drawing = spreadsheet_drawing.from_tree(node)

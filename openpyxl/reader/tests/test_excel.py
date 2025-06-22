@@ -109,7 +109,7 @@ def test_style_assignment(datadir, load_workbook_):
     assert len(wb._alignments) == 9
     assert len(wb._fills) == 6
     assert len(wb._fonts) == 8
-    # 7 + 4 borders, because the top-left cell of a merg cell gets
+    # 7 + 4 borders, because the top-left cell of a merge cell gets
     # a new border and the old ones are not deleted.
     assert len(wb._borders) == 11
     assert len(wb._number_formats) == 0

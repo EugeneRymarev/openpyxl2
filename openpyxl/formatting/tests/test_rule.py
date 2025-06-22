@@ -306,7 +306,7 @@ def test_formula_rule():
     assert cf.dxf == DifferentialStyle()
 
 
-def test_cellis_rule():
+def test_cell_is_rule():
     from openpyxl.formatting.rule import CellIsRule
     from openpyxl.styles.fills import PatternFill
 

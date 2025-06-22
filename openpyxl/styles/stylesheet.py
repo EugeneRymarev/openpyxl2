@@ -174,7 +174,7 @@ class Stylesheet(Serialisable):
                 # Create an index of which styles refer to datetimes
                 date_formats.add(idx)
             if is_timedelta_format(fmt):
-                # Create an index of which styles refer to timedeltas
+                # Create an index of which styles refer to time deltas
                 timedelta_formats.add(idx)
         self.date_formats = date_formats
         self.timedelta_formats = timedelta_formats
