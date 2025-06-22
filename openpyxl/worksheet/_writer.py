@@ -149,7 +149,7 @@ class WorksheetWriter:
 
     def write_sort(self):
         """
-        As per discusion with the OOXML Working Group
+        As per discussion with the OOXML Working Group
         global sort state is not required.
         openpyxl never reads it from existing files
         """

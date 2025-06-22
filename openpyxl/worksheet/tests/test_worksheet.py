@@ -591,7 +591,7 @@ class TestEditableWorksheet:
             (True, "I2:I4", "I2:I4"),
         ],
     )
-    def test_move_translated_fomula(self, dummy_worksheet, translate, formula, result):
+    def test_move_translated_formula(self, dummy_worksheet, translate, formula, result):
         ws = dummy_worksheet
         cell = ws["G4"]
         cell.value = formula

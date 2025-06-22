@@ -157,7 +157,7 @@ class WorkSheetParser:
             MERGE_TAG: ("merged_cells", MergeCells),
             CONTROLS_TAG: ("controls", ControlList),
         }
-        # add a finaliser to close the source when this becomes possible
+        # add a finalizer to close the source when this becomes possible
         it = iterparse(self.source)
         for _, element in it:
             tag_name = element.tag
