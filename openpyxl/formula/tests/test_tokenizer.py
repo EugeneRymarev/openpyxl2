@@ -75,7 +75,7 @@ class TestTokenizerRegexes:
             ('"spamspamspam"', '"spamspamspam"'),
             ('"this is "" a test "" "', '"this is "" a test "" "'),
             ('""', '""'),
-            ('"spam and ""cheese"""+"ignore"', ('"spam and ""cheese"""')),
+            ('"spam and ""cheese"""+"ignore"', '"spam and ""cheese"""'),
             ('\'"spam and ""cheese"""+"ignore"', None),
             ('"oops ""', None),
         ],

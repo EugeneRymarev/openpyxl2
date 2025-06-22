@@ -33,7 +33,7 @@ class Serialisable(metaclass=MetaSerialisable):
 
     @property
     def tagname(self):
-        raise (NotImplementedError)
+        raise NotImplementedError
 
     namespace = None
 

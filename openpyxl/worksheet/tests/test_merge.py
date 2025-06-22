@@ -78,7 +78,7 @@ class TestMergedCellRange:
         cells = merged_cell_range(ws, "A1:E4")
         assert cells.start_cell == ws["A1"]
 
-    @pytest.mark.parametrize("end", [("C1"), ("A3"), ("C3")])
+    @pytest.mark.parametrize("end", ["C1", "A3", "C3"])
     def test_get_borders(self, merged_cell_range, end):
         ws = Workbook().active
         ws["A1"].border = Border(top=thick_border(), left=thick_border())

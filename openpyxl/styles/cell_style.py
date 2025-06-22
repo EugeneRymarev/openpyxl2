@@ -49,10 +49,10 @@ class StyleArray(array.array):
         return hash(tuple(self))
 
     def __copy__(self):
-        return StyleArray((self))
+        return StyleArray(self)
 
     def __deepcopy__(self, memo):
-        return StyleArray((self))
+        return StyleArray(self)
 
 
 class CellStyle(Serialisable):
@@ -183,7 +183,7 @@ class CellStyleList(Serialisable):
         try:
             return self.xf[idx]
         except IndexError:
-            print((f"{idx} is out of range"))
+            print(f"{idx} is out of range")
         return self.xf[idx]
 
     def _to_array(self):

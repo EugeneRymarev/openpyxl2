@@ -219,7 +219,7 @@ class ExcelReader:
             fh = self.archive.open(rel.target)
             ws = self.wb.create_sheet(sheet.name)
             processor = WorksheetProcessor(ws, self.archive)
-            processor.find_children((rel.target))
+            processor.find_children(rel.target)
             ws._rels = processor.rels
             ws_parser = WorksheetReader(
                 ws,
