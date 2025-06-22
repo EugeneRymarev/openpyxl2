@@ -219,6 +219,7 @@ def apply_stylesheet(archive, wb):
         warnings.warn("Workbook contains no default style, apply openpyxl's default")
     if stylesheet.colors is not None:
         wb._colors = stylesheet.colors.index
+    return None
 
 
 def write_stylesheet(wb):
