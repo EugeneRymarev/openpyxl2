@@ -144,7 +144,7 @@ class DisplayUnitsLabel(Serialisable):
     spPr = Typed(expected_type=GraphicalProperties, allow_none=True)
     graphicalProperties = Alias("spPr")
     txPr = Typed(expected_type=RichText, allow_none=True)
-    textPropertes = Alias("txPr")
+    textProperties = Alias("txPr")
     __elements__ = ("layout", "tx", "spPr", "txPr")
 
     def __init__(self, layout=None, tx=None, spPr=None, txPr=None):
