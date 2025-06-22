@@ -144,9 +144,9 @@ class CellRichText(list):
     def __add__(self, arg):
         return CellRichText([copy.copy(e) for e in list(self) + list(arg)])._opt()
 
-    def __setitem__(self, indx, val):
+    def __setitem__(self, index, val):
         CellRichText._check_element(val)
-        super().__setitem__(indx, val)
+        super().__setitem__(index, val)
         self._opt()
 
     def append(self, arg):
