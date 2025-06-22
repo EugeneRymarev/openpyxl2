@@ -9,14 +9,14 @@ class Singleton(type):
     Only one instance of a class can exist. Does not work with __slots__
     """
 
-    def __init__(self, *args, **kw):
+    def __init__(cls, *args, **kw):
         super().__init__(*args, **kw)
-        self.__instance = None
+        cls.__instance = None
 
-    def __call__(self, *args, **kw):
-        if self.__instance is None:
-            self.__instance = super().__call__(*args, **kw)
-        return self.__instance
+    def __call__(cls, *args, **kw):
+        if cls.__instance is None:
+            cls.__instance = super().__call__(*args, **kw)
+        return cls.__instance
 
 
 class Cached(type):
@@ -26,13 +26,13 @@ class Cached(type):
     one doesn't already exist. Does not work with __slots__
     """
 
-    def __init__(self, *args, **kw):
+    def __init__(cls, *args, **kw):
         super().__init__(*args, **kw)
-        self.__cache = weakref.WeakValueDictionary()
+        cls.__cache = weakref.WeakValueDictionary()
 
-    def __call__(self, *args):
-        if args in self.__cache:
-            return self.__cache[args]
+    def __call__(cls, *args):
+        if args in cls.__cache:
+            return cls.__cache[args]
         obj = super().__call__(*args)
-        self.__cache[args] = obj
+        cls.__cache[args] = obj
         return obj
