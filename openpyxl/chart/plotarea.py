@@ -118,12 +118,12 @@ class PlotArea(Serialisable):
         self._axes = _axes
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
-        axIds = {ax.axId for ax in self._axes}
+        ax_ids = {ax.axId for ax in self._axes}
         for chart in self._charts:
-            for id, axis in chart._axes.items():
-                if id not in axIds:
+            for id_, axis in chart._axes.items():
+                if id_ not in ax_ids:
                     setattr(self, axis.tagname, axis)
-                    axIds.add(id)
+                    ax_ids.add(id_)
         return super().to_tree(tagname)
 
     @classmethod

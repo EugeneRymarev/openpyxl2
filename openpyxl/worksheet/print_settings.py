@@ -152,8 +152,8 @@ class PrintArea(MultiCellRange):
         if self.ranges:
             return ",".join(
                 [
-                    f"{quote_sheetname(self.title)}!{absolute_coordinate(str(range))}"
-                    for range in self.sorted()
+                    f"{quote_sheetname(self.title)}!{absolute_coordinate(str(r))}"
+                    for r in self.sorted()
                 ]
             )
         return ""

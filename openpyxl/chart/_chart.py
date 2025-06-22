@@ -100,7 +100,7 @@ class ChartBase(Serialisable):
         return self
 
     def to_tree(self, namespace=None, tagname=None, idx=None):
-        self.axId = [id for id in self._axes]
+        self.axId = [id_ for id_ in self._axes]
         if self.ser is not None:
             for s in self.ser:
                 s.__elements__ = attribute_mapping[self._series_type]
