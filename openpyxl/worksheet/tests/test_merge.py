@@ -176,7 +176,7 @@ class TestMergedCellRange:
         mcr2 = copy.copy(mcr1)
         assert mcr2 == mcr1
 
-    def test_contains(seld, merged_cell_range):
+    def test_contains(self, merged_cell_range):
         ws = Workbook().active
         mcr = merged_cell_range(ws, "B2:M20")
         assert "D4" in mcr
@@ -186,7 +186,7 @@ class TestMergedCellRange:
         mcr = merged_cell_range(ws, "B2:M20")
         assert "A1" not in mcr
 
-    def test_empty_side(seld, merged_cell_range):
+    def test_empty_side(self, merged_cell_range):
         ws = Workbook().active
         ws["A1"].border = Border(bottom=Side(style="thin"))
         mcr = merged_cell_range(ws, "A1:C3")
