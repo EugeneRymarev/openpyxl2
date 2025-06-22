@@ -12,7 +12,7 @@ class TestElementList:
     def ctor(self):
         container = ElementList()
         with pytest.raises(TypeError):
-            container.expected_type
+            _ = container.expected_type
 
 
 class Relation(Serialisable):

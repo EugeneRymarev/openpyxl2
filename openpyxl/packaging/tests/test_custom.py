@@ -226,7 +226,7 @@ class TestTypedPropertyList:
     def test_get_item_missing(self, custom_property_list):
         prop_list = custom_property_list()
         with pytest.raises(KeyError):
-            prop_list["PropName1"]
+            _ = prop_list["PropName1"]
 
     def test_delete(self, custom_property_list):
         prop_list = custom_property_list()

@@ -9,4 +9,4 @@ def test_color_descriptor():
 
     style = DummyStyle()
     style.value = "efefef"
-    style.value.RGB == "efefef"
+    assert style.value.RGB == "efefef"

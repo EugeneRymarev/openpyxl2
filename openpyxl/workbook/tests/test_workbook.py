@@ -245,7 +245,7 @@ def test_getitem(workbook):
     ws = wb["Sheet"]
     assert isinstance(ws, Worksheet)
     with pytest.raises(KeyError):
-        wb["NotThere"]
+        _ = wb["NotThere"]
 
 
 def test_get_chartsheet(workbook):

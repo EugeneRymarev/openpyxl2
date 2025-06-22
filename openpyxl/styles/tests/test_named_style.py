@@ -262,7 +262,7 @@ class TestNamedStyleList:
     def test_key_error(self, named_style_list):
         styles = named_style_list()
         with pytest.raises(KeyError):
-            styles["special"]
+            _ = styles["special"]
 
     def test_styles_equal(self, named_style):
         style1 = named_style(name="special")

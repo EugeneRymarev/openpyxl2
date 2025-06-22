@@ -218,7 +218,7 @@ class TestWorksheet:
     def test_getitem_invalid(self, worksheet, key):
         ws = worksheet(Workbook())
         with pytest.raises((IndexError, ValueError)):
-            ws[key]
+            _ = ws[key]
 
     def test_setitem(self, worksheet):
         ws = worksheet(Workbook())
@@ -364,8 +364,8 @@ class TestWorksheet:
 
     def test_column_groups(self, worksheet):
         ws = worksheet(Workbook())
-        ws.column_dimensions["A"]
-        ws.column_dimensions["F"]
+        _ = ws.column_dimensions["A"]
+        _ = ws.column_dimensions["F"]
         ws.column_dimensions.group("F", "K")
         assert ws.column_groups == ["F:K"]
 

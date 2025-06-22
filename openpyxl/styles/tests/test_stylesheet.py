@@ -347,9 +347,9 @@ def test_simple_styles(datadir):
     # set explicit formats
     ws["D9"].number_format = FORMAT_NUMBER_00
     ws["D9"].protection = Protection(locked=True)
-    ws["D9"].style_id
+    _ = ws["D9"].style_id
     ws["E1"].protection = Protection(hidden=True)
-    ws["E1"].style_id
+    _ = ws["E1"].style_id
     assert len(wb._cell_styles) == 4
     ss = write_stylesheet(wb)
     datadir.chdir()

@@ -338,7 +338,7 @@ def test_protection(dummy_worksheet, cell_):
 def test_pivot_button(dummy_worksheet, cell_):
     ws = dummy_worksheet
     cell = cell_(ws, column="A", row=1)
-    cell.style_id
+    _ = cell.style_id
     cell._style.pivotButton = 1
     assert cell.pivotButton is True
 
@@ -346,7 +346,7 @@ def test_pivot_button(dummy_worksheet, cell_):
 def test_quote_prefix(dummy_worksheet, cell_):
     ws = dummy_worksheet
     cell = cell_(ws, column="A", row=1)
-    cell.style_id
+    _ = cell.style_id
     cell._style.quotePrefix = 1
     assert cell.quotePrefix is True
 

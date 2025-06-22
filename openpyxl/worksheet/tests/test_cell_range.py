@@ -330,4 +330,4 @@ class TestMultiCellRange:
         mcr = multi_cell_range("A1:B2")
         assert mcr["A2"] == "A1:B2"
         with pytest.raises(CellNotMergedException) as e:
-            mcr["C3"]
+            _ = mcr["C3"]

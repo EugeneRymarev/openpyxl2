@@ -407,7 +407,7 @@ class TestConnectionList:
             node = fromstring(src.read())
         connections = connection_list.from_tree(node)
         with pytest.raises(IndexError):
-            connections[7]
+            _ = connections[7]
 
     def test_caches(self, connection_list, connection):
         from openpyxl.pivot.cache import CacheDefinition

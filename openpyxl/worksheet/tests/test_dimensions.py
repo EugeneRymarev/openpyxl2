@@ -237,5 +237,5 @@ class TestGrouping:
         ws = Worksheet(DummyWorkbook())
         dims = ws.column_dimensions
         dims["A"].width = 5
-        dims["D"]
+        _ = dims["D"]
         assert dims.to_tree() is not None

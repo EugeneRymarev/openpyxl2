@@ -271,7 +271,7 @@ class TestTableList:
     def test_get_table_does_not_exists(self, table, table_list):
         tablelist2 = table_list()
         with pytest.raises(KeyError):
-            tablelist2["NoTable"]
+            _ = tablelist2["NoTable"]
 
     def test_items(self, table, table_list):
         table1 = table(displayName="Table1", ref="A1:D10")
