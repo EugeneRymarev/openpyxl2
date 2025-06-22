@@ -183,6 +183,7 @@ class TestReadOnlyWorksheet:
 
     def test_iter(self, read_only_worksheet):
         ws = read_only_worksheet
+        row = None
         for row in ws:
             pass
         c = row[-1]

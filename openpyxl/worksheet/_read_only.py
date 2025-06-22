@@ -139,6 +139,7 @@ class ReadOnlyWorksheet:
         Do this only if it is explicitly requested.
         """
         max_col = 0
+        cell = None
         for r in self.rows:
             if not r:
                 continue

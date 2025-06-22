@@ -196,6 +196,7 @@ def coordinate_to_tuple(coordinate):
     """
     Convert an Excel style coordinate to (row, column) tuple
     """
+    idx = 0
     for idx, c in enumerate(coordinate):
         if c in string.digits:
             break

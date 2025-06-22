@@ -64,6 +64,7 @@ class Drawing:
 
     @property
     def anchor(self):
+        anchor = None
         if self.anchortype == "absolute":
             anchor = AbsoluteAnchor()
             anchor.pos.x = pixels_to_EMU(self.left)

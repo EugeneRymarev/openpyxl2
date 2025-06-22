@@ -275,6 +275,7 @@ def test_contains(workbook):
 
 def test_iter(workbook):
     wb = workbook()
+    ws = None
     for ws in wb:
         pass
     assert ws.title == "Sheet"

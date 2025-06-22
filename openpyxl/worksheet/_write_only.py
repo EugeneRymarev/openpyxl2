@@ -56,6 +56,7 @@ class WriteOnlyWorksheet(_WorkbookChild):
         """
         Send rows to the writer's stream
         """
+        xf = None
         try:
             xf = self._writer.xf.send(True)
         except StopIteration:

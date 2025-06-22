@@ -254,6 +254,7 @@ class ExcelReader:
             root = fromstring(src)
             connections = ConnectionList.from_tree(root)
             cached_connections = self.parser.pivot_caches.by_type()
+            group = list()
             for source, group in cached_connections:
                 if source == "external":
                     break

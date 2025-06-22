@@ -95,6 +95,7 @@ class MergedCellRange(CellRange):
                     self.ws._cells[(cell.row, cell.column)] = cell
                 cell.border += border
         protected = self.start_cell.protection is not None
+        protection = None
         if protected:
             protection = copy.copy(self.start_cell.protection)
         for coord in self.cells:

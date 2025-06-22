@@ -124,6 +124,7 @@ class ChartBase(Serialisable):
 
         self.plot_area.layout = self.layout
         idx_base = self.idx_base
+        chart = None
         for chart in self._charts:
             if chart not in self.plot_area._charts:
                 chart.idx_base = idx_base
