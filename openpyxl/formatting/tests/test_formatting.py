@@ -17,7 +17,7 @@ from openpyxl.xml.functions import tostring
 
 @pytest.fixture
 def conditional_formatting():
-    from ..formatting import ConditionalFormatting
+    from openpyxl.formatting.formatting import ConditionalFormatting
 
     return ConditionalFormatting
 

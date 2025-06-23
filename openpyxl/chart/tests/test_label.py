@@ -8,14 +8,14 @@ from openpyxl.xml.functions import tostring
 
 @pytest.fixture
 def data_label_list():
-    from ..label import DataLabelList
+    from openpyxl.chart.label import DataLabelList
 
     return DataLabelList
 
 
 @pytest.fixture
 def data_label():
-    from ..label import DataLabel
+    from openpyxl.chart.label import DataLabel
 
     return DataLabel
 
