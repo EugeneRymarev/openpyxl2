@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.styles.colors import Color
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.constants import SHEET_MAIN_NS

@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.chart.data_source import StrRef
 from openpyxl.chart.title import title_maker
 from openpyxl.tests.helper import compare_xml

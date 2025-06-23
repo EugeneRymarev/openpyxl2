@@ -2,6 +2,7 @@
 import decimal
 
 import pytest
+
 from openpyxl.compat import deprecated
 
 
@@ -67,13 +68,13 @@ def test_numeric_types():
 
 @pytest.mark.numpy_required
 def test_numpy_tostring():
-    from numpy import bool_
-    from numpy import float64
+    import numpy
+
     from openpyxl.compat.strings import safe_string
 
-    assert safe_string(float64(5.1)) == "5.1"
+    assert safe_string(numpy.float64(5.1)) == "5.1"
     assert safe_string(int(5)) == "5"
-    assert safe_string(bool_(True)) == "1"
+    assert safe_string(numpy.bool_(True)) == "1"
 
 
 @pytest.mark.skipif("sys.version_info[0]>=3")

@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles.numbers import FORMAT_DATE_TIME3
 from openpyxl.styles.numbers import FORMAT_DATE_XLSX14

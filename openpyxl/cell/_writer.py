@@ -8,10 +8,10 @@ from openpyxl.utils.datetime import to_ISO8601
 from openpyxl.worksheet.formula import ArrayFormula
 from openpyxl.worksheet.formula import DataTableFormula
 from openpyxl.xml import LXML
+from openpyxl.xml.functions import XML_NS
 from openpyxl.xml.functions import Element
 from openpyxl.xml.functions import SubElement
 from openpyxl.xml.functions import whitespace
-from openpyxl.xml.functions import XML_NS
 
 
 def _set_attributes(cell, styled=None):

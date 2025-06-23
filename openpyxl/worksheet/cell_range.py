@@ -494,4 +494,4 @@ class MultiCellRange(Strict):
         for r in self.ranges:
             if item <= r:
                 return r.coord
-        raise CellNotMergedException(f'There are no merged cells that include {item}')
+        raise CellNotMergedException(f"There are no merged cells that include {item}")

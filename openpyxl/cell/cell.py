@@ -15,8 +15,8 @@ from openpyxl.cell.rich_text import CellRichText
 from openpyxl.compat.numbers import NUMERIC_TYPES
 from openpyxl.styles.alignment import Alignment
 from openpyxl.styles.borders import Border
-from openpyxl.styles.fonts import Font
 from openpyxl.styles.fills import PatternFill
+from openpyxl.styles.fonts import Font
 from openpyxl.styles.numbers import FORMAT_DATE_DATETIME
 from openpyxl.styles.numbers import FORMAT_DATE_TIME6
 from openpyxl.styles.numbers import FORMAT_DATE_TIMEDELTA
@@ -271,7 +271,7 @@ class Cell(StyleableObject):
             for row in rows:
                 for cell in row:
                     if cell != self:
-                        if key != 'style':
+                        if key != "style":
                             setattr(cell, key, value)
                         else:
                             NamedStyleDescriptor().__set__(cell, value)
@@ -373,7 +373,6 @@ class Cell(StyleableObject):
     def style(self):
         NamedStyleDescriptor().__set__(self, "Normal")
         self.set_style_to_merged_cells("style", "Normal")
-
 
 
 class MergedCell(StyleableObject):

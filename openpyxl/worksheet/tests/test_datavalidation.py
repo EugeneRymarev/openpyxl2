@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.tests.helper import compare_xml
 from openpyxl.worksheet.cell_range import MultiCellRange
 from openpyxl.xml.functions import fromstring

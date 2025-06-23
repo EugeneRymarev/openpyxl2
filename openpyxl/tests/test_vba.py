@@ -3,6 +3,7 @@ import tempfile
 import zipfile
 
 import pytest
+
 from openpyxl.reader.excel import load_workbook
 from openpyxl.xml.constants import CONTYPES_NS
 from openpyxl.xml.functions import fromstring

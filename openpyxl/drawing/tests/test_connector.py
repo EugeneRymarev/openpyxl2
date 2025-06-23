@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.chart.shapes import Transform2D
 from openpyxl.chart.text import RichText

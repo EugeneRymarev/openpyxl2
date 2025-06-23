@@ -4,6 +4,7 @@ import io
 import zipfile
 
 import pytest
+
 from openpyxl.packaging.manifest import Manifest
 from openpyxl.pivot.fields import Text
 from openpyxl.tests.helper import compare_xml

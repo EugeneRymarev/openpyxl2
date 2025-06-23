@@ -2,6 +2,7 @@
 import copy
 
 import pytest
+
 from openpyxl.styles.borders import Border
 from openpyxl.styles.borders import Side
 from openpyxl.styles.protection import Protection

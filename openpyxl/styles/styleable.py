@@ -215,4 +215,3 @@ class StyleableObject:
     @style.deleter
     def style(self):
         NamedStyleDescriptor().__set__(self, "Normal")
-

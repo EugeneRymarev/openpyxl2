@@ -135,7 +135,6 @@ class NamedStyle(Serialisable):
         raise NotNamedStyleOrStrException("Right argument must be NamedStyle or str")
 
 
-
 class NamedStyleList(list):
     """
     Named styles are editable and can be applied to multiple objects

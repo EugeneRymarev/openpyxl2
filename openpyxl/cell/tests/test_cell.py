@@ -5,6 +5,7 @@ import itertools
 import numpy
 import pandas
 import pytest
+
 from openpyxl.cell.cell import ERROR_CODES
 from openpyxl.cell.cell import get_time_format
 from openpyxl.comments.comments import Comment

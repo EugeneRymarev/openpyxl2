@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.chart.bar_chart import BarChart
 from openpyxl.chart.line_chart import LineChart
 from openpyxl.tests.helper import compare_xml

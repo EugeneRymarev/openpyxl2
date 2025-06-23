@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.chartsheet.views import ChartsheetView
 from openpyxl.chartsheet.views import ChartsheetViewList
 from openpyxl.tests.helper import compare_xml

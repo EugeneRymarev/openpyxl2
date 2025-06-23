@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 from openpyxl.tests.helper import compare_xml
 from openpyxl.xml.constants import DCTERMS_NS
 from openpyxl.xml.constants import DCTERMS_PREFIX

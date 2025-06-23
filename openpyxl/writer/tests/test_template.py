@@ -3,6 +3,7 @@ import tempfile
 import zipfile
 
 import pytest
+
 from openpyxl.packaging.manifest import Manifest
 from openpyxl.reader.excel import load_workbook
 from openpyxl.xml.constants import ARC_CONTENT_TYPES

@@ -6,6 +6,7 @@ import string
 import zipfile
 
 import pytest
+
 from openpyxl.chart.bar_chart import BarChart
 from openpyxl.comments.comments import Comment
 from openpyxl.connection.connections import Connection

@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.formatting.formatting import ConditionalFormattingList
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles.borders import Border

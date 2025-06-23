@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.descriptors.base import Integer
 from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.styles.fonts import Font

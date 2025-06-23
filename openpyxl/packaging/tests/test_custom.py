@@ -2,6 +2,7 @@
 import datetime
 
 import pytest
+
 from openpyxl.packaging.custom import BoolProperty
 from openpyxl.packaging.custom import DateTimeProperty
 from openpyxl.packaging.custom import FloatProperty

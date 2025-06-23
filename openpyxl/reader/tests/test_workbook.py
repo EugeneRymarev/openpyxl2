@@ -3,6 +3,7 @@ import io
 import zipfile
 
 import pytest
+
 from openpyxl.utils.datetime import CALENDAR_MAC_1904
 from openpyxl.utils.datetime import CALENDAR_WINDOWS_1900
 from openpyxl.workbook.defined_name import DefinedName

@@ -2,6 +2,7 @@
 import array
 
 import pytest
+
 from openpyxl.styles.alignment import Alignment
 from openpyxl.styles.borders import Border
 from openpyxl.styles.cell_style import CellStyle

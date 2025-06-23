@@ -5,6 +5,7 @@ import io
 import zipfile
 
 import pytest
+
 from openpyxl.styles.cell_style import StyleArray
 from openpyxl.tests.helper import compare_xml
 from openpyxl.workbook.workbook import Workbook

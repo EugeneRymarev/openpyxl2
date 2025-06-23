@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.cell.read_only import ReadOnlyCell
 from openpyxl.styles.cell_style import StyleArray
 from openpyxl.utils.indexed_list import IndexedList

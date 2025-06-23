@@ -219,7 +219,7 @@ class NumericAxis(_BaseAxis):
         minorUnit=None,
         dispUnits=None,
         extLst=None,
-        **kw
+        **kw,
     ):
         self.crossBetween = crossBetween
         self.majorUnit = majorUnit
@@ -285,7 +285,7 @@ class TextAxis(_BaseAxis):
         tickMarkSkip=None,
         noMultiLvlLbl=None,
         extLst=None,
-        **kw
+        **kw,
     ):
         self.auto = auto
         self.lblAlgn = lblAlgn
@@ -344,7 +344,7 @@ class DateAxis(TextAxis):
         minorUnit=None,
         minorTimeUnit=None,
         extLst=None,
-        **kw
+        **kw,
     ):
         self.auto = auto
         self.lblOffset = lblOffset

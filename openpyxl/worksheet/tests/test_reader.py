@@ -6,6 +6,7 @@ import warnings
 import pytest
 from lxml.etree import fromstring
 from lxml.etree import iterparse
+
 from openpyxl.cell.rich_text import CellRichText
 from openpyxl.cell.rich_text import TextBlock
 from openpyxl.cell.text import InlineFont

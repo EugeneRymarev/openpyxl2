@@ -1,11 +1,12 @@
 # Copyright (c) 2010-2025 openpyxl
 import io
+from xml.etree.ElementTree import iterparse
 
 import pytest
+
 from openpyxl.xml.functions import XML_NS
 from openpyxl.xml.functions import Element
 from openpyxl.xml.functions import fromstring
-from xml.etree.ElementTree import iterparse
 from openpyxl.xml.functions import whitespace
 
 

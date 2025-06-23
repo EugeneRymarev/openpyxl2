@@ -2,6 +2,7 @@
 import datetime
 
 import pytest
+
 from openpyxl.utils.inference import cast_numeric
 from openpyxl.utils.inference import cast_percentage
 from openpyxl.utils.inference import cast_time

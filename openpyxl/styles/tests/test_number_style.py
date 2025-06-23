@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.styles.numbers import FORMAT_DATE_DATETIME
 from openpyxl.styles.numbers import FORMAT_DATE_DDMMYY
 from openpyxl.styles.numbers import FORMAT_DATE_DMMINUS

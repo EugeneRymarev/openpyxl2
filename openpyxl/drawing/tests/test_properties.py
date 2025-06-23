@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.drawing.geometry import GroupTransform2D
 from openpyxl.drawing.geometry import Point2D
 from openpyxl.drawing.geometry import PositiveSize2D

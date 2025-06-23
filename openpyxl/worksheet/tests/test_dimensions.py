@@ -2,6 +2,7 @@
 import copy
 
 import pytest
+
 from openpyxl.styles.styleable import StyleArray
 from openpyxl.tests.helper import compare_xml
 from openpyxl.utils.indexed_list import IndexedList

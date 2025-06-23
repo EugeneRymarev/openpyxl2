@@ -4,6 +4,7 @@ import decimal
 import io
 
 import pytest
+
 from openpyxl.tests.helper import compare_xml
 from openpyxl.utils.datetime import CALENDAR_MAC_1904
 from openpyxl.utils.datetime import CALENDAR_WINDOWS_1900

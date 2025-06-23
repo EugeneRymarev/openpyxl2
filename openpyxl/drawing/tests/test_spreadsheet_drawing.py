@@ -1,6 +1,8 @@
 # Copyright (c) 2010-2025 openpyxl
 import PIL
 import pytest
+from PIL.Image import Image as PILImage
+
 from openpyxl.chart.bar_chart import BarChart
 from openpyxl.drawing.image import Image
 from openpyxl.packaging.relationship import Relationship
@@ -564,7 +566,6 @@ def test_check_chart_with_anchor(anchor):
 @pytest.mark.pil_required
 def test_check_anchor_image(datadir):
     from openpyxl.drawing.spreadsheet_drawing import _check_anchor
-    from PIL.Image import Image as PILImage
 
     datadir.chdir()
     im = Image(PILImage())

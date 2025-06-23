@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.comments.comments import Comment
 from openpyxl.reader.excel import load_workbook
 from openpyxl.xml.functions import fromstring

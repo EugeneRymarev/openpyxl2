@@ -2,6 +2,7 @@
 import os
 
 import pytest
+
 from openpyxl.comments.comments import Comment
 from openpyxl.drawing.legacy import LegacyDrawing
 from openpyxl.formatting.rule import CellIsRule

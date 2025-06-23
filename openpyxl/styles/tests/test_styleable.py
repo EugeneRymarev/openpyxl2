@@ -2,6 +2,7 @@
 import copy
 
 import pytest
+
 from openpyxl.styles.named_styles import NamedStyle
 from openpyxl.styles.named_styles import NamedStyleList
 from openpyxl.utils.indexed_list import IndexedList

@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.comments.comments import Comment
 from openpyxl.comments.shape_writer import ShapeWriter
 from openpyxl.comments.shape_writer import _shape_factory

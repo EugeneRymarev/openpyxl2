@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.styles.borders import Border
 from openpyxl.styles.borders import Side
 from openpyxl.styles.colors import Color

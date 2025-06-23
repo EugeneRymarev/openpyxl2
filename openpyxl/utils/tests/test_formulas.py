@@ -1,4 +1,5 @@
 import pytest
+
 from openpyxl.utils.formulas import validate
 
 

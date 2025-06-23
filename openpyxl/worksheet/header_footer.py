@@ -6,11 +6,11 @@ let worksheets have separate items
 import re
 import warnings
 
-from openpyxl.descriptors import MatchPattern
 from openpyxl.descriptors import Strict
 from openpyxl.descriptors.base import Alias
 from openpyxl.descriptors.base import Bool
 from openpyxl.descriptors.base import Integer
+from openpyxl.descriptors.base import MatchPattern
 from openpyxl.descriptors.base import String
 from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.serialisable import Serialisable

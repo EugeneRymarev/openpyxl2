@@ -2,6 +2,8 @@
 import itertools
 
 import pytest
+from PIL.Image import Image as PILImage
+
 from openpyxl.cell.cell import Cell
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.cell_range import CellRange
@@ -461,7 +463,6 @@ def test_add_chart(worksheet):
 @pytest.mark.pil_required
 def test_add_image(worksheet):
     from openpyxl.drawing.image import Image
-    from PIL.Image import Image as PILImage
 
     ws = worksheet(DummyWorkbook())
     im = Image(PILImage())

@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.utils.cell import absolute_coordinate
 from openpyxl.utils.cell import column_index_from_string
 from openpyxl.utils.cell import coordinate_from_string

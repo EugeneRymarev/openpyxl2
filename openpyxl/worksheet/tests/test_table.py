@@ -3,6 +3,7 @@ import io
 import zipfile
 
 import pytest
+
 from openpyxl.tests.helper import compare_xml
 from openpyxl.worksheet.filters import AutoFilter
 from openpyxl.worksheet.filters import FilterColumn

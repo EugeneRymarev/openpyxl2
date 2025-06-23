@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.styles.colors import BLACK
 from openpyxl.styles.colors import WHITE
 from openpyxl.styles.colors import Color

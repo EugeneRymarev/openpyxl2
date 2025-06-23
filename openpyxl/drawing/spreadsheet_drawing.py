@@ -48,6 +48,7 @@ class Choice(Serialisable):
     """
     Markup compatibility choice
     """
+
     tagname = "choice"
     twoCellAnchor = Typed(expected_type=TwoCellAnchor, allow_none=True)
     oneCellAnchor = Typed(expected_type=OneCellAnchor, allow_none=True)

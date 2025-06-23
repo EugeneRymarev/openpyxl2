@@ -4,6 +4,7 @@ import io
 import zipfile
 
 import pytest
+
 from openpyxl.cell.read_only import EMPTY_CELL
 from openpyxl.cell.read_only import ReadOnlyCell
 from openpyxl.reader.excel import load_workbook

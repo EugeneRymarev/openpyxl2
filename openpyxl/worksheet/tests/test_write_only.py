@@ -2,6 +2,7 @@
 import datetime
 
 import pytest
+
 from openpyxl.cell.cell import WriteOnlyCell
 from openpyxl.styles.styleable import StyleArray
 from openpyxl.tests.helper import compare_xml

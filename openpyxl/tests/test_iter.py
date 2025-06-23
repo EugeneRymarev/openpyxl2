@@ -6,6 +6,7 @@ import os
 import zipfile
 
 import pytest
+
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles.styleable import StyleArray
 

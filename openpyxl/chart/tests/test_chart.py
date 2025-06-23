@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.chart.pivot import PivotFormat
 from openpyxl.chart.pivot import PivotSource
 from openpyxl.chart.plotarea import PlotArea

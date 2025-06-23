@@ -1,5 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import pytest
+
 from openpyxl.drawing.colors import SchemeColor
 from openpyxl.drawing.geometry import FontReference
 from openpyxl.drawing.geometry import StyleMatrixReference
