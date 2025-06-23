@@ -3,20 +3,6 @@ from openpyxl.descriptors.base import Alias
 from openpyxl.descriptors.base import Descriptor
 from openpyxl.descriptors.base import Typed
 from openpyxl.descriptors.sequence import Sequence
-# TODO: delete after last reformat commit
-from openpyxl.descriptors.base import Bool
-from openpyxl.descriptors.base import Integer
-from openpyxl.descriptors.base import MatchPattern
-from openpyxl.descriptors.base import String
-from openpyxl.descriptors.base import Float
-from openpyxl.descriptors.base import NoneSet
-from openpyxl.descriptors.base import Max
-from openpyxl.descriptors.base import Min
-from openpyxl.descriptors.base import MinMax
-from openpyxl.descriptors.base import Set
-from openpyxl.descriptors.base import DateTime
-from openpyxl.descriptors.base import Convertible
-
 
 
 class MetaStrict(type):
