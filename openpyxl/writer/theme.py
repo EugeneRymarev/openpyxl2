@@ -4,8 +4,7 @@ Write the theme xml based on a fixed string
 """
 
 
-theme_xml = """
-<?xml version="1.0"?>
+theme_xml = """<?xml version="1.0"?>
 <a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
          name="Office Theme">
     <a:themeElements>
