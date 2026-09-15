@@ -243,6 +243,21 @@ def write_stylesheet(wb):
             xf.protection = wb._protections[style.protectionId]
         xfs.append(xf)
     stylesheet.cellXfs = CellStyleList(xf=xfs)
+    # Named style objects (openpyxl.styles.NamedStyle) may be shared Python
+    # objects reused across several Workbook instances (e.g. when the same
+    # style constants are applied to many documents generated in a batch,
+    # before each is saved). Each time such an object is applied to a
+    # *different* workbook, its cached indices (fontId/borderId/fillId/xfId)
+    # are overwritten to match that workbook - so by the time *this*
+    # workbook is finally saved, those indices may reflect a completely
+    # different, later-processed workbook instead of this one, producing a
+    # styles.xml with out-of-range references that Excel reports as
+    # corrupted. Re-synchronize every named style with THIS workbook's own
+    # collections and position right before serializing, to guarantee
+    # correctness regardless of any such reuse in between.
+    for idx, ns in enumerate(wb._named_styles):
+        ns._style.xfId = idx
+        ns.bind(wb)
     stylesheet._split_named_styles(wb)
     stylesheet.tableStyles = wb._table_styles
     return stylesheet.to_tree()
