@@ -2,6 +2,7 @@
 """
 Worksheet is the 2nd-level container in Excel
 """
+import copy
 import inspect
 import itertools
 import operator
@@ -597,7 +598,7 @@ class Worksheet(_WorkbookChild):
         self.merged_cells.add(mcr)
         self._clean_merge_range(mcr)
 
-    def _clean_merge_range(self, mcr):
+    def _clean_merge_range(self, mcr, preserve_styles=False):
         """
         Remove all but the top left-cell from a range of merged cells
         and recreate the lost border information.
@@ -606,8 +607,12 @@ class Worksheet(_WorkbookChild):
         cells = mcr.cells
         next(cells)  # skip first cell
         for row, col in cells:
-            self._cells[row, col] = MergedCell(self, row, col)
-        mcr.format()
+            previous = self._cells.get((row, col))
+            cell = MergedCell(self, row, col)
+            if preserve_styles and previous is not None:
+                cell._style = copy.copy(previous._style)
+            self._cells[row, col] = cell
+        mcr.format(preserve_styles=preserve_styles)
 
     @property
     @deprecated("Use ws.merged_cells.ranges")
@@ -715,23 +720,56 @@ class Worksheet(_WorkbookChild):
                 continue
             self._move_cell(row, column, row_offset, col_offset)
 
-    def insert_rows(self, idx, amount=1):
+    def insert_rows(self, idx, amount=1, *, update_dependencies=True):
         """
         Insert row or rows before row==idx
+
+        Merged ranges, static defined names, print settings and row/column
+        dimensions are updated by default. Formula text is never translated.
+        Set update_dependencies=False for legacy cell-only movement.
+        See :doc:`editing_worksheets` for deletion and validation rules.
         """
+        if update_dependencies:
+            from openpyxl.worksheet._structural_edit import edit_worksheet
+
+            edit_worksheet(self, "row", idx, amount, deleting=False)
+            return
+
         self._move_cells(min_row=idx, offset=amount, row_or_col="row")
         self._current_row = self.max_row
 
-    def insert_cols(self, idx, amount=1):
+    def insert_cols(self, idx, amount=1, *, update_dependencies=True):
         """
         Insert column or columns before col==idx
+
+        Merged ranges, static defined names, print settings and row/column
+        dimensions are updated by default. Formula text is never translated.
+        Set update_dependencies=False for legacy cell-only movement.
+        See :doc:`editing_worksheets` for deletion and validation rules.
         """
+        if update_dependencies:
+            from openpyxl.worksheet._structural_edit import edit_worksheet
+
+            edit_worksheet(self, "column", idx, amount, deleting=False)
+            return
+
         self._move_cells(min_col=idx, offset=amount, row_or_col="column")
 
-    def delete_rows(self, idx, amount=1):
+    def delete_rows(self, idx, amount=1, *, update_dependencies=True):
         """
         Delete row or rows from row==idx
+
+        Merged ranges, static defined names, print settings and row/column
+        dimensions are updated by default. Formula text is never translated.
+        Set update_dependencies=False for legacy cell-only movement.
+        See :doc:`editing_worksheets` for deletion and validation rules.
         """
+        if update_dependencies:
+            from openpyxl.worksheet._structural_edit import edit_worksheet
+
+            edit_worksheet(self, "row", idx, amount, deleting=True)
+            return
+
         remainder = _gutter(idx, amount, self.max_row)
         self._move_cells(min_row=idx + amount, offset=-amount, row_or_col="row")
         # calculating min and max col is an expensive operation, do it only once
@@ -745,10 +783,21 @@ class Worksheet(_WorkbookChild):
         if not self._cells:
             self._current_row = 0
 
-    def delete_cols(self, idx, amount=1):
+    def delete_cols(self, idx, amount=1, *, update_dependencies=True):
         """
         Delete column or columns from col==idx
+
+        Merged ranges, static defined names, print settings and row/column
+        dimensions are updated by default. Formula text is never translated.
+        Set update_dependencies=False for legacy cell-only movement.
+        See :doc:`editing_worksheets` for deletion and validation rules.
         """
+        if update_dependencies:
+            from openpyxl.worksheet._structural_edit import edit_worksheet
+
+            edit_worksheet(self, "column", idx, amount, deleting=True)
+            return
+
         remainder = _gutter(idx, amount, self.max_column)
         self._move_cells(min_col=idx + amount, offset=-amount, row_or_col="column")
         # calculating min and max row is an expensive operation, do it only once

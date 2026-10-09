@@ -159,20 +159,26 @@ def test_styles_for_merged_cells(tmpdir):
     ws["A1"].protection = Protection(False, True)
     ws.merge_cells("A3:B3")
     ws["A3"].style = style
-    # TODO
-    # A bug that requires mandatory fixing.
-    # You can't use write-read, because when reading ReadOnly,
-    # the style property is not loaded, and when reading normally,
-    # the applied styles for MergedCell objects are lost.
-    # from openpyxl.reader.excel import load_workbook
-    # xlsx_file = "merged_cells_styles.xlsx"
-    # wb.save(xlsx_file)
-    # wb = load_workbook(xlsx_file, read_only=True)
-    # ws = wb.active
+    from openpyxl.reader.excel import load_workbook
+
+    xlsx_file = "merged_cells_styles.xlsx"
+    wb.save(xlsx_file)
+    wb = load_workbook(xlsx_file)
+    ws = wb.active
     for row in ws["A1:B2"]:
         for cell in row:
             assert cell.alignment == alignment
-            assert cell.border == border
+            expected = copy.copy(border)
+            if cell.coordinate != "A1":
+                if cell.row != 1:
+                    expected.top = None
+                if cell.row != 2:
+                    expected.bottom = None
+                if cell.column != 1:
+                    expected.left = None
+                if cell.column != 2:
+                    expected.right = None
+            assert cell.border == expected
             assert cell.fill == fill
             assert cell.font == font
             assert cell.number_format == FORMAT_NUMBER_00

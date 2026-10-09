@@ -1,6 +1,6 @@
 # Copyright (c) 2010-2025 openpyxl
 import io
-from xml.etree.ElementTree import iterparse
+from openpyxl.xml.functions import iterparse
 
 import pytest
 
@@ -54,7 +54,7 @@ vulnerable_xml_strings = (
 
 @pytest.mark.defusedxml_required
 @pytest.mark.parametrize("xml_input", vulnerable_xml_strings)
-def test_fromstring(xml_input):
+def test_fromstring_defused(xml_input):
     from defusedxml.common import DefusedXmlException
 
     with pytest.raises(DefusedXmlException):
@@ -63,7 +63,7 @@ def test_fromstring(xml_input):
 
 @pytest.mark.defusedxml_required
 @pytest.mark.parametrize("xml_input", vulnerable_xml_strings)
-def test_iterparse(xml_input):
+def test_iterparse_defused(xml_input):
     from defusedxml.common import DefusedXmlException
 
     with pytest.raises(DefusedXmlException):
@@ -72,11 +72,19 @@ def test_iterparse(xml_input):
 
 
 @pytest.mark.lxml_required
-@pytest.mark.parametrize("xml_input", vulnerable_xml_strings)
-def test_iterparse(xml_input):
-    f = io.BytesIO(xml_input)
-    with pytest.raises(ValueError):
-        fromstring(f)
+@pytest.mark.parametrize("xml_input", (vulnerable_xml_strings[0], vulnerable_xml_strings[1], vulnerable_xml_strings[3]))
+def test_fromstring_lxml_does_not_expand_entities(xml_input):
+    root = fromstring(xml_input)
+    assert root.text is None
+    assert len(root) > 0  # Entity references survive instead of being expanded.
+
+
+@pytest.mark.lxml_required
+def test_fromstring_lxml_rejects_invalid_xml():
+    from lxml.etree import XMLSyntaxError
+
+    with pytest.raises(XMLSyntaxError):
+        fromstring(vulnerable_xml_strings[2])
 
 
 @pytest.mark.parametrize(

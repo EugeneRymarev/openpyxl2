@@ -65,9 +65,36 @@ class MergedCellRange(CellRange):
         end_cell = self.ws._cells.get((self.max_row, self.max_col))
         if end_cell is not None:
             border = Border(right=end_cell.border.right, bottom=end_cell.border.bottom)
-            self.start_cell.border += border
+            self.start_cell._style = copy.copy(self.start_cell._style)
+            self.start_cell._border += border
 
-    def format(self):
+    def _apply_border(self, border):
+        """Replace the outline after an explicit assignment to the anchor.
+
+        Keep the complete definition on the anchor and project its four sides
+        onto the corresponding perimeter cells. Replacing (not adding) sides
+        also permits clearing a previously assigned border.
+        """
+        projections = {}
+        for row, column in self.cells:
+            if (row, column) == (self.min_row, self.min_col):
+                continue
+            cell = self.ws._cells.get((row, column))
+            if cell is None:
+                cell = MergedCell(self.ws, row=row, column=column)
+                self.ws._cells[(row, column)] = cell
+            edges = (row == self.min_row, row == self.max_row,
+                     column == self.min_col, column == self.max_col)
+            if edges not in projections:
+                projected = copy.copy(border)
+                for name, on_edge in zip(("top", "bottom", "left", "right"), edges):
+                    if not on_edge:
+                        setattr(projected, name, None)
+                projections[edges] = projected
+            projected = projections[edges]
+            cell._border = projected
+
+    def format(self, preserve_styles=False):
         """
         Each cell of the merged cell is created as MergedCell if it does not
         already exist.
@@ -80,6 +107,15 @@ class MergedCellRange(CellRange):
          - The left MergedCells get the left border from the top left cell.
          - The right MergedCells get the right border from the top left cell.
         """
+        # Loading must retain explicit per-cell protection as well as other
+        # stored styles. Capture this before border access creates style arrays.
+        styled = set()
+        if preserve_styles:
+            styled = {
+                coord for coord in self.cells
+                if self.ws._cells.get(coord) is not None
+                and self.ws._cells[coord]._style is not None
+            }
         names = ["top", "left", "right", "bottom"]
         for name in names:
             side = getattr(self.start_cell.border, name)
@@ -93,7 +129,7 @@ class MergedCellRange(CellRange):
                     row, col = coord
                     cell = MergedCell(self.ws, row=row, column=col)
                     self.ws._cells[(cell.row, cell.column)] = cell
-                cell.border += border
+                cell._border += border
         protected = self.start_cell.protection is not None
         protection = None
         if protected:
@@ -104,8 +140,8 @@ class MergedCellRange(CellRange):
                 row, col = coord
                 cell = MergedCell(self.ws, row=row, column=col)
                 self.ws._cells[(cell.row, cell.column)] = cell
-            if protected:
-                cell.protection = protection
+            if protected and coord not in styled:
+                cell._protection = protection
 
     def __contains__(self, coord):
         return coord in CellRange(self.coord)

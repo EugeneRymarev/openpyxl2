@@ -21,17 +21,28 @@ Differences
 
 Explanation
 -----------
-At the moment, the function of applying styles to all merged cells works only when saving and when reading in read-only mode.
+Styles assigned to the anchor of a merged range are applied to its cells.
+Borders are projected onto the outer perimeter, while the anchor retains the
+complete border definition. Replacing or deleting the anchor border also updates
+the perimeter. Named styles follow the same rule.
 
-If you read a file with merged cells, then MergedCell will not have any of the properties - they are replaced by the _clean_merge_range function.
+Loading a workbook preserves the stored styles of non-anchor merged cells,
+including individual formatting, through subsequent save/load cycles.
+Explicit border assignments to a non-anchor MergedCell remain local.
 
-As a result, after reading and saving, the styles of merged cells are lost.
 
-This behavior will be fixed in the future.
+Structural edits
+----------------
+``insert_rows``, ``insert_cols``, ``delete_rows`` and ``delete_cols`` now update
+merged ranges, static workbook/sheet-local names, print areas/titles and
+row/column dimensions. Partially deleted ranges shrink; completely deleted
+named references become ``#REF!``. Sparse sheets stay sparse.
 
-In progress
-------------
-* Fix the problem with the insert_rows, insert_cols, delete_rows, delete_cols functions so that the result of executing these functions matches the result of executing similar actions in Excel.
+Formula text and calculated named expressions remain unchanged. Tables, charts,
+data validation, conditional formatting and drawing/view references are not
+updated. This is not a claim of complete Excel editing compatibility.
+Pass ``update_dependencies=False`` when existing application code already
+updates dependencies itself. See ``doc/editing_worksheets.rst`` for details.
 
 
 Introduction

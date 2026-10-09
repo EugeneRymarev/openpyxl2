@@ -94,7 +94,7 @@ class Manifest(Serialisable):
         """
         exts = {os.path.splitext(part.PartName)[-1] for part in self.Override}
         return [
-            (ext[1:], mimetypes.types_map[True][ext]) for ext in sorted(exts) if ext
+            (ext[1:], mimetypes.types_map[True][ext.lower()]) for ext in sorted(exts) if ext
         ]
 
     def to_tree(self, tagname=None, idx=None, namespace=None):
@@ -161,7 +161,7 @@ class Manifest(Serialisable):
             ext = os.path.splitext(fn)[-1]
             if not ext:
                 continue
-            mime = mimetypes.types_map[True][ext]
+            mime = mimetypes.types_map[True][ext.lower()]
             fe = FileExtension(ext[1:], mime)
             self.Default.append(fe)
 

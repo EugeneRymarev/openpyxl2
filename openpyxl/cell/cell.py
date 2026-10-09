@@ -265,16 +265,25 @@ class Cell(StyleableObject):
         self._comment = value
 
     def set_style_to_merged_cells(self, key, value):
-        con = hasattr(self.parent, "merged_cells")
-        if con and self.coordinate in self.parent.merged_cells:
-            rows = self.parent[self.parent.merged_cells[self.coordinate]]
-            for row in rows:
-                for cell in row:
-                    if cell != self:
-                        if key != "style":
-                            setattr(cell, key, value)
-                        else:
-                            NamedStyleDescriptor().__set__(cell, value)
+        if not hasattr(self.parent, "merged_cells"):
+            return
+        for merged in self.parent.merged_cells:
+            if (self.row, self.column) != (merged.min_row, merged.min_col):
+                continue
+            if key == "border":
+                merged._apply_border(value)
+                return
+            for row, column in merged.cells:
+                cell = self.parent._cells[(row, column)]
+                if cell is self:
+                    continue
+                if key == "style":
+                    NamedStyleDescriptor().__set__(cell, value)
+                else:
+                    setattr(cell, key, value)
+            if key == "style":
+                merged._apply_border(copy.copy(self.border))
+            return
 
     @property
     def alignment(self):
