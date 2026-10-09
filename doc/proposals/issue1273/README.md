@@ -8,6 +8,10 @@ The original design below describes additional future work, not the complete
 supported contract of this implementation. See [implementation notes](../../issue-1273.md)
 and `doc/editing_worksheets.rst` for the actual behavior.
 
+Follow-up: `codex/fix-1273-formula-references` now implements maintenance of
+ordinary A1 formula references. See [the formula implementation](../../issue-1273-formulas.md)
+for its supported subset and explicit rejection of unsupported constructs.
+
 
 Source: [issue #1273](https://foss.heptapod.net/openpyxl/openpyxl/-/work_items/1273).
 The issue description was available through the public API; comments returned

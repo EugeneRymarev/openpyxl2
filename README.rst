@@ -38,9 +38,14 @@ merged ranges, static workbook/sheet-local names, print areas/titles and
 row/column dimensions. Partially deleted ranges shrink; completely deleted
 named references become ``#REF!``. Sparse sheets stay sparse.
 
-Formula text and calculated named expressions remain unchanged. Tables, charts,
-data validation, conditional formatting and drawing/view references are not
-updated. This is not a claim of complete Excel editing compatibility.
+Direct A1 references in cell formulas across all worksheets and in calculated
+names are updated too, including absolute references. Deleted references become
+``#REF!``. Pass ``update_formulas=False`` to retain formula text while updating
+range metadata. Formula evaluation remains the spreadsheet application's job.
+Unsupported formula constructs raise ``FormulaTranslationError`` before changes
+are applied; see ``doc/issue-1273-formulas.md`` for coverage and limitations.
+Tables, charts, data validation, conditional formatting and drawing/view
+references are not updated. This is not complete Excel editing compatibility.
 Pass ``update_dependencies=False`` when existing application code already
 updates dependencies itself. See ``doc/editing_worksheets.rst`` for details.
 

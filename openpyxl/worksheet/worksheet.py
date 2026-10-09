@@ -2,6 +2,7 @@
 """
 Worksheet is the 2nd-level container in Excel
 """
+
 import copy
 import inspect
 import itertools
@@ -720,54 +721,79 @@ class Worksheet(_WorkbookChild):
                 continue
             self._move_cell(row, column, row_offset, col_offset)
 
-    def insert_rows(self, idx, amount=1, *, update_dependencies=True):
+    def insert_rows(
+        self, idx, amount=1, *, update_dependencies=True, update_formulas=True
+    ):
         """
         Insert row or rows before row==idx
 
-        Merged ranges, static defined names, print settings and row/column
-        dimensions are updated by default. Formula text is never translated.
+        Merged ranges, defined names, print settings, dimensions and A1 formula
+        references throughout the workbook are updated by default.
+        Set update_formulas=False to retain formula text while updating metadata.
         Set update_dependencies=False for legacy cell-only movement.
         See :doc:`editing_worksheets` for deletion and validation rules.
         """
         if update_dependencies:
             from openpyxl.worksheet._structural_edit import edit_worksheet
 
-            edit_worksheet(self, "row", idx, amount, deleting=False)
+            edit_worksheet(
+                self,
+                "row",
+                idx,
+                amount,
+                deleting=False,
+                update_formulas=update_formulas,
+            )
             return
 
         self._move_cells(min_row=idx, offset=amount, row_or_col="row")
         self._current_row = self.max_row
 
-    def insert_cols(self, idx, amount=1, *, update_dependencies=True):
+    def insert_cols(
+        self, idx, amount=1, *, update_dependencies=True, update_formulas=True
+    ):
         """
         Insert column or columns before col==idx
 
-        Merged ranges, static defined names, print settings and row/column
-        dimensions are updated by default. Formula text is never translated.
+        Merged ranges, defined names, print settings, dimensions and A1 formula
+        references throughout the workbook are updated by default.
+        Set update_formulas=False to retain formula text while updating metadata.
         Set update_dependencies=False for legacy cell-only movement.
         See :doc:`editing_worksheets` for deletion and validation rules.
         """
         if update_dependencies:
             from openpyxl.worksheet._structural_edit import edit_worksheet
 
-            edit_worksheet(self, "column", idx, amount, deleting=False)
+            edit_worksheet(
+                self,
+                "column",
+                idx,
+                amount,
+                deleting=False,
+                update_formulas=update_formulas,
+            )
             return
 
         self._move_cells(min_col=idx, offset=amount, row_or_col="column")
 
-    def delete_rows(self, idx, amount=1, *, update_dependencies=True):
+    def delete_rows(
+        self, idx, amount=1, *, update_dependencies=True, update_formulas=True
+    ):
         """
         Delete row or rows from row==idx
 
-        Merged ranges, static defined names, print settings and row/column
-        dimensions are updated by default. Formula text is never translated.
+        Merged ranges, defined names, print settings, dimensions and A1 formula
+        references throughout the workbook are updated by default.
+        Set update_formulas=False to retain formula text while updating metadata.
         Set update_dependencies=False for legacy cell-only movement.
         See :doc:`editing_worksheets` for deletion and validation rules.
         """
         if update_dependencies:
             from openpyxl.worksheet._structural_edit import edit_worksheet
 
-            edit_worksheet(self, "row", idx, amount, deleting=True)
+            edit_worksheet(
+                self, "row", idx, amount, deleting=True, update_formulas=update_formulas
+            )
             return
 
         remainder = _gutter(idx, amount, self.max_row)
@@ -783,19 +809,29 @@ class Worksheet(_WorkbookChild):
         if not self._cells:
             self._current_row = 0
 
-    def delete_cols(self, idx, amount=1, *, update_dependencies=True):
+    def delete_cols(
+        self, idx, amount=1, *, update_dependencies=True, update_formulas=True
+    ):
         """
         Delete column or columns from col==idx
 
-        Merged ranges, static defined names, print settings and row/column
-        dimensions are updated by default. Formula text is never translated.
+        Merged ranges, defined names, print settings, dimensions and A1 formula
+        references throughout the workbook are updated by default.
+        Set update_formulas=False to retain formula text while updating metadata.
         Set update_dependencies=False for legacy cell-only movement.
         See :doc:`editing_worksheets` for deletion and validation rules.
         """
         if update_dependencies:
             from openpyxl.worksheet._structural_edit import edit_worksheet
 
-            edit_worksheet(self, "column", idx, amount, deleting=True)
+            edit_worksheet(
+                self,
+                "column",
+                idx,
+                amount,
+                deleting=True,
+                update_formulas=update_formulas,
+            )
             return
 
         remainder = _gutter(idx, amount, self.max_column)
