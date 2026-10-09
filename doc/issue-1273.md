@@ -1,13 +1,14 @@
 # Issue 1273: structural editing
 
 The initial implementation below was integrated into master without formula
-rewriting. A subsequent implementation on `codex/fix-1273-formula-references`
-adds formula maintenance by default, with `update_formulas=False` retaining the
+rewriting. A subsequent implementation from `codex/fix-1273-formula-references`,
+now also included in local master, adds formula maintenance by default,
+with `update_formulas=False` retaining the
 earlier behavior. See [formula support and validation](issue-1273-formulas.md).
 
 Implemented in `codex/fix-1273-structural-edits` and integrated into local
-`master` by fast-forward through `b63fe1faa`. Master now includes the upstream
-fixes, #2024 and this implementation of #1273 without formula rewriting.
+`master` by fast-forward through `b63fe1faa`. Master includes the upstream fixes,
+#2024, the initial #1273 implementation and formula maintenance from `315acec29`.
 
 All four public insert/delete methods now synchronize merged ranges, static
 global/local names (including names in another worksheet that refer to this

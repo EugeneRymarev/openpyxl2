@@ -1,6 +1,7 @@
 # Formula references during structural edits
 
 Branch: `codex/fix-1273-formula-references`, based on master `54ddb6cfd`.
+Implementation commit `315acec29` is included in local master by merge `06fc89240`.
 This follow-up extends #1273 without changing `move_range` or copy translation.
 
 All four insert/delete operations default to `update_formulas=True`. References
@@ -77,5 +78,5 @@ Final validation on Windows / Python 3.12.10:
 - `git diff --check` passes. Native comparison and recalculation logs are kept
   locally under the ignored `.venv/codex-audit/` directory.
 
-The implementation remains in its separate branch. Master stays at `54ddb6cfd`;
-no branch has been pushed to GitHub.
+The implementation is included in local master. The source branch is retained.
+This local integration has not been pushed to GitHub.

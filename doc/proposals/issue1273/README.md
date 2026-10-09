@@ -8,8 +8,8 @@ The original design below describes additional future work, not the complete
 supported contract of this implementation. See [implementation notes](../../issue-1273.md)
 and `doc/editing_worksheets.rst` for the actual behavior.
 
-Follow-up: `codex/fix-1273-formula-references` now implements maintenance of
-ordinary A1 formula references. See [the formula implementation](../../issue-1273-formulas.md)
+Follow-up: `codex/fix-1273-formula-references`, now included in local master,
+implements maintenance of ordinary A1 formula references. See [the formula implementation](../../issue-1273-formulas.md)
 for its supported subset and explicit rejection of unsupported constructs.
 
 
