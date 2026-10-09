@@ -401,7 +401,7 @@ class WorksheetReader:
         ranges = []
         for cr in self.parser.merged_cells.mergeCell:
             mcr = MergedCellRange(self.ws, cr.ref)
-            self.ws._clean_merge_range(mcr)
+            self.ws._clean_merge_range(mcr, preserve_styles=True)
             ranges.append(mcr)
         self.ws.merged_cells = MultiCellRange(ranges)
 

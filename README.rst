@@ -21,13 +21,15 @@ Differences
 
 Explanation
 -----------
-At the moment, the function of applying styles to all merged cells works only when saving and when reading in read-only mode.
+Styles assigned to the anchor of a merged range are applied to its cells.
+Borders are projected onto the outer perimeter, while the anchor retains the
+complete border definition. Replacing or deleting the anchor border also updates
+the perimeter. Named styles follow the same rule.
 
-If you read a file with merged cells, then MergedCell will not have any of the properties - they are replaced by the _clean_merge_range function.
+Loading a workbook preserves the stored styles of non-anchor merged cells,
+including individual formatting, through subsequent save/load cycles.
+Explicit border assignments to a non-anchor MergedCell remain local.
 
-As a result, after reading and saving, the styles of merged cells are lost.
-
-This behavior will be fixed in the future.
 
 In progress
 ------------

@@ -2,6 +2,7 @@
 """
 Worksheet is the 2nd-level container in Excel
 """
+import copy
 import inspect
 import itertools
 import operator
@@ -597,7 +598,7 @@ class Worksheet(_WorkbookChild):
         self.merged_cells.add(mcr)
         self._clean_merge_range(mcr)
 
-    def _clean_merge_range(self, mcr):
+    def _clean_merge_range(self, mcr, preserve_styles=False):
         """
         Remove all but the top left-cell from a range of merged cells
         and recreate the lost border information.
@@ -606,8 +607,12 @@ class Worksheet(_WorkbookChild):
         cells = mcr.cells
         next(cells)  # skip first cell
         for row, col in cells:
-            self._cells[row, col] = MergedCell(self, row, col)
-        mcr.format()
+            previous = self._cells.get((row, col))
+            cell = MergedCell(self, row, col)
+            if preserve_styles and previous is not None:
+                cell._style = copy.copy(previous._style)
+            self._cells[row, col] = cell
+        mcr.format(preserve_styles=preserve_styles)
 
     @property
     @deprecated("Use ws.merged_cells.ranges")
