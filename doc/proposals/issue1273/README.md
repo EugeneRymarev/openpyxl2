@@ -1,7 +1,7 @@
 # Proposal: consistent structural worksheet edits (#1273)
 
-**Status: historical design, followed by a partial implementation on
-`codex/fix-1273-structural-edits`.** Per the follow-up request, merged ranges,
+**Status: historical design, followed by a partial implementation from
+`codex/fix-1273-structural-edits`, now integrated into local `master`.** Per the follow-up request, merged ranges,
 static names, print settings and dimensions are now integrated; formulas remain
 unchanged. Dependency updates default to True, with an explicit legacy opt-out.
 The original design below describes additional future work, not the complete

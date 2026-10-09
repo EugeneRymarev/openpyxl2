@@ -136,8 +136,8 @@ were not changed. Test environments and raw comparison data live in the ignored
 ## Follow-up: requested implementation
 
 The owner subsequently requested integration of the first two changes and an
-implementation of #1273 without formula rewriting. Local `master` is now
-`ad9d318f6` (upstream fixes plus #2024). The implementation is on
+implementation of #1273 without formula rewriting. Local `master` first advanced
+to `ad9d318f6` (upstream fixes plus #2024). The implementation was developed on
 `codex/fix-1273-structural-edits`, based on the proposal branch. Its 48 formerly
 expected failures are now ordinary passing regression tests. The earlier branch
 layout and test counts above describe the initial review, not the current state.
@@ -146,3 +146,8 @@ See [#1273 implementation and validation](issue-1273.md) for supported reference
 declaration of unchanged formula text and remaining object-type limitations.
 Full validation: 2865 passed with lxml, 2869 with defusedxml; 12 pre-existing
 expected failures remain. No changes have been pushed to GitHub.
+
+After three successful visual scenarios rendered by Microsoft Excel 16.0, the
+owner requested integration of #1273. Local `master` was fast-forwarded through
+`b63fe1faa`; all three requested code changes are now included. See the
+implementation notes for the visual checks and their scope.

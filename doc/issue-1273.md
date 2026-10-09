@@ -1,8 +1,8 @@
 # Issue 1273: structural editing without formula rewriting
 
-Implemented in `codex/fix-1273-structural-edits`. The earlier upstream and #2024
-commits have been integrated into local `master` at `ad9d318f6`. This change
-remains separate for review.
+Implemented in `codex/fix-1273-structural-edits` and integrated into local
+`master` by fast-forward through `b63fe1faa`. Master now includes the upstream
+fixes, #2024 and this implementation of #1273 without formula rewriting.
 
 All four public insert/delete methods now synchronize merged ranges, static
 global/local names (including names in another worksheet that refer to this
@@ -51,8 +51,14 @@ Windows, Python 3.12.10, pytest 9.1.1:
 - The 12 expected failures pre-date this work. None of the #1273 acceptance
   cases remain marked xfail.
 - The new module and regression files pass Black's Python 3.8 formatting check.
-- Local master exactly matches `codex/fix-2024-merged-borders` (`ad9d318f6`),
-  verified with an ancestry check and an empty tree diff.
+- Three visual scenarios were checked using Microsoft Excel 16.0, build 20430:
+  borders assigned after merging, row insertion inside a merge and column
+  deletion including the original anchor. All three native PDF-rendered pages
+  were inspected: outlines and text were intact, without clipping or overlap.
+  Excel also verified the resulting merges, static names, dimensions and print
+  settings. The workbook was opened read-only and its SHA-256 remained unchanged.
+  This checks the generated workbook, not equivalence with Excel's own editing
+  policies. Two openpyxl save/load cycles also passed before the Excel check.
 
-No branches were pushed to GitHub. The current implementation is in its own
-branch; master contains only the earlier upstream and #2024 changes.
+No branches were pushed to GitHub. The implementation branch is retained;
+all three requested code changes are now integrated into local master.
