@@ -25,7 +25,16 @@ operations. This is a targeted maintenance audit, not a proof of every module.
 
 ## Is 3.2 significant?
 
-Yes, as a release line. Its existing changelog and code include ActiveX and Form
+First distinguish development branch heads from published releases. The verified
+archives of current **3.1** (`c7b9026dab21`) and **3.2** (`8ea4ebcb2440`) differ
+in only three files: `.hg_archival.txt`, `openpyxl/_constants.py`, and `tox.ini`.
+The embedded `.hg_archival.txt` confirms each requested node and branch. All
+workbook implementation files are byte-for-byte identical; versions are 3.1.6
+and 3.2.0b1. Thus these developments are already present on the current 3.1
+branch, even though a 3.2 release has not been published. Branch age alone is
+not evidence that the work was rejected or never integrated.
+
+Compared with the older published feature set, the development work is significant. Its existing changelog and code include ActiveX and Form
 Controls, volatile dependencies and external connections, a Coordinate object
 for cells, removal of Cell.internal_value, ISO dates by default and disabling
 external-link loading by default. These are compatibility-relevant changes,
