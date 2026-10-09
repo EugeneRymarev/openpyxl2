@@ -8,6 +8,9 @@
 - Current upstream 3.2: Mercurial `8ea4ebcb2440853e0a85e3b990678730bbc78534`
   (2026-07-11). Mercurial and converted Git hashes are different identities.
 - Current upstream 3.1: Mercurial `c7b9026dab21c7fae28c45c2366c0fb3edc0319f`.
+- Actual configured default branch: **branch/default**, Mercurial
+  `52c77fdee169dceefc11aceef956aa0367e9759a` (2025-10-01), version 3.1.5.
+  The project API, not an assumption about branch names, identifies this default.
 
 Sources: [3.2 revision](https://foss.heptapod.net/openpyxl/openpyxl/-/commit/8ea4ebcb2440853e0a85e3b990678730bbc78534),
 [public branch API](https://foss.heptapod.net/api/v4/projects/322/repository/branches),
@@ -25,7 +28,15 @@ operations. This is a targeted maintenance audit, not a proof of every module.
 
 ## Is 3.2 significant?
 
-First distinguish development branch heads from published releases. The verified
+First distinguish the actual default branch, development heads, and releases.
+Against **branch/default**, 3.2 has seven new non-test Python modules and 43
+existing non-test Python files with AST differences (including metadata). New
+modules include cell coordinates, external connections, drawing anchors/legacy
+content and volatile dependencies. This is a substantial difference, and the
+user's observation about changes absent from the actual default branch is valid.
+Both archives' embedded Mercurial node/branch metadata was checked.
+
+Separately, comparing the two development branches: The verified
 archives of current **3.1** (`c7b9026dab21`) and **3.2** (`8ea4ebcb2440`) differ
 in only three files: `.hg_archival.txt`, `openpyxl/_constants.py`, and `tox.ini`.
 The embedded `.hg_archival.txt` confirms each requested node and branch. All
@@ -96,3 +107,27 @@ collection from hiding the Windows regression.
 Read-only archive ownership remains with Workbook.close() on successful loads.
 The upstream patch does not cover read-only failures before returning a workbook;
 that is a remaining resource-lifecycle limitation, not a guarantee of this port.
+
+
+## Final branch layout and validation
+
+Local branches are stacked to preserve the fork and make each task reviewable:
+
+```text
+master (f35829b05, unchanged)
+  -> codex/upstream-3.2-fixes
+     -> codex/fix-2024-merged-borders
+        -> codex/proposal-1273-structural-edits
+```
+
+The last branch includes the completed earlier work. Its new #1273 content is a
+proposal, pure coordinate prototype and 48 strict expected-failure acceptance
+cases; it does not change the worksheet editing behavior. See
+[the proposal](proposals/issue1273/README.md) and [#2024 results](issue-2024.md).
+
+Final full-suite result on Windows/Python 3.12.10/lxml 5.4.0: **2749 passed,
+10 skipped, 60 xfailed**. Of the 60 xfails, 12 pre-existed and 48 document #1273.
+The #2024 branch independently passes both lxml and defusedxml configurations.
+No branch was pushed and no GitHub PR was opened. Pre-existing `.idea/` files
+were not changed. Test environments and raw comparison data live in the ignored
+`.venv/codex-audit/` directory; they are not runtime dependencies or committed code.
