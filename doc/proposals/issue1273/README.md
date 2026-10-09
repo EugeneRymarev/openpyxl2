@@ -1,7 +1,13 @@
 # Proposal: consistent structural worksheet edits (#1273)
 
-**Status: design proposal and executable coordinate prototype. Worksheet behavior
-is not changed by this branch. #1273 is not claimed fixed.**
+**Status: historical design, followed by a partial implementation on
+`codex/fix-1273-structural-edits`.** Per the follow-up request, merged ranges,
+static names, print settings and dimensions are now integrated; formulas remain
+unchanged. Dependency updates default to True, with an explicit legacy opt-out.
+The original design below describes additional future work, not the complete
+supported contract of this implementation. See [implementation notes](../../issue-1273.md)
+and `doc/editing_worksheets.rst` for the actual behavior.
+
 
 Source: [issue #1273](https://foss.heptapod.net/openpyxl/openpyxl/-/work_items/1273).
 The issue description was available through the public API; comments returned
@@ -204,30 +210,24 @@ escaped titles, repeated save/load cycles and unchanged-state-on-rejection tests
 Add a sparse case with only two far-apart cells and assert no intervening cells
 are created. Check both XML backends. Existing unrelated tests must remain green.
 
-## Executable evidence in this branch
+## Executable evidence after implementation
 
-- `openpyxl/worksheet/tests/test_structural_edit_contract.py`: 48 strict xfails
-  for the **current public methods**, covering all four operations and six
-  dependency types, in memory and after serialization. They fail on assertion,
-  not import/setup errors. They intentionally remain failing under `--runxfail`.
-- `doc/proposals/issue1273/axis_edit.py`: pure, unintegrated finite-interval model.
-- `doc/proposals/issue1273/test_axis_edit.py`: 21 passing tests, including an
-  independent enumerated-point oracle over 9,360 interval/edit combinations.
+- `openpyxl/worksheet/tests/test_structural_edit_contract.py`: all 48 original
+  public-interface acceptance cases now pass normally, with no xfail marker.
+- `openpyxl/worksheet/tests/test_structural_edit.py`: deletion/resize boundaries,
+  styles, scoped/static names, unchanged formulas, sparse cells, dimensions,
+  validation, failure atomicity and rollback through the public methods.
+- The prototype AxisEdit is now imported from `_structural_edit.py`; the existing
+  21 model tests exercise the real implementation, including the independent
+  point oracle over 9,360 interval/edit combinations.
 
-From the repository root, using a Python environment with project dependencies:
+From the repository root:
 
 ```text
-python -m pytest -q doc/proposals/issue1273/test_axis_edit.py
 python -m pytest -q openpyxl/worksheet/tests/test_structural_edit_contract.py
-python -m pytest -q openpyxl/worksheet/tests/test_structural_edit_contract.py --runxfail
+python -m pytest -q openpyxl/worksheet/tests/test_structural_edit.py
+python -m pytest -q doc/proposals/issue1273/test_axis_edit.py
 ```
 
-The last command is supposed to fail until the worksheet integration exists.
-The first two gave **21 passed, 48 xfailed**; forcing the acceptance cases with
-`--runxfail` gave **48 failed**. That distinction prevents the mathematical sketch
-from being mistaken for a completed workbook-editing implementation.
-
-
-Final full repository run in this branch (Python 3.12.10, lxml 5.4.0):
-**2749 passed, 10 skipped, 60 xfailed**. The 60 expected failures comprise the
-12 pre-existing ones plus this proposal's 48 documented acceptance cases.
+The earlier proposal branch retains its historical 48 expected failures. They
+were also rerun with `--runxfail` before implementation and all 48 failed.

@@ -1,16 +1,13 @@
-"""Executable acceptance criteria for the #1273 proposal; not yet implemented.
+"""Public-interface regressions for issue #1273, including XLSX round trips."""
 
-Run with --runxfail to reproduce the current failures. Strict xfails deliberately
-make an unexpected fix visible instead of pretending this branch implements it.
-"""
 from io import BytesIO
 
 import pytest
 
-from openpyxl import Workbook, load_workbook
+from openpyxl import load_workbook
+from openpyxl import Workbook
 from openpyxl.utils.cell import absolute_coordinate
 from openpyxl.workbook.defined_name import DefinedName
-
 
 OPERATIONS = [
     ("insert_rows", "B4:C5", "B4", 4, "B", "$4:$5"),
@@ -20,13 +17,15 @@ OPERATIONS = [
 ]
 
 
-@pytest.mark.xfail(strict=True, raises=AssertionError,
-                   reason="Proposal #1273: structural edits do not update dependencies yet")
 @pytest.mark.parametrize("operation,ref,anchor,row_key,col_key,titles", OPERATIONS)
-@pytest.mark.parametrize("feature", ["merge", "global_name", "local_name", "print_area", "titles", "dimensions"])
+@pytest.mark.parametrize(
+    "feature",
+    ["merge", "global_name", "local_name", "print_area", "titles", "dimensions"],
+)
 @pytest.mark.parametrize("reload", [False, True])
-def test_structural_edit_updates_dependencies(operation, ref, anchor, row_key,
-                                               col_key, titles, feature, reload):
+def test_structural_edit_updates_dependencies(
+    operation, ref, anchor, row_key, col_key, titles, feature, reload
+):
     wb = Workbook()
     ws = wb.active
     ws["B3"] = "anchor"
@@ -57,13 +56,19 @@ def test_structural_edit_updates_dependencies(operation, ref, anchor, row_key,
         assert str(ws.merged_cells) == ref
         assert ws[anchor].value == "anchor"
     elif feature == "global_name":
-        assert wb.defined_names["Block"].attr_text == "'Sheet'!" + absolute_coordinate(ref)
+        assert wb.defined_names["Block"].attr_text == "'Sheet'!" + absolute_coordinate(
+            ref
+        )
     elif feature == "local_name":
-        assert ws.defined_names["Block"].attr_text == "'Sheet'!" + absolute_coordinate(ref)
+        assert ws.defined_names["Block"].attr_text == "'Sheet'!" + absolute_coordinate(
+            ref
+        )
     elif feature == "print_area":
         assert str(ws.print_area) == "'Sheet'!" + absolute_coordinate(ref)
     elif feature == "titles":
-        actual = ws.print_title_rows if operation.endswith("rows") else ws.print_title_cols
+        actual = (
+            ws.print_title_rows if operation.endswith("rows") else ws.print_title_cols
+        )
         assert actual == titles
     elif feature == "dimensions":
         if operation.endswith("rows"):

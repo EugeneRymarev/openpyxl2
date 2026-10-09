@@ -31,9 +31,18 @@ including individual formatting, through subsequent save/load cycles.
 Explicit border assignments to a non-anchor MergedCell remain local.
 
 
-In progress
-------------
-* Fix the problem with the insert_rows, insert_cols, delete_rows, delete_cols functions so that the result of executing these functions matches the result of executing similar actions in Excel.
+Structural edits
+----------------
+``insert_rows``, ``insert_cols``, ``delete_rows`` and ``delete_cols`` now update
+merged ranges, static workbook/sheet-local names, print areas/titles and
+row/column dimensions. Partially deleted ranges shrink; completely deleted
+named references become ``#REF!``. Sparse sheets stay sparse.
+
+Formula text and calculated named expressions remain unchanged. Tables, charts,
+data validation, conditional formatting and drawing/view references are not
+updated. This is not a claim of complete Excel editing compatibility.
+Pass ``update_dependencies=False`` when existing application code already
+updates dependencies itself. See ``doc/editing_worksheets.rst`` for details.
 
 
 Introduction

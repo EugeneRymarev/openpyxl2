@@ -109,7 +109,7 @@ The upstream patch does not cover read-only failures before returning a workbook
 that is a remaining resource-lifecycle limitation, not a guarantee of this port.
 
 
-## Final branch layout and validation
+## Branch layout and validation at the end of the initial review
 
 Local branches are stacked to preserve the fork and make each task reviewable:
 
@@ -131,3 +131,18 @@ The #2024 branch independently passes both lxml and defusedxml configurations.
 No branch was pushed and no GitHub PR was opened. Pre-existing `.idea/` files
 were not changed. Test environments and raw comparison data live in the ignored
 `.venv/codex-audit/` directory; they are not runtime dependencies or committed code.
+
+
+## Follow-up: requested implementation
+
+The owner subsequently requested integration of the first two changes and an
+implementation of #1273 without formula rewriting. Local `master` is now
+`ad9d318f6` (upstream fixes plus #2024). The implementation is on
+`codex/fix-1273-structural-edits`, based on the proposal branch. Its 48 formerly
+expected failures are now ordinary passing regression tests. The earlier branch
+layout and test counts above describe the initial review, not the current state.
+
+See [#1273 implementation and validation](issue-1273.md) for supported references,
+declaration of unchanged formula text and remaining object-type limitations.
+Full validation: 2865 passed with lxml, 2869 with defusedxml; 12 pre-existing
+expected failures remain. No changes have been pushed to GitHub.
