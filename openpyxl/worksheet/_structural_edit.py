@@ -1,11 +1,10 @@
 """Plan row/column edits and synchronize the metadata covered by issue #1273.
 
-Formula text is deliberately never rewritten. All fallible transformations are
-prepared before the worksheet, its cells, or workbook registries are changed.
+Formula and metadata transformations are prepared before the worksheet, its
+cells, or workbook registries are changed.
 """
 
 import copy
-import re
 from dataclasses import dataclass
 from typing import Optional
 from typing import Tuple
@@ -13,12 +12,17 @@ from typing import Tuple
 from openpyxl.cell.cell import Cell
 from openpyxl.cell.cell import MergedCell
 from openpyxl.cell.coordinate import Coordinate
+from openpyxl.formula.structural import FormulaTranslationError
+from openpyxl.formula.structural import parse_reference as _reference
+from openpyxl.formula.structural import rewrite_formula
+from openpyxl.formula.structural import rewrite_reference as _rewrite_reference
 from openpyxl.formula.tokenizer import Tokenizer
 from openpyxl.formula.tokenizer import TokenizerError
 from openpyxl.styles.cell_style import StyleArray
 from openpyxl.utils.cell import column_index_from_string
 from openpyxl.utils.cell import get_column_letter
 from openpyxl.utils.indexed_list import IndexedList
+from openpyxl.workbook.properties import CalcProperties
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.cell_range import MultiCellRange
 from openpyxl.worksheet.dimensions import DimensionHolder
@@ -88,11 +92,6 @@ class AxisEdit:
         return first, last
 
 
-_CELL = re.compile(r"(\$?)([A-Za-z]{1,3})(\$?)([1-9][0-9]*)\Z")
-_COL = re.compile(r"(\$?)([A-Za-z]{1,3})\Z")
-_ROW = re.compile(r"(\$?)([1-9][0-9]*)\Z")
-
-
 def _range(edit, axis, cr):
     bounds = list(cr.bounds)
     first = 1 if axis == "row" else 0
@@ -109,63 +108,13 @@ def _range(edit, axis, cr):
     )
 
 
-def _reference(value):
-    """Parse only a literal A1 reference; return None for expressions/aliases."""
-    prefix, bang, coordinate = value.rpartition("!")
-    if not bang:
-        coordinate = value
-    if coordinate == "#REF!":
-        return prefix, bang, coordinate, None, None
-    parts = coordinate.split(":")
-    if len(parts) > 2:
-        return None
-    patterns = [_CELL] if len(parts) == 1 else [_CELL, _COL, _ROW]
-    for pattern in patterns:
-        matches = [pattern.fullmatch(part) for part in parts]
-        if all(matches):
-            return prefix, bang, coordinate, pattern, [m.groups() for m in matches]
-    return None
-
-
-def _rewrite_reference(value, parsed, owner, ws, axis, edit):
-    prefix, bang, coordinate, pattern, parts = parsed
-    title = prefix if bang else owner
-    if bang and title.startswith("'") and title.endswith("'"):
-        title = title[1:-1].replace("''", "'")
-    if title is None or "[" in title or ":" in title:
-        return value  # external, 3D, or context-dependent global reference
-    if title.casefold() != ws.title.casefold() or pattern is None:
-        return value
-    if (pattern is _COL and axis == "row") or (pattern is _ROW and axis == "column"):
-        return value  # the orthogonal axis is unbounded, not a finite rectangle
-    component = 3 if pattern is _CELL and axis == "row" else 1
-    values = [
-        int(p[component]) if axis == "row" else column_index_from_string(p[component])
-        for p in parts
-    ]
-    result = edit.interval(values[0], values[-1])
-    if result is None:
-        return "#REF!"
-    if result == (values[0], values[-1]):
-        return value
-    out = []
-    for part, position in zip(parts, (result[0], result[1])):
-        part = list(part)
-        replacement = str(position) if axis == "row" else get_column_letter(position)
-        if axis == "column" and part[component].islower():
-            replacement = replacement.lower()
-        part[component] = replacement
-        out.append("".join(part))
-    return (prefix + bang if bang else "") + ":".join(out)
-
-
 def _name_value(value, owner, ws, axis, edit):
     if not isinstance(value, str):
         return value
     leading_equals = value.startswith("=")
     try:
         tokens = Tokenizer(value if leading_equals else "=" + value).items
-    except TokenizerError:
+    except (TokenizerError, IndexError):
         return value
     significant = [t for t in tokens if t.type != "WHITE-SPACE"]
     if not significant or len(significant) % 2 == 0:
@@ -193,7 +142,7 @@ def _name_value(value, owner, ws, axis, edit):
     return ("=" if leading_equals else "") + "".join(result)
 
 
-def _names(ws, axis, edit):
+def _names(ws, axis, edit, update_formulas):
     wb = ws.parent
     scopes = [(getattr(wb, "defined_names", {}), None)]
     sheets = list(getattr(wb, "worksheets", ()))
@@ -203,7 +152,20 @@ def _names(ws, axis, edit):
     changes = []
     for definitions, owner in scopes:
         for name in definitions.values():
-            value = _name_value(name.attr_text, owner, ws, axis, edit)
+            try:
+                formula_value = name.attr_text
+                if update_formulas and isinstance(formula_value, str):
+                    formula_value = rewrite_formula(
+                        formula_value, owner, ws, axis, edit
+                    )
+                # Retain the established literal-name deletion/overflow policy.
+                value = _name_value(name.attr_text, owner, ws, axis, edit)
+                if value == name.attr_text:
+                    value = formula_value
+            except FormulaTranslationError as exc:
+                raise FormulaTranslationError(
+                    f"Defined name {name.name}: {exc}"
+                ) from exc
             if value != name.attr_text:
                 changes.append((name, value, name.attr_text))
     return changes
@@ -254,7 +216,7 @@ def _dimensions(ws, axis, edit):
 
 
 class _EditPlan:
-    def __init__(self, ws, axis, edit):
+    def __init__(self, ws, axis, edit, update_formulas):
         self.ws = ws
         self.axis = axis
         self.cells = {}
@@ -296,7 +258,45 @@ class _EditPlan:
                 else None
             )
         self.dimensions = _dimensions(ws, axis, edit)
-        self.names = _names(ws, axis, edit)
+        self.names = _names(ws, axis, edit, update_formulas)
+        self.formulas = []
+        self.calculation = None
+        if update_formulas:
+            sheets = list(getattr(ws.parent, "worksheets", ()))
+            if ws not in sheets:
+                sheets.append(ws)
+            has_formulas = False
+            for sheet in sheets:
+                # Use the final cell map, including retained merged anchors.
+                cells = self.cells if sheet is ws else sheet._cells
+                # Unsupported formula objects must also be detected when their
+                # anchor is deleted but some array/table result cells survive.
+                for cell in sheet._cells.values():
+                    if cell.data_type == "f" and not isinstance(cell.value, str):
+                        raise FormulaTranslationError(
+                            f"{sheet.title}!{cell.coordinate}: array and data-table formulas are not supported; "
+                            "use update_formulas=False for manual dependency management"
+                        )
+                for cell in cells.values():
+                    if cell.data_type != "f":
+                        continue
+                    has_formulas = True
+                    try:
+                        value = rewrite_formula(cell.value, sheet.title, ws, axis, edit)
+                    except FormulaTranslationError as exc:
+                        raise FormulaTranslationError(
+                            f"{sheet.title}!{cell.coordinate}: {exc}"
+                        ) from exc
+                    if value != cell.value:
+                        self.formulas.append((cell, value, cell.value))
+            if has_formulas or self.names:
+                calculation = getattr(ws.parent, "calculation", None)
+                self.calculation = (
+                    copy.copy(calculation) if calculation else CalcProperties()
+                )
+                self.calculation.fullCalcOnLoad = True
+                self.calculation.forceFullCalc = True
+                self.calculation.calcCompleted = False
         self.coordinates = [
             (cell, Coordinate(*coordinate), cell._coord)
             for coordinate, cell in self.cells.items()
@@ -385,6 +385,7 @@ class _EditPlan:
         }
         previous = {name: getattr(ws, name) for name in replacements}
         old_borders = ws.parent._borders if self.borders is not None else None
+        old_calculation = getattr(ws.parent, "calculation", None)
         try:
             for cell, coordinate, old in self.coordinates:
                 cell._coord = coordinate
@@ -394,8 +395,12 @@ class _EditPlan:
                 ws.parent._borders = self.borders
             for name, value in replacements.items():
                 setattr(ws, name, value)
+            for cell, value, old in self.formulas:
+                cell._value = value
             for name, value, old in self.names:
                 name.attr_text = value
+            if self.calculation is not None:
+                ws.parent.calculation = self.calculation
         except Exception:
             for cell, coordinate, old in self.coordinates:
                 cell._coord = old
@@ -405,13 +410,19 @@ class _EditPlan:
                 ws.parent._borders = old_borders
             for name, value in previous.items():
                 setattr(ws, name, value)
+            for cell, value, old in self.formulas:
+                cell._value = old
             for name, value, old in self.names:
                 name.attr_text = old
+            if self.calculation is not None:
+                ws.parent.calculation = old_calculation
             raise
 
 
-def edit_worksheet(ws, axis, index, amount, deleting=False):
+def edit_worksheet(ws, axis, index, amount, deleting=False, update_formulas=True):
+    if type(update_formulas) is not bool:
+        raise TypeError("update_formulas must be a bool")
     limit = 1048576 if axis == "row" else 16384
     edit = AxisEdit(index, amount, deleting=deleting, limit=limit)
     if amount:
-        _EditPlan(ws, axis, edit).apply()
+        _EditPlan(ws, axis, edit, update_formulas).apply()

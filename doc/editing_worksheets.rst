@@ -35,6 +35,8 @@ In this fork, all four insert/delete methods update these objects by default:
   edited worksheet, including names scoped to a different worksheet;
 * print areas and repeated print rows/columns;
 * row heights, column widths, hidden state, grouping and dimension styles.
+* direct A1 references in ordinary cell formulas throughout the workbook and
+  in calculated defined names (see the formula rules below).
 
 Cells are moved without filling gaps in sparse worksheets. Surviving Cell
 objects retain their identity. The append position is recalculated after both
@@ -77,13 +79,70 @@ Literal A1 cells, rectangular ranges, unions, whole-row and whole-column
 references are updated while preserving dollar signs and sheet quoting. Sheet
 names are matched case-insensitively. A local unqualified reference belongs to
 its owning worksheet. Global unqualified references have no reliable worksheet
-context and remain unchanged. External-workbook and 3D references remain
-unchanged as well.
+context and remain unchanged. External-workbook references remain unchanged.
+3D references are rejected when formula updates are enabled; with
+``update_formulas=False`` they retain the original unchanged behavior.
+
+Formula references
+~~~~~~~~~~~~~~~~~~
+
+By default, all four operations update direct A1 references in ordinary cell
+formulas on **every worksheet**, including formulas whose cells do not move.
+Absolute and mixed references are adjusted, retaining their dollar signs. This
+is structural editing, not copying a formula to a new cell::
+
+    >>> ws['A10'] = '=A1+$B$5'
+    >>> ws.insert_rows(5, 2)
+    >>> ws['A12'].value
+    '=A1+$B$7'
+
+Single cells, rectangular ranges, whole rows/columns, unions and intersections
+are supported. Quoted sheet names and whitespace are preserved. Insertions
+within a range expand it; partial deletions contract it. Completely deleted
+formula references become ``#REF!``, retaining their sheet qualifier. Full-axis
+references remain full-axis. An insertion pushing a formula reference off the
+sheet produces ``#REF!`` (or clips a partially surviving range); existing cells
+and metadata still follow the stricter overflow validation described below.
+
+Direct references in calculated names such as ``SUM(Sheet!$A$2:$A$5)`` are
+updated. Name identifiers in formulas stay unchanged, since their definitions
+carry the new references. Local unqualified references use the owning sheet;
+global unqualified references remain unchanged because no worksheet context is
+available. References in names use their stored A1 coordinates; relative names
+depending on the active cell/caller are not modelled. Prefer absolute references
+in names when automatic maintenance is required.
+
+String literals, including ``INDIRECT("A3")``, are never rewritten. Numeric
+offsets inside OFFSET and similar functions are not inferred or recalculated.
+External-workbook and structured table references are retained verbatim.
+Ordinary formula strings may use ``@A1`` or ``A1#``; this does not provide array
+output-range or dynamic-spill management.
+
+Unparseable formulas, 3D references, ranges with named/function endpoints, and
+array/data-table formula objects cause
+``openpyxl.formula.structural.FormulaTranslationError`` before any mutation.
+The check covers all surviving ordinary formulas and all defined names in the
+workbook. Array/data-table objects anywhere in the workbook block the operation,
+including those whose anchor would be deleted, because their output ranges
+cannot safely be ignored. Formulas outside the supported subset can be managed
+explicitly by the application::
+
+    >>> ws.insert_rows(7, update_formulas=False)
+
+This preserves cell formulas and calculated names while still maintaining the
+original merged ranges, literal names, print settings and dimensions.
+``update_dependencies=False`` bypasses both metadata and formula maintenance.
+Zero amount remains a no-op, even with unsupported formulas present.
+
+The library does not evaluate formulas. Formula-enabled edits with surviving
+formulas or changed names request a full recalculation on opening, preserving
+the workbook's manual/automatic and iterative calculation settings. A workbook
+in manual calculation mode still requires recalculation by its consumer.
+Each edit scans the materialized cells across the workbook; there is no persistent
+dependency graph, and no empty rectangular cell grid is created.
 
 .. important::
 
-    Formulas are not rewritten or evaluated, even when their cells move.
-    Calculated names, such as OFFSET/INDIRECT expressions, are also unchanged.
     This release does not update tables, filters, charts, pivot caches, data
     validation, conditional formatting, hyperlinks, drawings, controls or view
     references. Applications using those objects must continue managing their
@@ -102,7 +161,8 @@ axis limit raises OverflowError.
 The operation prepares replacements before modifying cells or metadata. Invalid
 ranges, overlapping merges/dimension groups and overflow leave the workbook
 unchanged, including its style registries. An unexpected exception during commit
-restores the prior state. There is no recovery guarantee for process termination
+restores the prior state, including formulas on other sheets, defined names and
+calculation properties. There is no recovery guarantee for process termination
 or exhaustion of memory.
 
 

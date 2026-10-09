@@ -1,4 +1,9 @@
-# Issue 1273: structural editing without formula rewriting
+# Issue 1273: structural editing
+
+The initial implementation below was integrated into master without formula
+rewriting. A subsequent implementation on `codex/fix-1273-formula-references`
+adds formula maintenance by default, with `update_formulas=False` retaining the
+earlier behavior. See [formula support and validation](issue-1273-formulas.md).
 
 Implemented in `codex/fix-1273-structural-edits` and integrated into local
 `master` by fast-forward through `b63fe1faa`. Master now includes the upstream
@@ -28,7 +33,7 @@ merge is retained. Resizing restores the perimeter using the anchor's border.
 Unqualified global names, calculated names and external/3D references remain
 unchanged. Wholly deleted literal references become #REF!.
 
-Formula text in cells and calculated name expressions is unchanged. This scope
+In the initial implementation, formula text and calculated names were unchanged. This scope
 does not synchronize tables, charts/pivots, filters, validation/conditional
 formatting, hyperlinks, drawings/controls or views. `move_range` and private
 cell-moving primitives retain their earlier semantics. These limitations and

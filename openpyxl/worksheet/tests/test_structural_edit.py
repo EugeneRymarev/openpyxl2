@@ -263,7 +263,7 @@ def test_static_name_references(value, operation, expected):
     wb = Workbook()
     wb.create_sheet("Other")
     wb.defined_names.add(DefinedName("Block", attr_text=value))
-    getattr(wb.active, operation)(1)
+    getattr(wb.active, operation)(1, update_formulas=False)
     assert wb.defined_names["Block"].attr_text == expected
 
 
@@ -304,7 +304,7 @@ def test_scoped_names_and_escaped_sheet_titles():
 def test_formula_names_are_unchanged(expression):
     wb = Workbook()
     wb.defined_names.add(DefinedName("Expression", attr_text=expression))
-    wb.active.insert_rows(1)
+    wb.active.insert_rows(1, update_formulas=False)
     assert wb.defined_names["Expression"].attr_text == expression
 
 
@@ -315,8 +315,8 @@ def test_cell_formulas_on_all_sheets_are_unchanged():
     ws["B3"] = "=SUM($A$1:A2)"
     other["A1"] = "=Sheet!B3"
     formula = ws["B3"]
-    ws.insert_rows(1)
-    ws.delete_cols(1)
+    ws.insert_rows(1, update_formulas=False)
+    ws.delete_cols(1, update_formulas=False)
     assert ws["A4"] is formula
     loaded = roundtrip(wb)
     assert loaded.active["A4"].value == "=SUM($A$1:A2)"
