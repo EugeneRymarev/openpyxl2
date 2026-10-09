@@ -156,15 +156,22 @@ def test_no_external_links(datadir, load_workbook_):
     assert wb._external_links == []
 
 
-def test_file_closes(datadir, load_workbook_):
-    """Test whether workbook file is closed correctly after loading"""
-    datadir.chdir()
-    filename = "empty_with_no_properties-copy.xlsx"
-    # create a copy that can be deleted later
-    shutil.copyfile("empty_with_no_properties.xlsx", filename)
-    load_workbook_(filename)
-    # remove would fail if the file is not closed correctly after loading
-    os.remove(filename)
+def test_file_closes(datadir, tmp_path, load_workbook_):
+    """Windows must allow deleting the input immediately after loading."""
+    import gc
+
+    path = tmp_path / "input.xlsx"
+    shutil.copyfile(str(datadir.join("empty_with_no_properties.xlsx")), path)
+    was_enabled = gc.isenabled()
+    gc.disable()
+    try:
+        load_workbook_(path)
+        path.unlink()
+        assert not path.exists()
+    finally:
+        if was_enabled:
+            gc.enable()
+
 
 
 class TestExcelReader:
@@ -344,3 +351,30 @@ class TestWorksheetProcessor:
         rel = drawing.children[0]
         assert rel.target == "xl/media/image3.emf"
         assert rel.blob._data()[:10] == b"\x01\x00\x00\x00l\x00\x00\x00\x00\x00"
+
+
+@pytest.mark.parametrize("error", [ValueError, RuntimeError])
+def test_archive_closed_on_read_error(datadir, monkeypatch, error):
+    reader = ExcelReader(str(datadir.join("empty_with_no_properties.xlsx")))
+
+    def fail():
+        raise error("invalid workbook")
+
+    monkeypatch.setattr(reader, "read_worksheets", fail)
+    try:
+        with pytest.raises(error):
+            reader.read()
+        assert reader.archive.fp is None
+    finally:
+        reader.archive.close()
+
+
+def test_read_only_archive_owned_by_workbook(datadir):
+    reader = ExcelReader(str(datadir.join("empty_with_no_properties.xlsx")), read_only=True)
+    try:
+        reader.read()
+        assert reader.archive.fp is not None
+        reader.wb.close()
+        assert reader.archive.fp is None
+    finally:
+        reader.archive.close()

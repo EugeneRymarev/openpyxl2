@@ -216,31 +216,31 @@ class ExcelReader:
                 ws.sheet_state = sheet.state
                 self.wb._sheets.append(ws)
                 continue
-            fh = self.archive.open(rel.target)
-            ws = self.wb.create_sheet(sheet.name)
-            processor = WorksheetProcessor(ws, self.archive)
-            processor.find_children(rel.target)
-            ws._rels = processor.rels
-            ws_parser = WorksheetReader(
-                ws,
-                fh,
-                self.shared_strings,
-                self.data_only,
-                self.rich_text,
-            )
-            ws_parser.bind_all()
-            ws.sheet_state = sheet.state
-            processor.get_comments()
-            processor.get_pivots(self.parser.pivot_caches)
-            processor.get_drawings()
-            processor.get_activex()
-            processor.get_controls()
-            processor.get_legacy()
-            for t in ws_parser.tables:
-                src = self.archive.read(t)
-                xml = fromstring(src)
-                table = Table.from_tree(xml)
-                ws.add_table(table)
+            with self.archive.open(rel.target) as fh:
+                ws = self.wb.create_sheet(sheet.name)
+                processor = WorksheetProcessor(ws, self.archive)
+                processor.find_children(rel.target)
+                ws._rels = processor.rels
+                ws_parser = WorksheetReader(
+                    ws,
+                    fh,
+                    self.shared_strings,
+                    self.data_only,
+                    self.rich_text,
+                )
+                ws_parser.bind_all()
+                ws.sheet_state = sheet.state
+                processor.get_comments()
+                processor.get_pivots(self.parser.pivot_caches)
+                processor.get_drawings()
+                processor.get_activex()
+                processor.get_controls()
+                processor.get_legacy()
+                for t in ws_parser.tables:
+                    src = self.archive.read(t)
+                    xml = fromstring(src)
+                    table = Table.from_tree(xml)
+                    ws.add_table(table)
 
     def read_volatile_deps(self):
         if ARC_VOLATILE_DEPENDENCIES in self.valid_files:
@@ -286,8 +286,6 @@ class ExcelReader:
             self.read_volatile_deps()
             action = "read connections"
             self.read_connections()
-            if not self.read_only:
-                self.archive.close()
         except ValueError as e:
             msg = (
                 f"Unable to read workbook: could not {action} from "
@@ -296,6 +294,10 @@ class ExcelReader:
                 "invalid XML.\nPlease see the exception for more details."
             )
             raise ValueError(msg) from e
+        finally:
+            # A successfully loaded read-only workbook owns its archive.
+            if not self.read_only:
+                self.archive.close()
 
 
 class WorksheetProcessor:

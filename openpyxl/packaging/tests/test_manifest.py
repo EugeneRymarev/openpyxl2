@@ -327,3 +327,13 @@ class TestManifest:
         m = manifest.from_tree(tree)
         sheets = m.findall(WORKSHEET_TYPE)
         assert len(list(sheets)) == 1
+
+
+@pytest.mark.parametrize("extension", ["JPEG", "JpEg", "PNG", "Vml"])
+def test_mime_registration_case_insensitive(extension):
+    from openpyxl.packaging.manifest import Manifest, mimetypes
+
+    manifest = Manifest()
+    manifest._register_mimetypes([f"xl/media/image1.{extension}"])
+    item = next(item for item in manifest.Default if item.Extension == extension)
+    assert item.ContentType == mimetypes.types_map[True]["." + extension.lower()]
