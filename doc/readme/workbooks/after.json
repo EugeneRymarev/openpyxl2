@@ -1,0 +1,39 @@
+{
+  "insert_rows": {
+    "call": "insert_rows(3)",
+    "total_cell": "C10",
+    "formula": "=SUM(C7:C8)",
+    "merged_ranges": "B4:E4",
+    "defined_name": "'insert_rows'!$C$7:$C$8",
+    "print_area": "'insert_rows'!$B$4:$E$10"
+  },
+  "insert_cols": {
+    "call": "insert_cols(2)",
+    "total_cell": "D9",
+    "formula": "=SUM(D6:D7)",
+    "merged_ranges": "C3:F3",
+    "defined_name": "'insert_cols'!$D$6:$D$7",
+    "print_area": "'insert_cols'!$C$3:$F$9"
+  },
+  "delete_rows": {
+    "call": "delete_rows(2)",
+    "total_cell": "C8",
+    "formula": "=SUM(C5:C6)",
+    "merged_ranges": "B2:E2",
+    "defined_name": "'delete_rows'!$C$5:$C$6",
+    "print_area": "'delete_rows'!$B$2:$E$8"
+  },
+  "delete_cols": {
+    "call": "delete_cols(1)",
+    "total_cell": "B9",
+    "formula": "=SUM(B6:B7)",
+    "merged_ranges": "A3:D3",
+    "defined_name": "'delete_cols'!$B$6:$B$7",
+    "print_area": "'delete_cols'!$A$3:$D$9"
+  },
+  "merge_cells": {
+    "C4_fill": "FFDBEAFE",
+    "E6_right": "medium",
+    "E6_bottom": "medium"
+  }
+}

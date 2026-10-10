@@ -5,3 +5,4 @@ prune scratchpad
 prune doc
 
 include *.rst
+include README.md README.ru.md

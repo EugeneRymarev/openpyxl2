@@ -10,7 +10,13 @@ openpyxl - A Python library to read/write Excel 2010 xlsx/xlsm files
 :Version: |release|
 
 
-.. include:: ../README.rst
+openpyxl2 is a fork of openpyxl for reading and writing Excel workbooks.
+It extends structural worksheet edits, formula reference maintenance and
+merged-cell styling. For the fork's complete change overview, examples and
+Excel screenshots, see the
+`English README <https://github.com/EugeneRymarev/openpyxl2/blob/master/README.md>`_
+or the
+`Russian README <https://github.com/EugeneRymarev/openpyxl2/blob/master/README.ru.md>`_.
 
 
 Support

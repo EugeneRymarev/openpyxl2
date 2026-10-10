@@ -1,0 +1,74 @@
+{
+  "application": "Microsoft Excel for Windows",
+  "method": "Native window screenshots; generated XLSX opened and recalculated in Excel",
+  "image_size": [
+    1440,
+    852
+  ],
+  "captures": [
+    {
+      "case": "insert_rows",
+      "phase": "before",
+      "path": "doc/readme/images/insert_rows_before.jpg",
+      "sha256": "a3c54438d3561a5f65b706e12d1acae9ce62d82f7ee79aa8d83addaff59249a8"
+    },
+    {
+      "case": "insert_rows",
+      "phase": "after",
+      "path": "doc/readme/images/insert_rows_after.jpg",
+      "sha256": "d52f8d8da6a98c7deecff9280dc380fb99929aff481763fc2d6e3e92a57665e4"
+    },
+    {
+      "case": "insert_cols",
+      "phase": "before",
+      "path": "doc/readme/images/insert_cols_before.jpg",
+      "sha256": "f76029415be0a11e0b6d209392d79d00ea60a6fb89457fdb8e4720ee2d9aa86d"
+    },
+    {
+      "case": "insert_cols",
+      "phase": "after",
+      "path": "doc/readme/images/insert_cols_after.jpg",
+      "sha256": "7ac80031c11ad297b682819d12880f521094129cdd86a0f525ecf4a660b9948a"
+    },
+    {
+      "case": "delete_rows",
+      "phase": "before",
+      "path": "doc/readme/images/delete_rows_before.jpg",
+      "sha256": "47323c2c42633bb1e4d1038a410bdfd88f2344f682257af88b6f928251f78bf0"
+    },
+    {
+      "case": "delete_rows",
+      "phase": "after",
+      "path": "doc/readme/images/delete_rows_after.jpg",
+      "sha256": "93f099aba166bd46fe4d4c36fbb3653f3f35f8c17693d4e7b3023df926f47c73"
+    },
+    {
+      "case": "delete_cols",
+      "phase": "before",
+      "path": "doc/readme/images/delete_cols_before.jpg",
+      "sha256": "a6fd05a1a8fc996ca3ddcd97544e5388b3539425a1eaa75af01b7385c6309f9e"
+    },
+    {
+      "case": "delete_cols",
+      "phase": "after",
+      "path": "doc/readme/images/delete_cols_after.jpg",
+      "sha256": "c86d82a4d2d1526c2a68e396da2b9eb0ffc657664fa2be07e34c2b8549d885eb"
+    },
+    {
+      "case": "merge_cells",
+      "phase": "before",
+      "path": "doc/readme/images/merge_cells_before.jpg",
+      "sha256": "2442c0a36357f63d52a66c658926e70a90fa9c78d23c82785b757cb65bee5000"
+    },
+    {
+      "case": "merge_cells",
+      "phase": "after",
+      "path": "doc/readme/images/merge_cells_after.jpg",
+      "sha256": "b4fc4b79a67a9b010af844c8c36c85aae6542c6637ea5f35316fd36f3998b18b"
+    }
+  ],
+  "workbooks": {
+    "before.xlsx": "d08586fedadb5c89684d74134fe541f658a1b2e2ee7e80e4ead40552ac2749ca",
+    "after.xlsx": "46e506acf4f4d2ede6c576f3bc2429bcc764ba57c361931b3eb22e3b24def270"
+  }
+}

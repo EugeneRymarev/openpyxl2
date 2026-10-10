@@ -21,7 +21,7 @@ from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
-    with open(os.path.join(here, 'README.rst')) as f:
+    with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
         README = f.read()
 except IOError:
     README = ''
@@ -70,6 +70,7 @@ setup(
     version=__version__,
     description="A Python library to read/write Excel 2010 xlsx/xlsm files",
     long_description=README,
+    long_description_content_type='text/markdown',
     author=__author__,
     author_email=__author_email__,
     url=__url__,
