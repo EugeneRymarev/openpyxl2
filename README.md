@@ -4,7 +4,7 @@
 
 **openpyxl2** is a fork of [openpyxl](https://foss.heptapod.net/openpyxl/openpyxl), a Python library for reading and writing Excel `.xlsx`, `.xlsm`, `.xltx` and `.xltm` files. It improves row and column editing, maintains formula references, and preserves formatting of merged cells.
 
-The Python package and import name remain **`openpyxl`**. Python 3.8 or newer is required; the repository's CI matrix covers Python 3.8–3.14. The code is based on the upstream 3.2 development line and reports version `3.2.0b1`.
+The Python package and import name remain **`openpyxl`**. Python 3.8 or newer is required; the repository's CI matrix covers Python 3.8–3.14. The code is based on the upstream 3.2 development line and reports version `3.2.0b2`.
 
 ## Installation and a first workbook
 
@@ -35,6 +35,24 @@ loaded = load_workbook("sales.xlsx")
 assert loaded["Sales"]["B5"].value == "=SUM(B3:B4)"
 loaded.close()
 ```
+
+## Downloading wheels and publishing releases
+
+The **Python package** workflow builds a universal `py3-none-any.whl` and a source archive (`.tar.gz`). After the wheel passes its clean-environment smoke test, both files are saved for 30 days in the **python-distributions** artifact on the Actions run page. Builds run on pushes and pull requests configured in the workflow, and can also be started with **Actions → Python package → Run workflow**. Extract the downloaded artifact ZIP before installing the wheel:
+
+```sh
+python -m pip install /path/to/openpyxl-3.2.0b2-py3-none-any.whl
+```
+
+Use the filename for the version you downloaded. The wheel works on Windows, Linux and macOS with supported Python versions.
+
+To publish packages in [GitHub Releases](https://github.com/EugeneRymarev/openpyxl2/releases):
+
+1. Update `__version__` in `openpyxl/_constants.py` and commit the change together with the workflow.
+2. Create and publish a GitHub Release (or prerelease) from that commit with a tag equal to the package version, optionally prefixed with `v`, for example `v3.2.0b2`. Saving a draft or pushing a tag alone does not publish packages.
+3. The workflow checks the tag, builds the packages and runs the test matrix. Once all test and wheel jobs succeed, it attaches the same `.whl` and `.tar.gz` files to the release.
+
+The upload job uses the automatic `GITHUB_TOKEN` with `contents: write`; no extra secret is needed. Existing assets are not overwritten, so rerunning publication with the same filenames fails rather than replacing them. Publishing only works for tags whose commit includes this workflow. The distribution and import name remain `openpyxl`; this workflow does not upload to PyPI.
 
 ## Differences from original openpyxl
 
