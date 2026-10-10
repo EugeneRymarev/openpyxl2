@@ -1,4 +1,5 @@
-lxml>=5.0.1,<6
+-c constraints.txt
+lxml
 numpy
 pandas
 pillow

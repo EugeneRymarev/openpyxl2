@@ -124,7 +124,22 @@ Support of Python Versions
 ++++++++++++++++++++++++++
 
 Make sure that you can test different versions of Python. Currently,
-Python 3.8 and upwards is supported.
+Python 3.8 and upwards is supported, including CPython 3.14.
+
+The development dependencies in ``requirements.txt`` and tox share
+``constraints.txt``. Python 3.8--3.13 retain lxml 5.x; Python 3.14 uses lxml 6.x
+because wheels for that interpreter start with lxml 6.0.1. This changes the test
+environment, not the library's optional dependency policy.
+
+To test Python 3.14 with both XML backends::
+
+    tox -e py314,py314-nolxml
+
+The ``nolxml`` environment disables lxml and defusedxml in openpyxl, exercising
+the standard-library XML backend and et_xmlfile. lxml remains installed because
+the test helpers use it for XML comparisons. GitHub Actions also checks a built
+wheel in a clean environment with only its required dependencies installed.
+Support for free-threaded Python 3.14t is not implied by these checks.
 
 
 Topics

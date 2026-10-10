@@ -72,6 +72,12 @@ test-python313:
   variables:
     TOXENV: py313
 
+test-python314:
+  <<: *unit
+  image: python:3.14
+  variables:
+    TOXENV: py314,py314-nolxml
+
 # test-pypy3:
 #   <<: *unit
 #   image: pypy:3
