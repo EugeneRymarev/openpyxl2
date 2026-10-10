@@ -5,6 +5,7 @@
 New Features
 ------------
 
+* Support Python 3.14.
 * Support Active X elements
 * Support Form Controls
 * Support for documents with volatile dependencies
